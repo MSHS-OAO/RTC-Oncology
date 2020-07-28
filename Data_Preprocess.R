@@ -1,5 +1,6 @@
 # Packages ----------------------------------------------------------------
 library("readxl")
+library("lubridate")
 
 
 # Data Import -------------------------------------------------------------
@@ -14,6 +15,7 @@ appt_updates <- read_excel(data_LOC, sheet = 2)
 # Slot Usage Pre-Process --------------------------------------------------
 slot_usage$appt_dow <- weekdays(as.Date(slot_usage$DATE_TIME)) #Get the DOW based off of Date_time
 slot_usage$appt_month <- months(as.Date(slot_usage$DATE_TIME))
+slot_usage$slot_hour <- hour(strptime(slot_usage$DATE_TIME, format = "%Y-%m-%d %H:%M:%S"))
 
 
 # Appt Updates Pre-Process ------------------------------------------------
