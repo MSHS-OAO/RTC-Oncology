@@ -14,9 +14,10 @@ appt_updates <- read_excel(data_LOC, sheet = 2)
 
 # Slot Usage Pre-Process --------------------------------------------------
 slot_usage <- slot_usage[order(as.Date(slot_usage$DATE_TIME, format="%Y-%m-%d")),] #sort slot_usage by date
+slot_usage$DATE_TIME <- format(slot_usage$DATE_TIME, "%m-%d-%Y %H:%M:%S") #refomrat Date_Time
 slot_usage$appt_dow <- weekdays(as.Date(slot_usage$DATE_TIME)) #Get the DOW based off of Date_time
 slot_usage$appt_month <- months(as.Date(slot_usage$DATE_TIME)) #get month of appt
-slot_usage$slot_hour <- hour(strptime(slot_usage$DATE_TIME, format = "%Y-%m-%d %H:%M:%S"))
+slot_usage$slot_hour <- hour(strptime(slot_usage$DATE_TIME, format = "%m-%d-%Y %H:%M:%S"))
 
 
 
