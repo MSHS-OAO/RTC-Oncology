@@ -12,11 +12,11 @@ appt_updates <- read_excel(data_LOC, sheet = 2)
 
 
 # Slot Usage Pre-Process --------------------------------------------------
-slot_usage$DOW <- weekdays(as.Date(slot_usage$DATE_TIME)) #Get the DOW based off of Date_time
-
+slot_usage$appt_dow <- weekdays(as.Date(slot_usage$DATE_TIME)) #Get the DOW based off of Date_time
+slot_usage$appt_month <- months(as.Date(slot_usage$DATE_TIME))
 
 
 # Appt Updates Pre-Process ------------------------------------------------
-appt_updates$DOW <- weekdays(as.Date(appt_updates$APPT_DATE_TIME))
+appt_updates$appt_dow <- weekdays(as.Date(appt_updates$APPT_DATE_TIME))
 appt_updates$req_to_scheduled <- as.Date(appt_updates$APPT_DATE_TIME) - as.Date(appt_updates$ACTION_DATE_TIME) #Calculated time from appt requested to scheduled
 
