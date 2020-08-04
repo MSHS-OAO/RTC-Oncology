@@ -22,7 +22,7 @@ slot_usage$slot_hour <- hour(strptime(slot_usage$DATE_TIME, format = "%m-%d-%Y %
 slot_usage <- slot_usage[!is.na(slot_usage$RESOURCE),] #deletes rows with NA as a rsource
 resource_list <- as.list(unique(slot_usage$RESOURCE)) #list of unique providers
 slot_usage$resource_time_comb <- paste(slot_usage$RESOURCE,slot_usage$DATE_TIME) #combine time and resource 
-slot_usage$overbook <- duplicated(slot_usage$resource_time_comb)
+slot_usage$overbook <- duplicated(slot_usage$resource_time_comb) #find duplicates in resource_time_comb
 
 
 
