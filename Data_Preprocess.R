@@ -21,6 +21,11 @@ slot_usage$appt_month <- months(as.Date(slot_usage$DATE_TIME)) #get month of app
 slot_usage$slot_hour <- hour(strptime(slot_usage$DATE_TIME, format = "%m-%d-%Y %H:%M:%S"))
 slot_usage <- slot_usage[!is.na(slot_usage$RESOURCE),] #deletes rows with NA as a rsource
 resource_list <- as.list(unique(slot_usage$RESOURCE)) #list of unique providers
+slot_usage$resource_time_comb<- paste(slot_usage$RESOURCE,slot_usage$DATE_TIME) #combine time and resource 
+
+
+
+
 
 # Appt Updates Pre-Process ------------------------------------------------
 appt_updates$appt_dow <- weekdays(as.Date(appt_updates$APPT_DATE_TIME)) #get dow of appt
