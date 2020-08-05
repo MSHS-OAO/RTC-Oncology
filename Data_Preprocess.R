@@ -11,7 +11,7 @@ data_LOC <- "C:/Users/Administrator/Downloads/Sample Slot Usage and Appointment 
 slot_usage <- read_excel(data_LOC, sheet = 1)
 appt_updates <- read_excel(data_LOC, sheet = 2)
 
-
+# making changes
 
 # Slot Usage Pre-Process --------------------------------------------------
 slot_usage <- slot_usage[order(as.Date(slot_usage$DATE_TIME, format="%Y-%m-%d")),] #sort slot_usage by date
