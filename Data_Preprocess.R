@@ -26,6 +26,7 @@ slot_usage$overbook <- duplicated(slot_usage$resource_time_comb) #find duplicate
 slot_usage <- slot_usage[!(slot_usage$SLOT_TYPE == "Unavailable"),]
 slot_usage <- slot_usage[!(slot_usage$SLOT_TYPE == "RTC DO NOT BOOK"),]
 slot_usage <- slot_usage[!(slot_usage$APPT_TYPE == "Lab Work CC"),] 
+slot_usage <- slot_usage[!(slot_usage$APPT_TYPE == "EST PT-COVID19 SCREENING"),] 
 
 
 
