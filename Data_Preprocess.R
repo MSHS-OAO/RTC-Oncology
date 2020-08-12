@@ -24,6 +24,7 @@ resource_list <- as.list(unique(slot_usage$RESOURCE)) #list of unique providers
 slot_usage$resource_time_comb <- paste(slot_usage$RESOURCE,slot_usage$DATE_TIME) #combine time and resource 
 slot_usage$overbook <- duplicated(slot_usage$resource_time_comb) #find duplicates in resource_time_comb
 slot_usage <- slot_usage[!(slot_usage$SLOT_TYPE == "Unavailable"),]
+slot_usage <- slot_usage[!(slot_usage$SLOT_TYPE == "RTC DO NOT BOOK"),]
 slot_usage <- slot_usage[!(slot_usage$APPT_TYPE == "Lab Work CC"),] 
 
 
