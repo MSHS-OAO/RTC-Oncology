@@ -7,9 +7,9 @@ library("dplyr")
 # Data Import -------------------------------------------------------------
 
 #data_LOC <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Sample Slot Usage and Appointment Update Data.xlsx"
-data_LOC <- "C:/Users/Administrator/Downloads/Sample Slot Usage and Appointment Update Data.xlsx"
-slot_usage <- read_excel(data_LOC, sheet = 1)
-appt_updates <- read_excel(data_LOC, sheet = 2)
+#data_LOC <- "C:/Users/Administrator/Downloads/Sample Slot Usage and Appointment Update Data.xlsx"
+slot_usage <- read_excel("C:/Users/Armando/Downloads/Cerner Actual data/RTC Slot usage jun01-aug31 2020.xlsx")
+appt_updates <- read_excel("C:/Users/Armando/Downloads/Cerner Actual data/RTC Appointment Update Jul01-aug31.xlsx")
 
 # making changes
 
