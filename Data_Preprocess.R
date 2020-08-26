@@ -3,6 +3,7 @@ library("readxl")
 library("lubridate")
 library("dplyr")
 library("magrittr")
+library("tibble")
 
 # Data Import -------------------------------------------------------------
 
@@ -50,10 +51,47 @@ provider_slot_usage <-
   slot_usage %>%
   filter(!RESOURCE %in% unique(procedure_slot_usage$RESOURCE))
 
-# provider_slot_usage <-
-#   slot_usage %>%
-#   filter(RESOURCE %in% unique(provider_slot_usage$RESOURCE))
+unique_dates <- tbl_df(unique(slot_usage$slot_date))
+colnames(unique_dates) <- "date"
 
-test <-
-  slot_usage %>%
-    mutate(slot_minute = minute(DATE_TIME))
+
+
+# create a n by 4 matrix filled with zeros. The for loop iterates through each unique
+# date and filter the slot_usage based on the date.  Get the total number of appt for
+# that day then get the number of appts scheduled, open,a nd calc percentage of booked appts
+
+count <- matrix(0, nrow(unique_dates), 4)
+colnames(count) <- c("scheduled", "open", "total", "percent_schedlued")
+for (i in 1:nrow(unique_dates)) {
+  tmp <- filter(slot_usage, slot_date == unique_dates[i,1])
+  total <- nrow(filter(slot_usage, slot_date == unique_dates[i,1]))
+  schedlued <- nrow(filter(tmp, STATE == "Scheduled"))
+  open <- nrow(filter(tmp, STATE == "Open"))
+  percent_schedlued <- schedlued/total*100 
+  count[i,1] <- schedlued
+  count[i,2] <- open
+  count[i,3] <- total
+  count[i,4] <- percent_schedlued
+}
+tbl_df(count)
+
+
+noshow_count <- matrix(0, nrow(unique_dates), 3)
+colnames(noshow_count) <- c("noshow", "total", "percent_noshow") 
+for (i in 1:nrow(unique_dates)) {
+  tmp <- filter(slot_usage, slot_date == unique_dates[i,1])
+  total <- nrow(filter(slot_usage, slot_date == unique_dates[i,1]))
+  noshow <- nrow(filter(tmp, STATUS == "NOSHOW"))
+  percent_noshow <- noshow/total*100 
+  noshow_count[i,1] <- noshow
+  noshow_count[i,2] <- total
+  noshow_count[i,3] <- percent_noshow
+  
+}
+tbl_df(noshow_count)
+
+
+
+
+
+
