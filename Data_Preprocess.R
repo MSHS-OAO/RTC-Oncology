@@ -6,20 +6,20 @@ library("magrittr")
 
 # Data Import -------------------------------------------------------------
 
-slot_usage <- read_excel("J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Cerner Actual data/RTC Slot usage jun01-aug31 2020.xlsx")
+#slot_usage <- read_excel("J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Cerner Actual data/RTC Slot usage jun01-aug31 2020.xlsx")
 #data_LOC <- "C:/Users/Administrator/Downloads/Sample Slot Usage and Appointment Update Data.xlsx"
-#slot_usage <- read_excel("C:/Users/Armando/Downloads/Cerner Actual data/RTC Slot usage jun01-aug31 2020.xlsx")
+slot_usage <- read_excel("C:/Users/Armando/Downloads/Cerner Actual data/RTC Slot usage jun01-aug31 2020.xlsx")
 
 
 # Slot Usage Pre-Process --------------------------------------------------
 
 
-## Using mutate columns are created for the DOW,month,hour, and 
-##whether the appointment is overbooked or not
-##filter out specific slot types that we are not looking for
-##as well as remoove any NAs in slot_type or RESOURCE
-##Order the DATA by DATE_TIME and then split the data into
-##a procedure data frame and a provider data frame
+# Using mutate columns are created for the DOW,month,hour, and 
+# whether the appointment is overbooked or not
+# filter out specific slot types that we are not looking for
+# as well as remove any NAs in slot_type or RESOURCE
+# Order the DATA by DATE_TIME and then split the data into
+# a procedure data frame and a provider data frame
 
 #slot_usage <-
 slot_usage %<>% #assignment/pass
@@ -27,7 +27,10 @@ slot_usage %<>% #assignment/pass
          appt_month = month(DATE_TIME, label = T), 
          slot_hour = hour(DATE_TIME), 
          resource_time_comb = paste(RESOURCE,DATE_TIME),
-         overbook = duplicated(resource_time_comb)) %>%
+         overbook = duplicated(resource_time_comb),
+         slot_minute = minute(DATE_TIME),
+         slot_time = paste0(slot_hour,":",slot_minute),
+         slot_date = date(DATE_TIME)) %>%
   filter(!SLOT_TYPE %in% 
            c("Unavailable", "RTC DO NOT BOOK", "EST PT-COVID19 SCREENING", "Non Face to Face"),
          !is.na(SLOT_TYPE),
@@ -51,3 +54,6 @@ provider_slot_usage <-
 #   slot_usage %>%
 #   filter(RESOURCE %in% unique(provider_slot_usage$RESOURCE))
 
+test <-
+  slot_usage %>%
+    mutate(slot_minute = minute(DATE_TIME))
