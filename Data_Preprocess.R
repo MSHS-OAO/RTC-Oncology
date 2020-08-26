@@ -100,7 +100,6 @@ for (i in 1:nrow(unique_dates)) {
   total <- nrow(filter(slot_usage, slot_date == unique_dates[i,1]))
   overbook <- nrow(filter(tmp, overbook == "TRUE"))
   percent_overbook <- overbook/total*100
-  #verbook_count[i,1] <- date
   overbook_count[i,1] <- overbook
   overbook_count[i,2] <- total
   overbook_count[i,3] <- percent_overbook
