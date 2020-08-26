@@ -60,23 +60,23 @@ colnames(unique_dates) <- "date"
 # date and filter the slot_usage based on the date.  Get the total number of appt for
 # that day then get the number of appts scheduled, open,a nd calc percentage of booked appts
 
-count <- matrix(0, nrow(unique_dates), 4)
-colnames(count) <- c("scheduled", "open", "total", "percent_schedlued")
+state_count <- matrix(0, nrow(unique_dates), 4)
+colnames(state_count) <- c("scheduled", "open", "total", "percent_schedlued")
 for (i in 1:nrow(unique_dates)) {
   tmp <- filter(slot_usage, slot_date == unique_dates[i,1])
   total <- nrow(filter(slot_usage, slot_date == unique_dates[i,1]))
   schedlued <- nrow(filter(tmp, STATE == "Scheduled"))
   open <- nrow(filter(tmp, STATE == "Open"))
   percent_schedlued <- schedlued/total*100 
-  count[i,1] <- schedlued
-  count[i,2] <- open
-  count[i,3] <- total
-  count[i,4] <- percent_schedlued
+  state_count[i,1] <- schedlued
+  state_count[i,2] <- open
+  state_count[i,3] <- total
+  state_count[i,4] <- percent_schedlued
 }
-tbl_df(count)
+state_count <- cbind(unique_dates,state_count)
 
 
-noshow_count <- matrix(0, nrow(unique_dates), 3)
+noshow_count <- data.frame(matrix(0, nrow(unique_dates), 3))
 colnames(noshow_count) <- c("noshow", "total", "percent_noshow") 
 for (i in 1:nrow(unique_dates)) {
   tmp <- filter(slot_usage, slot_date == unique_dates[i,1])
@@ -88,10 +88,22 @@ for (i in 1:nrow(unique_dates)) {
   noshow_count[i,3] <- percent_noshow
   
 }
-tbl_df(noshow_count)
+noshow_count <- cbind(unique_dates,noshow_count)
 
 
 
-
-
-
+overbook_count <- data.frame(matrix(0, nrow(unique_dates), 3))
+colnames(overbook_count) <- c("overbook", "total", "percent_overbook") 
+for (i in 1:nrow(unique_dates)) {
+  date <- unique_dates[i,1]
+  tmp <- filter(slot_usage, slot_date == unique_dates[i,1])
+  total <- nrow(filter(slot_usage, slot_date == unique_dates[i,1]))
+  overbook <- nrow(filter(tmp, overbook == "TRUE"))
+  percent_overbook <- overbook/total*100
+  #verbook_count[i,1] <- date
+  overbook_count[i,1] <- overbook
+  overbook_count[i,2] <- total
+  overbook_count[i,3] <- percent_overbook
+  
+}
+overbook_count <- cbind(unique_dates,overbook_count)
