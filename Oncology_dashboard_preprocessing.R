@@ -1,15 +1,19 @@
+
+#####Install packages
+#install.packages("timeDate")
 #install.packages("readxl")
+#install.packages("dplyr")
+#install.packages("lubridate")
+
+#####Require packages
 library(timeDate)
 library(readxl)
 library(dplyr)
 library(lubridate)
 
-
-if (list.files("J://") == "Presidents") {
-  user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects"
-} else {
-  user_directory <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects"
-}
+#####Determine the path in the shared-drive
+ifelse (list.files("J://") == "Presidents", user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects", 
+        user_directory <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects")
 
 ###################### Raw Data ######################
 #read the Ambulatory Care raw data 
@@ -20,6 +24,23 @@ file_list_amb <- list.files(path = paste0(user_directory, "/System Operations/Am
 
 amb_list <- lapply(file_list_amb, function(x) read.csv(paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/Monthly/", x), stringsAsFactors = FALSE))
 
+for (i in (1: length(amb_list))){
+  #change dates that were imported as char
+  amb_list[[i]][c("APPT_MADE_DTTM", "APPT_DTTM", "APPT_CANC_DTTM")] <- lapply(amb_list[[i]][c("APPT_MADE_DTTM", "APPT_DTTM", "APPT_CANC_DTTM")],as.POSIXct, tz="UTC", format="%Y-%m-%d %H:%M:%OS")
+  #get the month, year, weekday for important dates
+  amb_list[[i]] <- amb_list[[i]] %>%
+    mutate(appt_made_day = weekdays(APPT_MADE_DTTM),
+           appt_made_month = month(APPT_MADE_DTTM),
+           appt_made_year = year(APPT_MADE_DTTM),
+           appt_day = weekdays(APPT_DTTM),
+           appt_month = month(APPT_DTTM),
+           appt_year = year(APPT_DTTM),
+           cancel_day = weekdays(APPT_CANC_DTTM),
+           cancel_month = month(APPT_CANC_DTTM),
+           cancel_year = year(APPT_CANC_DTTM))
+}
+
+#binding the rows of the data-list
 amb_df <- bind_rows(amb_list)
 
 ###################### References ######################
