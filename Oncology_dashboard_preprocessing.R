@@ -10,6 +10,7 @@ library(timeDate)
 library(readxl)
 library(dplyr)
 library(lubridate)
+library(stringr)
 
 #####Determine the path in the shared-drive
 ifelse (list.files("J://") == "Presidents", user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects", 
@@ -67,23 +68,29 @@ PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
 ##remove the space at the end and at the beginning when applicable
 PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
 
+#####change all to first word capitalized
+#####try to figure out how to make it more generalized 
+
 #make sure to fix the lab vs labs 
 #unique(PRC_mapping$`Association List : A`) 
 #--> [1] "EXCLUDE"   "Lab"       "Labs"      "Office"    "Treatment"
 
 PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
+PRC_mapping$`Association List : A` <- str_to_title(PRC_mapping$`Association List : A`)
 
 #fix capitalization
 #unique(PRC_mapping$`Association List: B`) 
 #[1] "EXCLUDE"           "Lab Visit"         "Lab visit"         "APH Visit"         "Established Visit"
 #[6] "New Visit"         "Nurse Visit"       "Procedure"         "Telehealth Visit"  "Treatment Visit"
 
-PRC_mapping$`Association List: B`[PRC_mapping$`Association List: B` == "Lab visit"] <- "Lab Visit"
+PRC_mapping$`Association List: B` <- str_to_title(PRC_mapping$`Association List: B`)
 
 #unique(PRC_mapping$`Association List: T`) 
 #[1] "EXCLUDE"              "Non - Tx"             "Phlebotomy"           "APH Infusion"        
 #[5] "Infusion"             "Transfusion"          "Injection"            "Hydration"           
 #[9] "Port Flush"           "Pump Disconnect"      "Therapeutic Infusion"
+
+PRC_mapping$`Association List: T` <- str_to_title(PRC_mapping$`Association List: T`)
 
 #unique(PRC_mapping$`In Person vs Telehealth`) 
 #[1] "In Person"  "Telehealth"
@@ -95,7 +102,60 @@ colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "
 amb_df_groupings <- merge(amb_df, department_mapping, by=c("DEPARTMENT_NAME"))
 amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
 
+#####duplicates by mrn, provider, visit type, time stamps, insurance/fin class ..
+#amb_df_groupings_ <- unique(amb_df_groupings_)
+
+#based on unique MRNs --> unique patients
+#amb_df_groupings_unique_MRN <- 
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, .keep_all = TRUE)
+
+#based on MRN and appt date
+#this looks at if patients were scheduled for the same appt time and date
+#amb_df_groupings_unique_MRN_appt_date <-
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, APPT_DTTM, .keep_all = TRUE)
+
+#based on MRN, appt date, and insurance
+#this looks at if patients were scheduled for the same appt time and date
+#amb_df_groupings_unique_MRN_appt_date_insurance <-
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, APPT_DTTM, FINCLASS,  .keep_all = TRUE)
+
+#based on MRN, visit method, and appt date
+#amb_df_groupings_unique_MRN_appt_date_type <-
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, APPT_DTTM, VISIT_METHOD,  .keep_all = TRUE)
+
+#based on MRN, visit method, appt date, and appt status
+#amb_df_groupings_unique_MRN_appt_date_type_status <-
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, APPT_DTTM, VISIT_METHOD, DERIVED_STATUS_DESC,  .keep_all = TRUE)
 
 
+#only keep unique visits --> unique visits are defined as the visits with different
+#MRN, appt date time, PRC name, provider name, and appt status 
+amb_df_groupings_unique <-
+  amb_df_groupings_ %>% 
+  distinct(MRN, APPT_DTTM, PRC_NAME, PROV_NAME_WID, DERIVED_STATUS_DESC,  .keep_all = TRUE)
+
+#Investigate the duplicates
+amb_df_groupings_dups_MRN_appt_date_prc <-
+  amb_df_groupings_[duplicated(amb_df_groupings_[,c("MRN", "APPT_DTTM", "PRC_NAME", "PROV_NAME_WID", "DERIVED_STATUS_DESC")]),]
+
+#count number of duplicates
+dups_count <- count(amb_df_groupings_dups_MRN_appt_date_prc)
+#499
+
+#amb_df_groupings_unique_MRN_appt_date_prc_insurance <-
+#  amb_df_groupings_ %>% 
+#  distinct(MRN, APPT_DTTM, PRC_NAME, PROV_NAME_WID, DERIVED_STATUS_DESC, FINCLASS, .keep_all = TRUE)
+
+#amb_df_groupings_dups_MRN_appt_date_prc_insurance <-
+#  amb_df_groupings_[duplicated(amb_df_groupings_[,c("MRN", "APPT_DTTM", "PRC_NAME", "PROV_NAME_WID", "DERIVED_STATUS_DESC", "FINCLASS")]),]
+
+#count number of duplicates
+#count(amb_df_groupings_dups_MRN_appt_date_prc_insurance)
+#446
 
 
