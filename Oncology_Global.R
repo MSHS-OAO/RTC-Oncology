@@ -193,14 +193,20 @@ for (i in (1: length(amb_list))){
   amb_list[[i]][c("APPT_MADE_DTTM", "APPT_DTTM", "APPT_CANC_DTTM")] <- lapply(amb_list[[i]][c("APPT_MADE_DTTM", "APPT_DTTM", "APPT_CANC_DTTM")],as.POSIXct, tz="UTC", format="%Y-%m-%d %H:%M:%OS")
   #get the month, year, weekday for important dates
   amb_list[[i]] <- amb_list[[i]] %>%
-    mutate(appt_made_day = weekdays(APPT_MADE_DTTM),
-           appt_made_month = month(APPT_MADE_DTTM),
+    mutate(appt_made_date = as.Date(APPT_MADE_DTTM),
+           appt_made_hour = hour(APPT_MADE_DTTM),
+           appt_made_day = weekdays(APPT_MADE_DTTM),
+           appt_made_month = month(APPT_MADE_DTTM, label = TRUE),
            appt_made_year = year(APPT_MADE_DTTM),
+           appt_date = as.Date(APPT_DTTM),
+           appt_hour = hour(APPT_DTTM),
            appt_day = weekdays(APPT_DTTM),
-           appt_month = month(APPT_DTTM),
+           appt_month = month(APPT_DTTM, label = TRUE),
            appt_year = year(APPT_DTTM),
+           cancel_date = as.Date(APPT_CANC_DTTM),
+           cancel_hour = hour(APPT_CANC_DTTM),
            cancel_day = weekdays(APPT_CANC_DTTM),
-           cancel_month = month(APPT_CANC_DTTM),
+           cancel_month = month(APPT_CANC_DTTM, label = TRUE),
            cancel_year = year(APPT_CANC_DTTM))
 }
 
@@ -244,6 +250,12 @@ colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "
 
 ### (3) Pre-process data ----------------------------------------------------------------------------------
 
+#Holiday Calendar
+#Remove Good Friday from MSHS Holidays
+NYSE_Holidays <- as.Date(holidayNYSE(year = 1990:2100))
+GoodFriday <- as.Date(GoodFriday())
+MSHS_Holiday <- NYSE_Holidays[GoodFriday != NYSE_Holidays]
+
 #merge the ambulatory data with the grouping data
 amb_df_groupings <- merge(amb_df, department_mapping, by=c("DEPARTMENT_NAME"))
 amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
@@ -256,6 +268,30 @@ amb_df_groupings_unique <-
 
 #only keep arrived patients
 arrived_patients <- amb_df_groupings_unique[which(amb_df_groupings_unique$DERIVED_STATUS_DESC == "Arrived"),]
+
+#add a column to determin if holiday
+arrived_patients$holiday <- isHoliday(as.timeDate(arrived_patients$appt_date) , holidays = MSHS_Holiday)
+
+
+#create a function to filter the data as needed based on:
+#Site, department, provider, Visit Type, visit method, days of week
+
+filtered_data <- function(df, site, department, provider, visit_type, visit_method, DOW){
+  filtered_df <- df %>% filter(SITE %in% site, 
+                               DEPT_SPECIALITY_NAME %in% department,
+                               PROV_NAME_WID %in% provider,
+                               AssociationListA %in% visit_type,
+                               InPersonvsTele %in% visit_method,
+                               appt_day%in% DOW)
+  return(filtered_df)
+}
+
+#Summarize data: arrived total patients by month
+arrived_patients_monthly <- arrived_patients %>% 
+  group_by(SITE, AssociationListA, appt_month, appt_year) %>%
+  summarise(total_patients = n()) %>%
+  arrange(SITE, appt_month, appt_year) %>%
+  ungroup()
 
 
 
