@@ -1,3 +1,18 @@
+default_campus <- "DBC"
+campus_choices <- sort(unique(amb_df_groupings_unique$SITE))
+default_specialties <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus, "DEPT_SPECIALTY_NAME"]))
+default_departments <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
+                                                             amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties, "DEPARTMNET_NAME"])) 
+default_visittype <- NULL
+default_provider <- NULL
+default_refprovider <- NULL
+dateRange_min <- min(amb_df_groupings_unique$APPT_DTTM) 
+dateRange_max <- max(amb_df_groupings_unique$APPT_DTTM)
+daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
+holid <- NULL
+default_appttypes <- NULL
+default_treattype <- NULL
+
 ui <- dashboardPage(
   dashboardHeader(title = "Oncology Analytics Tool",
                   titleWidth = 250),
@@ -17,7 +32,7 @@ ui <- dashboardPage(
     ))),
     
     # Overwrite fixed height of dashboard sidebar
-    #tags$head(tags$style(HTML('.content-wrapper { height: 6000px !important;}'))),
+    tags$head(tags$style(HTML('.content-wrapper { height: 6000px !important;}'))),
     
     width = 200,
     
@@ -25,11 +40,15 @@ ui <- dashboardPage(
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuSubItem("Trend/Overview", tabName = "volumetrend"),
                          menuSubItem("Breakdown", tabName = "volumebreakdown"),
-                         menuSubItem("Comparison", tabName = "volumecomparison"))
+                         menuSubItem("Comparison", tabName = "volumecomparison")
+                )
       
     ) # Close sidebarMenu
   ), # Close Dashboard Sidebar
   dashboardBody(
+    tabItem(tabName = "volumetrend",
+            column(10)
+            ),
     conditionalPanel(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
         input.sbm == 'volumecomparison'", 
@@ -40,7 +59,7 @@ ui <- dashboardPage(
                height = "100px",
                solidHeader = FALSE,
                pickerInput("selectedCampus",label=NULL,
-                           choices=sort(unique(historical.data$Campus)),
+                           choices = campus_choices,
                            multiple=TRUE,
                            options = pickerOptions(
                              liveSearch = TRUE,
@@ -48,10 +67,172 @@ ui <- dashboardPage(
                              selectedTextFormat = "count > 1", 
                              countSelectedText = "{0}/{1} Campuses", 
                              dropupAuto = FALSE),
-                           selected = "MSUS")),
-             )# Close column
+                           selected = default_campus
+              )
+            ),
+
+            box(
+              title = "Select Specialty:",
+              width = 12,
+              height = "100px",
+              solidHeader = FALSE,
+              pickerInput("selectedSpecialty",label=NULL,
+                          choices = default_specialties,
+                          multiple=TRUE,
+                          options = pickerOptions(
+                            liveSearch = TRUE,
+                            actionsBox = TRUE,
+                            selectedTextFormat = "count > 1",
+                            countSelectedText = "{0}/{1} Specialties",
+                            dropupAuto = FALSE),
+                          selected = default_specialties
+            )
+          ),
+          box(
+            title = "Select Department:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedDepartment",label=NULL,
+                        choices=default_departments,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Departments",
+                          dropupAuto = FALSE),
+                        selected = default_departments
+          )
+        ),
+        box(
+          title = "Select Visit Type:",
+          width = 12,
+          height = "100px",
+          solidHeader = FALSE,
+          pickerInput("selectedvisitype",label=NULL,
+                      choices=default_visittype,
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        liveSearch = TRUE,
+                        actionsBox = TRUE,
+                        selectedTextFormat = "count > 1",
+                        countSelectedText = "{0}/{1} Visit Types",
+                        dropupAuto = FALSE),
+                      selected = default_visittype
+          )
+        ),
+        box(
+          title = "Select Provider Name:",
+          width = 12,
+          height = "100px",
+          solidHeader = FALSE,
+          pickerInput("selectedprovider",label=NULL,
+                      choices=default_provider,
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        liveSearch = TRUE,
+                        actionsBox = TRUE,
+                        selectedTextFormat = "count > 1",
+                        countSelectedText = "{0}/{1} Providers",
+                        dropupAuto = FALSE),
+                      selected = default_provider
+          )
+        ),
+        box(
+          title = "Select Reffered Provider Name:",
+          width = 12,
+          height = "100px",
+          solidHeader = FALSE,
+          pickerInput("selectedrefprovider",label=NULL,
+                      choices=default_refprovider,
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        liveSearch = TRUE,
+                        actionsBox = TRUE,
+                        selectedTextFormat = "count > 1",
+                        countSelectedText = "{0}/{1} Providers",
+                        dropupAuto = FALSE),
+                      selected = default_refprovider
+          )
+        ),
+        box(
+          title = "Select Date Range:",
+          width = 12, 
+          height = "100px",
+          solidHeader = FALSE, 
+          dateRangeInput("dateRange", label = NULL,
+                         start = dateRange_min, end = dateRange_max,
+                         min = dateRange_min, max = dateRange_max
+                         )
+          ),
+        box(
+          title = "Select Days of Week:",
+          width = 12, 
+          solidHeader = FALSE, 
+          selectInput("daysOfWeek",label = NULL,
+                      choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
+                      multiple=TRUE, selectize=TRUE
+                      )
+          ),
+        box(
+          title = "Select Holidays to Exclude:",
+          width = 12,
+          solidHeader = FALSE,
+          pickerInput("excludeHolidays",label=NULL,
+                      choices= unique(holid$holiday),
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        liveSearch = TRUE,
+                        actionsBox = TRUE,
+                        dropupAuto = FALSE),
+                      selected = unique(holid$holiday)
+                      )
+          )
+      )# Close column
       
-    )# Close conditional Panel
+    ),# Close conditional Panel
+    conditionalPanel(
+      condition = "input.sbm == 'volumecomparison'",
+      column(2,
+             box(
+               title = "Select Appointment Type:",
+               width = 12,
+               height = "100px",
+               solidHeader = FALSE,
+               pickerInput("selectedappointmenttype",label=NULL,
+                           choices = default_appttypes,
+                           multiple=TRUE,
+                           options = pickerOptions(
+                             liveSearch = TRUE,
+                             actionsBox = TRUE,
+                             selectedTextFormat = "count > 1", 
+                             countSelectedText = "{0}/{1} Appointemnt Types", 
+                             dropupAuto = FALSE),
+                           selected = default_appttypes
+               )    
+        
+      ),
+      box(
+        title = "Select Treatement Type:",
+        width = 12,
+        height = "100px",
+        solidHeader = FALSE,
+        pickerInput("selectedtreatmenttype",label=NULL,
+                    choices = default_treattype,
+                    multiple=TRUE,
+                    options = pickerOptions(
+                      liveSearch = TRUE,
+                      actionsBox = TRUE,
+                      selectedTextFormat = "count > 1", 
+                      countSelectedText = "{0}/{1} Appointemnt Types", 
+                      dropupAuto = FALSE),
+                    selected = default_treattype
+        )    
+        
+      )
+    )# Close column
+  ) #Close Conditional Panel
     
   ) # Close Dashboard Body
 )# Close Dashboard Page
