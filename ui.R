@@ -36,7 +36,7 @@ ui <- dashboardPage(
     ))),
     
     # Overwrite fixed height of dashboard sidebar
-    tags$head(tags$style(HTML('.content-wrapper { height: 6000px !important;}'))),
+    #tags$head(tags$style(HTML('.content-wrapper { height: 6000px !important;}'))),
     
     width = 200,
     
@@ -50,6 +50,10 @@ ui <- dashboardPage(
     ) # Close sidebarMenu
   ), # Close Dashboard Sidebar
   dashboardBody(
+    tags$head(tags$style(
+      HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
+    )),
+    fluidPage(
     # box "status" color for Mount Sinai Purple
     tags$style(HTML("
     .box.box-solid.box-primary>.box-header {
@@ -350,6 +354,6 @@ ui <- dashboardPage(
       )
     )# Close column
   ) #Close Conditional Panel
-    
+    ) #Close Fluid
   ) # Close Dashboard Body
 )# Close Dashboard Page
