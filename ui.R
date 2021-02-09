@@ -154,6 +154,12 @@ ui <- dashboardPage(
                      
               )
       ), #Close Volume breakdown tab
+      tabItem(tabName = "volumecomparison",
+              column(10,
+                     div("Volume Comparison", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                     tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr()
+              ) #Close column
+      )# Close volume Comparison
     ), #Close tab Items
     conditionalPanel(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
