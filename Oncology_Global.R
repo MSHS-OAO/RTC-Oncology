@@ -254,4 +254,10 @@ amb_df_groupings_unique <-
   amb_df_groupings_ %>% 
   distinct(MRN, APPT_DTTM, PRC_NAME, PROV_NAME_WID, DERIVED_STATUS_DESC,  .keep_all = TRUE)
 
+#only keep arrived patients
+arrived_patients <- amb_df_groupings_unique[which(amb_df_groupings_unique$DERIVED_STATUS_DESC == "Arrived"),]
+
+
+
+
 
