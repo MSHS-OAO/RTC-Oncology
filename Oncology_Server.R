@@ -70,7 +70,37 @@ server <- function(input, output, session) {
     
   }
 # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
+  output$break_totalvisitsgraph <- renderPlot({
+    
+  })
   
+  output$break_totalvisitstable <- function() {
+    
+  }
+  
+  output$break_examvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$break_examvisitstable <- function() {
+    
+  }
+  
+  output$break_treatmentvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$break_treatmentvisitstable <- function() {
+    
+  }
+  
+  output$break_labvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$break_labvisitstable <- function() {
+    
+  }
 # Volume Comparison Tab ------------------------------------------------------------------------------------------------------       
   
   
