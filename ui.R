@@ -19,6 +19,7 @@ default_treattype <- NULL
 ui <- dashboardPage(
   dashboardHeader(title = "Oncology Analytics Tool",
                   titleWidth = 250),
+  # Sidebar ------------------------------------------------------------------------------------------------------
   dashboardSidebar(
     # Customize dashboard color scheme: title bar = .logo & .navbar; side bar = .main-sidebar; background = .content-wrapper
     tags$head(tags$style(HTML('.logo {
@@ -76,6 +77,7 @@ ui <- dashboardPage(
     # Top align plot outputs
     tags$head(tags$style(".top-align { vertical-align: top;}  ")),
     tabItems(
+# Volume Trend Tab ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "volumetrend",
                 column(10,
                        div("Volume Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -115,6 +117,7 @@ ui <- dashboardPage(
                        
                 )
               ),
+# Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "volumebreakdown",
               column(10,
                      div("Volume Breakdown", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -154,6 +157,7 @@ ui <- dashboardPage(
                      
               )
       ), #Close Volume breakdown tab
+# Volume Comparison Tab ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "volumecomparison",
               column(10,
                      div("Volume Comparison", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -161,6 +165,7 @@ ui <- dashboardPage(
               ) #Close column
       )# Close volume Comparison
     ), #Close tab Items
+# Conditional Filters ------------------------------------------------------------------------------------------------------    
     conditionalPanel(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
         input.sbm == 'volumecomparison'", 
