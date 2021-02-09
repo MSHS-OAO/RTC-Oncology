@@ -1,3 +1,6 @@
+library(shinydashboardPlus)
+library(shinycssloaders)
+
 default_campus <- "DBC"
 campus_choices <- sort(unique(amb_df_groupings_unique$SITE))
 default_specialties <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus, "DEPT_SPECIALTY_NAME"]))
@@ -46,9 +49,49 @@ ui <- dashboardPage(
     ) # Close sidebarMenu
   ), # Close Dashboard Sidebar
   dashboardBody(
-    tabItem(tabName = "volumetrend",
-            column(10)
-            ),
+    # box "status" color for Mount Sinai Purple
+    tags$style(HTML("
+    .box.box-solid.box-primary>.box-header {
+    color:#fff;
+    background:#221f72
+    }
+    .box.box-solid.box-primary{
+    border-bottom-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#ffffff;
+    border-top-color:#ffffff;
+    }
+                    ")),
+    
+    # valueBox "yellow" color for Mount Sinai Light Grey
+    tags$style(".small-box.bg-yellow { background-color: 	#dddedd !important; color: #000000 !important; }"),
+    # valueBox "purple" color for Mount Sinai Dark Purple
+    tags$style(".small-box.bg-purple { background-color: 	#212070 !important; color: #ffffff !important; }"),
+    # valueBox "fuchsia" color for Mount Sinai Dark Pink
+    tags$style(".small-box.bg-fuchsia { background-color: 	#d80b8c !important; color: #ffffff !important; }"),
+    # valueBox "aqua" color for Mount Sinai Dark Blue
+    tags$style(".small-box.bg-aqua { background-color: 	#00aeef !important; color: #ffffff !important; }"),
+    
+    
+    # Top align plot outputs
+    tags$head(tags$style(".top-align { vertical-align: top;}  ")),
+    tabItems(
+      tabItem(tabName = "volumetrend",
+                column(10,
+                       div("Volume Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                       tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                       boxPlus(
+                         title = "Visits", width = 12, status = "primary", height = "500px",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotOutput("totalvisitsgraph", height="450px") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"), br(),
+                         tableOutput("totalvisitsgraph") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       
+                )
+              )
+    ), #Close tab Items
     conditionalPanel(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
         input.sbm == 'volumecomparison'", 
