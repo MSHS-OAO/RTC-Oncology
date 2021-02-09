@@ -1,4 +1,5 @@
 server <- function(input, output, session) {
+# Observe Events ------------------------------------------------------------------------------------------------------    
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
@@ -35,6 +36,43 @@ server <- function(input, output, session) {
                                      choices = NULL
                    )},
                ignoreInit = TRUE)
+  
+# Volume Trend Tab ------------------------------------------------------------------------------------------------------    
+  output$trend_totalvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$trend_totalvisitstable <- function() {
+    
+  }
+  
+  output$trend_examvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$trend_examvisitstable <- function() {
+    
+  }
+  
+  output$trend_treatmentvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$trend_treatmentvisitstable <- function() {
+    
+  }
+  
+  output$trend_labvisitsgraph <- renderPlot({
+    
+  })
+  
+  output$trend_labvisitstable <- function() {
+    
+  }
+# Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
+  
+# Volume Comparison Tab ------------------------------------------------------------------------------------------------------       
+  
   
 }
 

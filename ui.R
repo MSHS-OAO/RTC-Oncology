@@ -87,7 +87,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("trend_totalvisitsgraph", height="450px") %>% 
                            withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_totalvisitsgraph") %>% 
+                         tableOutput("trend_totalvisitstable") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -95,7 +95,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("trend_examvisitsgraph", height="450px") %>% 
                            withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_examvisitsgraph") %>% 
+                         tableOutput("trend_examvisitstable") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -103,7 +103,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("trend_treatmentvisitsgraph", height="450px") %>% 
                            withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_treatmentvisitsgraph") %>% 
+                         tableOutput("trend_treatmentvisitstable") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -111,7 +111,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("trend_labvisitsgraph", height="450px") %>% 
                            withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_labvisitsgraph") %>% 
+                         tableOutput("trend_labvisitstable") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        
@@ -127,7 +127,7 @@ ui <- dashboardPage(
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                        plotOutput("break_totalvisitsgraph", height="450px") %>% 
                          withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_totalvisitsgraph") %>% 
+                       tableOutput("break_totalvisitstable") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      boxPlus(
@@ -135,7 +135,7 @@ ui <- dashboardPage(
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                        plotOutput("break_examvisitsgraph", height="450px") %>% 
                          withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_examvisitsgraph") %>% 
+                       tableOutput("break_examvisitstable") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      boxPlus(
@@ -143,7 +143,7 @@ ui <- dashboardPage(
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                        plotOutput("break_treatmentvisitsgraph", height="450px") %>% 
                          withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_treatmentvisitsgraph") %>% 
+                       tableOutput("break_treatmentvisitstable") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      boxPlus(
@@ -151,7 +151,7 @@ ui <- dashboardPage(
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                        plotOutput("break_labvisitsgraph", height="450px") %>% 
                          withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_labvisitsgraph") %>% 
+                       tableOutput("break_labvisitstable") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      
