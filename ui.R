@@ -81,16 +81,79 @@ ui <- dashboardPage(
                        div("Volume Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
                        boxPlus(
-                         title = "Visits", width = 12, status = "primary", height = "500px",
+                         title = "All Visits", width = 12, status = "primary", height = "500px",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("totalvisitsgraph", height="450px") %>% 
+                         plotOutput("trend_totalvisitsgraph", height="450px") %>% 
                            withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("totalvisitsgraph") %>% 
+                         tableOutput("trend_totalvisitsgraph") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       boxPlus(
+                         title = "Exam Visits", width = 12, status = "primary", height = "500px",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotOutput("trend_examvisitsgraph", height="450px") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"), br(),
+                         tableOutput("trend_examvisitsgraph") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       boxPlus(
+                         title = "Treatment Visits", width = 12, status = "primary", height = "500px",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotOutput("trend_treatmentvisitsgraph", height="450px") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"), br(),
+                         tableOutput("trend_treatmentvisitsgraph") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       boxPlus(
+                         title = "Lab Visits", width = 12, status = "primary", height = "500px",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotOutput("trend_labvisitsgraph", height="450px") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"), br(),
+                         tableOutput("trend_labvisitsgraph") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        
                 )
+              ),
+      tabItem(tabName = "volumebreakdown",
+              column(10,
+                     div("Volume Breakdown", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                     tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                     boxPlus(
+                       title = "All Visits", width = 12, status = "primary", height = "500px",
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       plotOutput("break_totalvisitsgraph", height="450px") %>% 
+                         withSpinner(type = 5, color = "#d80b8c"), br(),
+                       tableOutput("break_totalvisitsgraph") %>% 
+                         withSpinner(type = 5, color = "#d80b8c")
+                     ),
+                     boxPlus(
+                       title = "Exam Visits", width = 12, status = "primary", height = "500px",
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       plotOutput("break_examvisitsgraph", height="450px") %>% 
+                         withSpinner(type = 5, color = "#d80b8c"), br(),
+                       tableOutput("break_examvisitsgraph") %>% 
+                         withSpinner(type = 5, color = "#d80b8c")
+                     ),
+                     boxPlus(
+                       title = "Treatment Visits", width = 12, status = "primary", height = "500px",
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       plotOutput("break_treatmentvisitsgraph", height="450px") %>% 
+                         withSpinner(type = 5, color = "#d80b8c"), br(),
+                       tableOutput("break_treatmentvisitsgraph") %>% 
+                         withSpinner(type = 5, color = "#d80b8c")
+                     ),
+                     boxPlus(
+                       title = "Lab Visits", width = 12, status = "primary", height = "500px",
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       plotOutput("break_labvisitsgraph", height="450px") %>% 
+                         withSpinner(type = 5, color = "#d80b8c"), br(),
+                       tableOutput("break_labvisitsgraph") %>% 
+                         withSpinner(type = 5, color = "#d80b8c")
+                     ),
+                     
               )
+      ), #Close Volume breakdown tab
     ), #Close tab Items
     conditionalPanel(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
