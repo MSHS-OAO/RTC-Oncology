@@ -252,23 +252,6 @@ ui <- dashboardPage(
           )
         ),
         box(
-          title = "Select Visit Type:",
-          width = 12,
-          height = "100px",
-          solidHeader = FALSE,
-          pickerInput("selectedvisitype",label=NULL,
-                      choices=default_visittype,
-                      multiple=TRUE,
-                      options = pickerOptions(
-                        liveSearch = TRUE,
-                        actionsBox = TRUE,
-                        selectedTextFormat = "count > 1",
-                        countSelectedText = "{0}/{1} Visit Types",
-                        dropupAuto = FALSE),
-                      selected = default_visittype
-          )
-        ),
-        box(
           title = "Select Provider Name:",
           width = 12,
           height = "100px",
@@ -300,6 +283,23 @@ ui <- dashboardPage(
                         countSelectedText = "{0}/{1} Providers",
                         dropupAuto = FALSE),
                       selected = default_refprovider
+          )
+        ),
+        box(
+          title = "Select Visit Type:",
+          width = 12,
+          height = "100px",
+          solidHeader = FALSE,
+          pickerInput("selectedvisitype",label=NULL,
+                      choices=default_visittype,
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        liveSearch = TRUE,
+                        actionsBox = TRUE,
+                        selectedTextFormat = "count > 1",
+                        countSelectedText = "{0}/{1} Visit Types",
+                        dropupAuto = FALSE),
+                      selected = default_visittype
           )
         ),
         box(

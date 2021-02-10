@@ -7,31 +7,27 @@ server <- function(input, output, session) {
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
-                      choices = NULL
+                      choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus, "DEPT_SPECIALTY_NAME"]))
     )},
     ignoreInit = TRUE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty),{
     updatePickerInput(session,
                       inputId = "selectedDepartment",
-                      choices = NULL
-    )},
-    ignoreInit = TRUE)
-  
-  observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment),{
-    updatePickerInput(session,
-                      inputId = "selectedvisitype",
-                      choices = NULL
+                      choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus &
+                                                                      amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% input$selectedSpecialty, "DEPARTMENT_NAME"])) 
     )},
     ignoreInit = TRUE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment,
-                    input$selectedvisitype),{
-    updatePickerInput(session,
-                      inputId = "selectedprovider",
-                      choices = NULL
-    )},
-    ignoreInit = TRUE)
+                 input$selectedvisitype),{
+                   updatePickerInput(session,
+                                     inputId = "selectedprovider",
+                                     choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus &
+                                                                                     amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% input$selectedSpecialty &
+                                                                                     amb_df_groupings_unique$DEPARTMENT_NAME %in% input$selectedDepartment, "PROV_NAME_WID"])) 
+                   )},
+               ignoreInit = TRUE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment,
                  input$selectedvisitype, input$selectedprovider),{
@@ -40,6 +36,15 @@ server <- function(input, output, session) {
                                      choices = NULL
                    )},
                ignoreInit = TRUE)
+  
+  observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment),{
+    updatePickerInput(session,
+                      inputId = "selectedvisitype",
+                      choices = NULL
+    )},
+    ignoreInit = TRUE)
+  
+
   
 # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
