@@ -2,13 +2,27 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
+
+# Remove Provider ID from Provider Name column
+amb_df_groupings_unique$PROV_NAME_WID <- trimws(gsub("\\[.*?\\]", "", amb_df_groupings_unique$PROV_NAME_WID))
+
 default_campus <- "DBC"
 campus_choices <- sort(unique(amb_df_groupings_unique$SITE))
 default_specialties <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus, "DEPT_SPECIALTY_NAME"]))
+
 default_departments <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
-                                                             amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties, "DEPARTMNET_NAME"])) 
-default_visittype <- NULL
-default_provider <- NULL
+                                                             amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties, "DEPARTMENT_NAME"])) 
+
+default_provider <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
+                                                          amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties &
+                                                          amb_df_groupings_unique$DEPARTMENT_NAME %in% default_departments, "PROV_NAME_WID"])) 
+
+
+default_visittype <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
+                                                           amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties &
+                                                           amb_df_groupings_unique$DEPARTMENT_NAME %in% default_departments & 
+                                                           amb_df_groupings_unique$PROV_NAME_WID %in% default_provider, "AssociationListA"])) 
+
 default_refprovider <- NULL
 dateRange_min <- min(amb_df_groupings_unique$APPT_DTTM) 
 dateRange_max <- max(amb_df_groupings_unique$APPT_DTTM)

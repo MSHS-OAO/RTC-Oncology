@@ -657,13 +657,7 @@ if(out_of_date == 'TRUE'){ #check if out_of date is true
   slot.data.subset.missing <- processed_dataset[[1]] # gets the processed slot data from above
   data.subset.new.missing <- processed_dataset[[2]] #gets the processed access data from above
   slot.data.subset <- bind_rows(slot.data.subset,slot.data.subset.missing) #amends the missing slot data to slot.data.subset
-  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing) #amends the missing access data to data.subset.new
-  #slot.comb.path <- paste0(combined_path_slot,"/",max_date_monthly)
-  #access.comb.path <- paste0(combined_path_access,"/",max_date_monthly)
-  #file.remove(list.files(path = slot.data.subset,pattern = "*.rds", full.names = T))
-  #file.remove(list.files(path = data.subset.new,pattern = "*.rds", full.names = T))
-  # slot.data.subset <- process_data(data_all)[[1]]
-  # data.subset.new <- process_data(data_all)[[2]]
+  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing) # amends the missing access data to data.subset.new
 }
 
 
