@@ -1,5 +1,9 @@
 server <- function(input, output, session) {
 # Observe Events ------------------------------------------------------------------------------------------------------    
+  observeEvent(input$download1, {
+    screenshot(filename = "Oncology Dashboard")
+  })
+  
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
@@ -103,6 +107,7 @@ server <- function(input, output, session) {
   }
 # Volume Comparison Tab ------------------------------------------------------------------------------------------------------       
 
+  
 }
 
 shinyApp(ui, server)

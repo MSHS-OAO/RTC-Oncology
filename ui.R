@@ -1,6 +1,7 @@
 library(shinydashboardPlus)
 library(shinycssloaders)
-
+library(shinyBS)
+library(shinyscreenshot)
 default_campus <- "DBC"
 campus_choices <- sort(unique(amb_df_groupings_unique$SITE))
 default_specialties <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus, "DEPT_SPECIALTY_NAME"]))
@@ -174,6 +175,16 @@ ui <- dashboardPage(
       condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
         input.sbm == 'volumecomparison'", 
       column(2,
+             fluidRow(
+               column(2, offset = 1,
+                      actionButton("download1",
+                                   label = icon("download")),
+                      bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
+                                "bottom", options = list(container = "body"))
+                      
+               )
+             ),
+             br(),
              box(
                title = "Select Campus:",
                width = 12,
@@ -354,6 +365,6 @@ ui <- dashboardPage(
       )
     )# Close column
   ) #Close Conditional Panel
-    ) #Close Fluid
+  ) #Close Fluid
   ) # Close Dashboard Body
 )# Close Dashboard Page
