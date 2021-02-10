@@ -296,25 +296,108 @@ arrived_patients <- amb_df_groupings_unique[which(amb_df_groupings_unique$DERIVE
 arrived_patients$holiday <- isHoliday(as.timeDate(arrived_patients$appt_date) , holidays = MSHS_Holiday)
 
 
-#create a function to filter the data as needed based on:
-#Site, department, provider, Visit Type, visit method, days of week
 
-filtered_data <- function(df, site, department, provider, visit_type, visit_method, DOW){
-  filtered_df <- df %>% filter(SITE %in% site, 
-                               DEPT_SPECIALITY_NAME %in% department,
-                               PROV_NAME_WID %in% provider,
-                               AssociationListA %in% visit_type,
-                               InPersonvsTele %in% visit_method,
-                               appt_day%in% DOW)
-  return(filtered_df)
-}
-
-#Summarize data: arrived total patients by month
+#Summarize data: arrived patients by month
 arrived_patients_monthly <- arrived_patients %>% 
-  group_by(SITE, AssociationListA, appt_month, appt_year) %>%
+  group_by(SITE, DEPT_SPECIALTY_NAME, AssociationListA, AssociationListB, AssociationListT, appt_month, appt_year, InPersonvsTele) %>%
   summarise(total_patients = n()) %>%
   arrange(SITE, appt_month, appt_year) %>%
   ungroup()
+
+#Summarize data: arrived patients by year
+arrived_patients_yearly <- arrived_patients %>% 
+  group_by(SITE, DEPT_SPECIALTY_NAME, AssociationListA, AssociationListB, AssociationListT, appt_year, InPersonvsTele) %>%
+  summarise(total_patients = n()) %>%
+  arrange(SITE, appt_year) %>%
+  ungroup()
+
+#create a function to filter the data as needed based on:
+
+filtered_data <- function(df, site, specialty, visit_type, visit_method){
+  if(is.null(visit_type)){
+    filtered_df <- filter(df, SITE == site & DEPT_SPECIALTY_NAME == specialty & InPersonvsTele == visit_method)
+    return(filtered_df)
+  } else{
+    filtered_df <- filter(df, SITE == site & DEPT_SPECIALTY_NAME == specialty & AssociationListA == visit_type & InPersonvsTele == visit_method)
+    return(filtered_df)
+  }
+}
+
+
+#example: get arrival data for MSW, Oncology, all visit type, In Person
+#get the filtered data
+MSW_Oncology_InPerson <- filtered_data(arrived_patients_monthly, "MSW", "Oncology", NULL, "In Person")
+MSW_Oncology_InPerson <- MSW_Oncology_InPerson[which(MSW_Oncology_InPerson$AssociationListA != "Exclude"), ]
+MSW_Oncology_InPerson$appt_year <- format(MSW_Oncology_InPerson$appt_year, format = "%Y")
+
+#add an extra column to combine the site and specialty
+MSW_Oncology_InPerson$site_specialty <- paste0(MSW_Oncology_InPerson$SITE," - ",MSW_Oncology_InPerson$DEPT_SPECIALTY_NAME)
+
+#summarize the data to get the total monthly arrivals
+MSW_Oncology_InPerson_monthly <- MSW_Oncology_InPerson %>% 
+  group_by(site_specialty, appt_month) %>%
+  summarise(total_patients_monthly = sum(total_patients))
+
+#summarize the data to get the total monthly stratified arrivals by visit type
+MSW_Oncology_InPerson_monthly_stratified <- MSW_Oncology_InPerson %>% 
+  group_by(site_specialty, appt_month, AssociationListA) %>%
+  summarise(total_patients_monthly = sum(total_patients))
+
+
+#summarize the data to get the total yearly arrivals
+MSW_Oncology_InPerson_yearly <- MSW_Oncology_InPerson %>% 
+  group_by(site_specialty, appt_year) %>%
+  summarise(total_patients_yearly = sum(total_patients))
+
+#summarize the data to get the total yearly stratified arrivals by visit type
+MSW_Oncology_InPerson_yearly_stratified <- MSW_Oncology_InPerson %>% 
+  group_by(site_specialty, appt_year, AssociationListA) %>%
+  summarise(total_patients_yearly = sum(total_patients))
+
+```
+
+
+```{r ggplots for monthly arrivals}
+
+#create a ggplot for the total monthly arrival
+ggplot(MSW_Oncology_InPerson_monthly, aes(x = appt_month, y = total_patients_monthly, group=site_specialty, col=site_specialty)) +
+        geom_line()+
+        geom_point(size=2)+
+        scale_color_MountSinai()+
+        labs(x="Month", y="Total Patient Volume", group = "Site - Specialty", col = "Site - Specialty",
+             title = "Total Arrived Patients by Site and Specialty")
+
+
+#create a ggplot for the total monthly stratified arrival by visit type
+ggplot(MSW_Oncology_InPerson_monthly_stratified, aes(x = appt_month, y = total_patients_monthly, group=AssociationListA, col=AssociationListA, shape = site_specialty)) +
+        geom_line()+
+        geom_point(size=2)+
+        scale_color_MountSinai()+
+        labs(x="Month", y="Total Patient Volume", group = "Visit Type", col = "Visit Type", shape = "Site - Specialty",
+             title = "Total Arrived Patients by Visit Type, Site, and Specialty")
+
+
+```
+
+
+```{r ggplot for yearly arrivals}
+#create a ggplot for the total yearly arrival
+ggplot(MSW_Oncology_InPerson_yearly, aes(x = appt_year, y = total_patients_yearly, group=site_specialty, col=site_specialty)) +
+        geom_line()+
+        geom_point(size=2)+ 
+        scale_color_MountSinai()+
+        labs(x="Year", y="Total Patient Volume", group = "Site - Specialty", col = "Site - Specialty",
+             title = "Total Arrived Patients by Site and Specialty")
+
+
+#create a ggplot for the total yearly stratified arrival by visit type
+ggplot(MSW_Oncology_InPerson_yearly_stratified, aes(x = appt_year, y = total_patients_yearly, group=AssociationListA, col=AssociationListA, shape = site_specialty)) +
+        geom_line()+
+        geom_point(size=2)+
+        scale_color_MountSinai()+
+        labs(x="Year", y="Total Patient Volume", group = "Visit Type", col = "Visit Type", shape = "Site - Specialty",
+             title = "Total Arrived Patients by Visit Type, Site, and Specialty")
+
 
 ```
 
