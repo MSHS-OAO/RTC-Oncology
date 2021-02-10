@@ -322,8 +322,10 @@ filtered_data <- function(df, site, specialty, visit_type, visit_method){
     return(filtered_df)
   }
 }
+```
 
 
+```{r filter data and summarize it}
 #example: get arrival data for MSW, Oncology, all visit type, In Person
 #get the filtered data
 MSW_Oncology_InPerson <- filtered_data(arrived_patients_monthly, "MSW", "Oncology", NULL, "In Person")
