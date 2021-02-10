@@ -277,7 +277,7 @@ theme_new_line <- function(base_size = 12,
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
-
+# Define file paths for use later in the script
 monthly_access <<- here("Data/Access/Monthly")
 monthly_slot <<- here("Data/Slot/Monthly")
 singleday_access <<- here("Data/Access/SingleDay")
@@ -301,6 +301,10 @@ setwd(wdpath)
 # ## Utilization Data
 # data.hour.scheduled <- read_csv("Data/Utilization/data.hour.scheduled.pilotV1.csv")
 # data.hour.arrived <- read_csv("Data/Utilization/data.hour.arrived.pilotV1.csv")
+
+
+# process_data function includes reading in the mapping file creating an renaming slot and access columns
+# the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
 
 process_data <- function(access_data,slot_data){
   slot.data.raw <- slot_data
@@ -495,11 +499,13 @@ process_data <- function(access_data,slot_data){
   return(reuturn_list)
 }
 
+#takes in a single argument, a monthly file path, and returns a list of the file names within that folder 
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
                             pattern = "*.csv", full.names = F))) 
 }
 
+#takes in a single argument, a singleday file path, and returns a list of the file names within that folder 
 singleday_path_part <- function(singleday){
   return(as.list(list.files(path = singleday,     # Identify all csv files in folder
                             pattern = "*.csv", full.names = F))) 
@@ -514,6 +520,8 @@ readin_data_all <- function(){
   return(data_all)
 }
 
+#takes in a single input, a single day file path, and reads in all the files within 
+#that folder.  The function returns a data frame containing all the data within the folder
 read_singleday <- function(singleday){
   dataset <- NULL
   for (data in list.files(singleday,pattern = ".*csv", full.names = T)){
@@ -526,6 +534,8 @@ read_singleday <- function(singleday){
   }
 }
 
+#functions takes in a data frame(slot or access data) input and returns the 
+#max date within that data frame
 max_date_data_type <- function(data_type){
   if(!is.null(slot.data.raw$SLOT_BEGIN_TIME)){
     max_date_data_all <- date(max(slot.data.raw$SLOT_BEGIN_TIME))
@@ -535,6 +545,9 @@ max_date_data_type <- function(data_type){
   return(max_date_data_all)
 } 
 
+
+#Function takes in a singleday and monthly file path and returns the max date in monthly,
+# max month of monthly, and max month in singleday
 max_date <- function(singleday,monthly){ 
   monthly_months <- data.frame(Date = file_path_sans_ext(monthly_path_part(monthly)))
   max_file_monthly <- max(as.Date(monthly_months$Date, "%Y-%m-%d",origin = "1970-01-01"))
@@ -553,6 +566,13 @@ max_date <- function(singleday,monthly){
   return(max_date_list)
 }
 
+#Function takes in a singleday and monthly file path, if there is a file in 
+#singleday detected then this will read in the file/s using the read_singleday function
+#(decribed above) and checks to see if the months in the the single day and monthly 
+# folders are the same using max_date function (described above) to return the months
+# if they match the singleday data will be appended to the respective monthly file
+#else it will create a new monthly file for the new month data
+#Lastly it will remove all the files in singleday since all new data is contained within monthly
 
 check_singleday <- function(singleday,monthly){
   filein_singleday = !is_empty(singleday_path_part(singleday))
@@ -577,12 +597,19 @@ check_singleday <- function(singleday,monthly){
   
 }
 
+#check_singleday (described above) function call for slot and access data
 check_singleday(singleday_access,monthly_access)
 check_singleday(singleday_slot,monthly_slot)
 
 
 # Load Data Files
 ## Scheduling Data
+
+#if statement to check if data already exists if it doesn't then read in all data
+# from the slot and access monthly files and assign them to access.data.raw and slot.data.raw
+# this will also create the data.subset.new, slot.data.subset, and holid by using the
+# process_data function (described above)
+
 if (!(exists("access.data.raw"))){ 
   access.data.raw <<- list.files(path = "Data/Access/Monthly",
                                  pattern = "*.csv", full.names = TRUE) %>%
@@ -602,33 +629,35 @@ if (!(exists("access.data.raw"))){
 
 
 
-max_date_access <- max_date_data_type(data.subset.new)
-max_date_monthly_access <- max_date(singleday_access,monthly_access)[[1]]
-out_of_date <- !(isTRUE((all.equal(max_date_access,max_date_monthly_access))))
+max_date_access <- max_date_data_type(data.subset.new) # get the max date in data.subset.new
+max_date_monthly_access <- max_date(singleday_access,monthly_access)[[1]] #get the max date in the monthly access folder
+out_of_date <- !(isTRUE((all.equal(max_date_access,max_date_monthly_access)))) #checks to see if the data.subset.new is out of date with what is in the monthly folder
 max_date_slot <- max_date_data_type(slot.data.raw)
 #max_date_monthly_slot <- max_date(singleday_slot,monthly_slot)[[1]]
 max_date_monthly_slot <- max_date_monthly_access
 
-if(out_of_date == 'TRUE'){
-  missing_dates_monthly_access <- data.frame(Date = format(as.Date(as.Date(max_date_access+1):as.Date(max_date_monthly_access), origin="1970-01-01"), "%m-%d-%Y"))
-  max_month_monthly_access <- format(max_date_monthly_access,"%m")
+
+
+if(out_of_date == 'TRUE'){ #check if out_of date is true
+  missing_dates_monthly_access <- data.frame(Date = format(as.Date(as.Date(max_date_access+1):as.Date(max_date_monthly_access), origin="1970-01-01"), "%m-%d-%Y")) # makes a data frame that contains the missing dates from data.subset.new
+  max_month_monthly_access <- format(max_date_monthly_access,"%m") 
   curr_year <- format(Sys.Date(), "%Y")
-  recent_monthly_filepath_access <- paste0(monthly_access,"/",curr_year,"-",max_month_monthly_access,"-01.csv")
-  recent_monthly_data_access <- read_csv(recent_monthly_filepath_access)
-  missing_date_data_access <- subset(recent_monthly_data_access, APPT_DTTM >= (max_date_access+1))
+  recent_monthly_filepath_access <- paste0(monthly_access,"/",curr_year,"-",max_month_monthly_access,"-01.csv")# creates the file path to the mosr recent monthly file
+  recent_monthly_data_access <- read_csv(recent_monthly_filepath_access)# reads in the data from the created most recent monthly file path
+  missing_date_data_access <- subset(recent_monthly_data_access, APPT_DTTM >= (max_date_access+1))# subsets the data to include only the missing data (determined above)
   #data_all  <- bind_rows(data_all,missing_date_data)
-  missing_dates_monthly_slot <- data.frame(Date = format(as.Date(as.Date(max_date_slot+1):as.Date(max_date_monthly_slot), origin="1970-01-01"), "%m-%d-%Y"))
+  missing_dates_monthly_slot <- data.frame(Date = format(as.Date(as.Date(max_date_slot+1):as.Date(max_date_monthly_slot), origin="1970-01-01"), "%m-%d-%Y"))# makes a data frame that contains the missing dates from slot.data.raw
   max_month_monthly_slot <- month(max_date_monthly_slot)
-  recent_monthly_filepath_slot <- paste0(monthly_slot,"/",curr_year,"-",max_month_monthly_access,"-01.csv")
-  recent_monthly_data_slot <- read_csv(recent_monthly_filepath_slot)
-  missing_date_data_slot <- subset(recent_monthly_data_slot, SLOT_BEGIN_TIME >= (max_date_access+1))
+  recent_monthly_filepath_slot <- paste0(monthly_slot,"/",curr_year,"-",max_month_monthly_access,"-01.csv")# Creates the file path for the most recent month in the slot monthly folder
+  recent_monthly_data_slot <- read_csv(recent_monthly_filepath_slot) # reads in the slot monthly data from the create path above
+  missing_date_data_slot <- subset(recent_monthly_data_slot, SLOT_BEGIN_TIME >= (max_date_access+1)) # subsets the data to include only the missing data (determined above)
   
   
-  processed_dataset <- process_data(missing_date_data_access,missing_date_data_slot)
-  slot.data.subset.missing <- processed_dataset[[1]]
-  data.subset.new.missing <- processed_dataset[[2]]
-  slot.data.subset <- bind_rows(slot.data.subset,slot.data.subset.missing)
-  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing)
+  processed_dataset <- process_data(missing_date_data_access,missing_date_data_slot) #using the process_data function pre processes only the missing data for slot and access
+  slot.data.subset.missing <- processed_dataset[[1]] # gets the processed slot data from above
+  data.subset.new.missing <- processed_dataset[[2]] #gets the processed access data from above
+  slot.data.subset <- bind_rows(slot.data.subset,slot.data.subset.missing) #amends the missing slot data to slot.data.subset
+  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing) #amends the missing access data to data.subset.new
   #slot.comb.path <- paste0(combined_path_slot,"/",max_date_monthly)
   #access.comb.path <- paste0(combined_path_access,"/",max_date_monthly)
   #file.remove(list.files(path = slot.data.subset,pattern = "*.rds", full.names = T))
