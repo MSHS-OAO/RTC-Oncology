@@ -340,7 +340,7 @@ ui <- dashboardPage(
     ),# Close conditional Panel
     conditionalPanel(
       condition = "input.sbm == 'volumecomparison'",
-      column(2,
+      column(2, offset = 10,
              box(
                title = "Select Appointment Type:",
                width = 12,
