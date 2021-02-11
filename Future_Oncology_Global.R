@@ -316,8 +316,8 @@ process_data <- function(access_data,slot_data){
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
   data.raw$campus_new <- site_ref$`Site`[match(data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)] # Crosswalk Campus to Site by Department Name
-  data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
-  
+  #data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  data.raw <- filter(data.raw, campus_new == "Oncology")
   # Dummy columns until they are added to Clarity table: SEX, FPA
   data.raw$SEX <- "Male"
   data.raw$VITALS_TAKEN_TM <- ""
