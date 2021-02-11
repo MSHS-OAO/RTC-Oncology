@@ -366,7 +366,7 @@ process_data <- function(access_data,slot_data){
   data.raw <- amb_df_groupings_
   
   # Data fields incldued for analysis 
-  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID",
+  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID"
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
                      "APPT_MADE_DTTM","APPT_DTTM","PRC_NAME","APPT_LENGTH","DERIVED_STATUS_DESC",
                      "APPT_CANC_DTTM", "CANCEL_REASON_NAME",
@@ -382,7 +382,7 @@ process_data <- function(access_data,slot_data){
   data.subset <- data.raw[original.cols]
   
   # Rename data fields (columns) 
-  new.cols <- c("Campus.Specialty","Department","Provider",
+  new.cols <- c("Campus.Specialty","Department","Provider", "Ref.Provider",
                 "MRN","Patient.Name","Zip.Code","Sex","Birth.Date","Coverage",
                 "Appt.Made.DTTM","Appt.DTTM","Appt.Type","Appt.Dur","Appt.Status",
                 "Appt.Cancel.DTTM", "Cancel.Reason",
@@ -422,6 +422,9 @@ process_data <- function(access_data,slot_data){
   
   # Remove Provider ID from Provider Name column
   data.subset$Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Provider))
+  
+  # Remove Provider ID from Referring Provider Name column
+  data.subset$Ref.Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Ref.Provider))
   
   # New Patient Classification based on level of care ("LOS_NAME")
   data.subset$New.PT2 <- ifelse(is.na(data.subset$Class.PT), "",grepl("NEW", data.subset$Class.PT, fixed = TRUE))
