@@ -323,6 +323,44 @@ process_data <- function(access_data,slot_data){
   data.raw$VITALS_TAKEN_TM <- ""
   data.raw$Provider_Leave_DTTM <- ""
   
+  
+###### Processing the Reference File
+  #read the mapping file that was provided by Marcy
+  mapping_file <- here("Data/EPIC Data - [Department ID] to Site - Oncology System Data Groupings 1.6.2020.xlsx")
+  
+  #from the mapping file import the department ID sheet
+  department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")
+  department_mapping <- department_mapping[1:(length(department_mapping)-2)]
+  
+  #returns string without leading or trailing white space
+  trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+  
+  ##remove the space at the end and at the beginning when applicable
+  department_mapping$`EPIC  Department` <- trim(department_mapping$`EPIC  Department`)
+  
+  #change column names for the department mapping
+  colnames(department_mapping) <- c("System", "DEPARTMENT_NAME", "DEPARTMENT_ID", "SITE", "ACTIVE", "Notes")
+  
+  #from the mapping file import the department PRC sheet
+  PRC_mapping <- read_excel(mapping_file, sheet = "Visit Type 'PRC Name' -Mappings")
+  PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
+  
+  ##remove the space at the end and at the beginning when applicable
+  PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+  
+  #####change all to first word capitalized
+  PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
+  PRC_mapping$`Association List : A` <- str_to_title(PRC_mapping$`Association List : A`)
+  
+  PRC_mapping$`Association List: B` <- str_to_title(PRC_mapping$`Association List: B`)
+  
+  PRC_mapping$`Association List: T` <- str_to_title(PRC_mapping$`Association List: T`)
+  
+  #change column names for the PRC mapping
+  colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "AssociationListT", "InPersonvsTele")
+  
+  
+  
   # Data fields incldued for analysis 
   original.cols <- c("campus_new","DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID",
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
