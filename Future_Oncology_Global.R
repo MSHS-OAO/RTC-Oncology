@@ -366,7 +366,7 @@ process_data <- function(access_data,slot_data){
   data.raw <- amb_df_groupings_
   
   # Data fields incldued for analysis 
-  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID"
+  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID",
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
                      "APPT_MADE_DTTM","APPT_DTTM","PRC_NAME","APPT_LENGTH","DERIVED_STATUS_DESC",
                      "APPT_CANC_DTTM", "CANCEL_REASON_NAME",
