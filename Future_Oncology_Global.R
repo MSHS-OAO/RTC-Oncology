@@ -359,6 +359,10 @@ process_data <- function(access_data,slot_data){
   #change column names for the PRC mapping
   colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "AssociationListT", "InPersonvsTele")
   
+  #merge the ambulatory data with the grouping data
+  amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
+  amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
+  
   
   
   # Data fields incldued for analysis 
