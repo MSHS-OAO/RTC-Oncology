@@ -363,10 +363,10 @@ process_data <- function(access_data,slot_data){
   amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
   
-  
+  data.raw <- amb_df_groupings_
   
   # Data fields incldued for analysis 
-  original.cols <- c("campus_new","DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID",
+  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID",
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
                      "APPT_MADE_DTTM","APPT_DTTM","PRC_NAME","APPT_LENGTH","DERIVED_STATUS_DESC",
                      "APPT_CANC_DTTM", "CANCEL_REASON_NAME",
@@ -375,13 +375,14 @@ process_data <- function(access_data,slot_data){
                      "PHYS_ENTER_DTTM","Provider_Leave_DTTM",
                      "VISIT_END_DTTM","CHECKOUT_DTTM",
                      "TIME_IN_ROOM_MINUTES","CYCLE_TIME_MINUTES","VIS_NEW_TO_DEP_YN","LOS_NAME", "DEP_RPT_GRP_THIRTYONE", 
-                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C")
+                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C",
+                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT")
   
   # Subset raw data 
   data.subset <- data.raw[original.cols]
   
   # Rename data fields (columns) 
-  new.cols <- c("Campus","Campus.Specialty","Department","Provider",
+  new.cols <- c("Campus.Specialty","Department","Provider",
                 "MRN","Patient.Name","Zip.Code","Sex","Birth.Date","Coverage",
                 "Appt.Made.DTTM","Appt.DTTM","Appt.Type","Appt.Dur","Appt.Status",
                 "Appt.Cancel.DTTM", "Cancel.Reason",
@@ -390,7 +391,8 @@ process_data <- function(access_data,slot_data){
                 "Providerin_DTTM","Providerout_DTTM",
                 "Visitend.DTTM","Checkout.DTTM",
                 "Time.in.room","Cycle.time","New.PT","Class.PT","Cadence",
-                "Appt.Source","Access.Center","Visit.Method","Resource")
+                "Appt.Source","Access.Center","Visit.Method","Resource",
+                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT")
   
   colnames(data.subset) <- new.cols
   
