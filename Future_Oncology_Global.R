@@ -501,6 +501,7 @@ process_data <- function(access_data,slot_data){
   slot.data.raw$Campus_new <- site_ref$`Site`[match(slot.data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)]
   slot.data.raw <- filter(slot.data.raw, Campus_new == "Oncology")
   #slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- merge(slot.data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   
   # Data fields incldued for analysis
   original.cols.slots <- c("DEPT_SPECIALTY_NAME",
