@@ -135,8 +135,20 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("trend_labvisitsgraph", height="550px") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
-                       )
-                       
+                       ),
+                       boxPlus(
+                         title = "Annual Visit Volume Summary", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         column(3,
+                         checkboxGroupButtons(
+                           inputId = "annualVolSummary",
+                           label = h3("Select Visit Type:"), 
+                           choices = c("Office", "Treatment", "Labs"),
+                           selected = c("Office", "Treatment", "Labs"),
+                           status = "warning"
+                         ),
+                         tableOutput("trend_visitstable")
+                       ))
                 )
               ),
 # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
@@ -161,6 +173,11 @@ ui <- dashboardPage(
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                        plotOutput("break_treatmentvisitsgraph", height="550px") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
+                     ),
+                     boxPlus(
+                       title = "Visit Volume Breakdown", width = 12, status = "primary", 
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       tableOutput("break_visitstable")
                      )
                      
               )

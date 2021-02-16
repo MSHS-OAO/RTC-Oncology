@@ -88,7 +88,9 @@ server <- function(input, output, session) {
     data <- dataArrived()
     # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
 
-    total_visits <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
+    total_visits <- data %>%
+      filter(AssociationListA %in% c("Office","Treatment","Labs")) %>%
+      group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
 
     if(length(unique(data$SITE)) == 1){
       site <- unique(data$SITE)
@@ -178,36 +180,40 @@ server <- function(input, output, session) {
     
   })
   
-  output$trend_visitstable <- renderPlot({
-    
+  output$trend_visitstable <- function(){
+
     data <- dataArrived()
-    data <- arrived.data
-    
-    visits_tb <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+    # data <- arrived.data
+
+    visits_tb <- data %>% 
+      filter(AssociationListA %in% input$annualVolSummary) %>%
+      group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
       spread(Appt.Year, total)
     
+    visits_tb <- visits_tb[match(monthOptions, visits_tb$Appt.Month),]
+    visits_tb$Appt.Month <- monthOptions
+    
+    visits_tb %>%
+      kable(escape = F, align = "c",
+            col.names = c("Month", "2020", "2021")) %>%
+      kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
+      add_header_above(c("Total Visit Volume" = 3),
+                      color = "black", font_size = 22, align = "center") %>%
+      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#212070", color = "white")
+    
+    # months <- append(unique(visits_tb$Appt.Month),"Total")
+    # 
+    # total_val <- colSums(visits_tb[,-1])
+    # visits_tb <- rbind(visits_tb, total_val)
+    # 
+    # visits_tb$Appt.Month <- months
+    # 
+    # visits_tb <- variance
+    # 
+    # visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
+    # visits_tb$variance_perc <- visits_tb
 
-    total_val <- colSums(visits_tb[,-1])
-    cbind(total, total_val)
-    
-    visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
-      mutate(variance1 = )
-    
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
-    } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
-    }
-    
-    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-      geom_line(aes(color=Appt.Year), size=1.1)+
-      geom_point(aes(color=Appt.Year), size=3)+
-      scale_color_MountSinai('dark')+
-      labs(title = paste0(site," ","Annual Lab Visits\n"), 
-           y = NULL, x = NULL, fill = NULL)+
-      theme_new_line()
-    
-  })
+  }
   
 
 # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
@@ -305,6 +311,29 @@ server <- function(input, output, session) {
                    size=5, fontface="bold.italic")
     
   })
+  
+  # output$break_visitstable <- function(){
+  #   
+  #   data <- dataArrived()
+  #   data <- arrived.data
+  #   
+  #   visits_tb <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+  #     spread(Appt.Year, total)
+  #   
+  #   
+  #   months <- append(unique(visits_tb$Appt.Month),"Total")
+  #   
+  #   total_val <- colSums(visits_tb[,-1])
+  #   visits_tb <- rbind(visits_tb, total_val)
+  #   
+  #   visits_tb$Appt.Month <- months
+  #   
+  #   visits_tb <- variance 
+  #   
+  #   visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
+  #   visits_tb$variance_perc <- visits_tb
+  #   
+  # }
   
 
 # Volume Comparison Tab ------------------------------------------------------------------------------------------------------       
