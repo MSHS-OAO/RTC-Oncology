@@ -84,6 +84,8 @@ colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "
 amb_df_groupings <- merge(amb_df, department_mapping, by=c("DEPARTMENT_NAME"))
 amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
 
+amb_df_groupings_$appt_time <-  strftime(amb_df_groupings_$APPT_DTTM, format="%H:%M:%S", tz = "GMT")
+  
 #only keep unique visits --> unique visits are defined as the visits with different
 #MRN, appt date time, PRC name, provider name, and appt status 
 amb_df_groupings_unique <-
@@ -109,11 +111,17 @@ MSW_Marcy_dec_2020 <- MSW_Marcy[which(MSW_Marcy$Month == "December" & MSW_Marcy$
 
 #pre-process marcy's data
 MSW_Marcy_dec_2020$Appt_Date <- as.Date(MSW_Marcy_dec_2020$Date, format =  "%m/%d/%y")
+MSW_Marcy_dec_2020$time <- format(parse_date_time(MSW_Marcy_dec_2020$`Appt Time`, '%I:%M %p')
+, format = "%H:%M:%S")
 
 #check the missed records
-#add a unique identifier to both of the datasets based on Name, Date, duration
-MSW_Marcy_dec_2020$unique_id <- paste0(MSW_Marcy_dec_2020$`Pt Name`, " ", MSW_Marcy_dec_2020$Appt_Date, " ", MSW_Marcy_dec_2020$`Sch Duration`)
-MSW_onco_unique_dec$uniqe_id <- paste0(MSW_onco_unique_dec$PAT_NAME, " ", MSW_onco_unique_dec$appt_date, " ", MSW_onco_unique_dec$APPT_LENGTH)
+#add a unique identifier to both of the datasets based on Name, Date, duration, time
+MSW_Marcy_dec_2020$unique_id <- paste0(MSW_Marcy_dec_2020$`Pt Name`, " ", MSW_Marcy_dec_2020$Appt_Date, " ", MSW_Marcy_dec_2020$`Sch Duration`, " ", MSW_Marcy_dec_2020$time)
+MSW_onco_unique_dec$uniqe_id <- paste0(MSW_onco_unique_dec$PAT_NAME, " ", MSW_onco_unique_dec$appt_date, " ", MSW_onco_unique_dec$APPT_LENGTH, " ", MSW_onco_unique_dec$appt_time)
+
+#reset index for the two files:
+row.names(MSW_onco_unique_dec) <- NULL
+row.names(MSW_Marcy_dec_2020) <- NULL
 
 #match the unique ids
 match_df <- as.data.frame(match(MSW_Marcy_dec_2020$unique_id, MSW_onco_unique_dec$uniqe_id))
