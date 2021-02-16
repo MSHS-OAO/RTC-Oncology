@@ -376,7 +376,7 @@ process_data <- function(access_data,slot_data){
                      "VISIT_END_DTTM","CHECKOUT_DTTM",
                      "TIME_IN_ROOM_MINUTES","CYCLE_TIME_MINUTES","VIS_NEW_TO_DEP_YN","LOS_NAME", "DEP_RPT_GRP_THIRTYONE", 
                      "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C",
-                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT")
+                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
   
   # Subset raw data 
   data.subset <- data.raw[original.cols]
@@ -392,7 +392,7 @@ process_data <- function(access_data,slot_data){
                 "Visitend.DTTM","Checkout.DTTM",
                 "Time.in.room","Cycle.time","New.PT","Class.PT","Cadence",
                 "Appt.Source","Access.Center","Visit.Method","Resource",
-                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT")
+                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
   
   colnames(data.subset) <- new.cols
   
