@@ -311,7 +311,7 @@ arrived_patients_yearly <- arrived_patients %>%
   arrange(SITE, appt_year) %>%
   ungroup()
 
-#create a function to filter the data as needed based on:
+#create a function to filter the data as needed based on: site, specialty, visit type, and visit method
 
 filtered_data <- function(df, site, specialty, visit_type, visit_method){
   if(is.null(visit_type)){
