@@ -3,33 +3,44 @@ library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
 
-# Remove Provider ID from Provider Name column
-amb_df_groupings_unique$PROV_NAME_WID <- trimws(gsub("\\[.*?\\]", "", amb_df_groupings_unique$PROV_NAME_WID))
+# # Remove Provider ID from Provider Name column
+# amb_df_groupings_unique$PROV_NAME_WID <- trimws(gsub("\\[.*?\\]", "", amb_df_groupings_unique$PROV_NAME_WID))
+
+### Set default values for master filters --------------------------------------------------------------------------------------
 
 default_campus <- "DBC"
-campus_choices <- sort(unique(amb_df_groupings_unique$SITE))
-default_specialties <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus, "DEPT_SPECIALTY_NAME"]))
+campus_choices <- sort(unique(historical.data$SITE))
+default_specialties <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Campus.Specialty"]))
 
-default_departments <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
-                                                             amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties, "DEPARTMENT_NAME"])) 
-
-default_provider <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
-                                                          amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties &
-                                                          amb_df_groupings_unique$DEPARTMENT_NAME %in% default_departments, "PROV_NAME_WID"])) 
+default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                     historical.data$Campus.Specialty %in% default_specialties, "Department"])) 
 
 
-default_visittype <- sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% default_campus &
-                                                           amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% default_specialties &
-                                                           amb_df_groupings_unique$DEPARTMENT_NAME %in% default_departments & 
-                                                           amb_df_groupings_unique$PROV_NAME_WID %in% default_provider, "AssociationListA"])) 
+default_provider <- sort(unique(historical.data[historical.data$SITE %in% default_campus & 
+                                                          historical.data$Campus.Specialty %in% default_specialties &
+                                                          historical.data$Department %in% default_departments, "Provider"])) 
 
-default_refprovider <- NULL
-dateRange_min <- min(amb_df_groupings_unique$APPT_DTTM) 
-dateRange_max <- max(amb_df_groupings_unique$APPT_DTTM)
+
+default_refProvider <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                     historical.data$Campus.Specialty %in% default_specialties &
+                                                     historical.data$Department %in% default_departments &
+                                                     historical.data$Provider %in% default_provider, "Ref.Provider"]))
+
+
+# 
+# default_visittype <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                            historical.data$Campus.Specialty %in% default_specialties &
+#                                                            historical.data$Department %in% default_departments & 
+#                                                            historical.data$Provider %in% default_provider, "AssociationListA"])) 
+
+
+
+dateRange_min <- min(historical.data$Appt.DateYear) 
+dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
-holid <- NULL
-default_appttypes <- NULL
-default_treattype <- NULL
+# holid <- unique(holid$holiday)
+# default_appttypes <- NULL
+# default_treattype <- NULL
 
 ui <- dashboardPage(
   dashboardHeader(title = "Oncology Analytics Tool",
@@ -57,7 +68,7 @@ ui <- dashboardPage(
     
     sidebarMenu(id = "sbm",
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
-                         menuSubItem("Trend/Overview", tabName = "volumetrend"),
+                         menuSubItem("Overview", tabName = "volumetrend"),
                          menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          menuSubItem("Comparison", tabName = "volumecomparison")
                 )
@@ -102,37 +113,29 @@ ui <- dashboardPage(
                        div("Volume Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
                        boxPlus(
-                         title = "All Visits", width = 12, status = "primary", height = "500px",
+                         title = "All Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_totalvisitsgraph", height="450px") %>% 
-                           withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_totalvisitstable") %>% 
+                         plotOutput("trend_totalvisitsgraph", height="550px") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
-                         title = "Exam Visits", width = 12, status = "primary", height = "500px",
+                         title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_examvisitsgraph", height="450px") %>% 
-                           withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_examvisitstable") %>% 
+                         plotOutput("trend_examvisitsgraph", height="550px") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
-                         title = "Treatment Visits", width = 12, status = "primary", height = "500px",
+                         title = "Treatment Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_treatmentvisitsgraph", height="450px") %>% 
-                           withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_treatmentvisitstable") %>% 
+                         plotOutput("trend_treatmentvisitsgraph", height="550px") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
-                         title = "Lab Visits", width = 12, status = "primary", height = "500px",
+                         title = "Lab Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_labvisitsgraph", height="450px") %>% 
-                           withSpinner(type = 5, color = "#d80b8c"), br(),
-                         tableOutput("trend_labvisitstable") %>% 
+                         plotOutput("trend_labvisitsgraph", height="550px") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
-                       ),
+                       )
                        
                 )
               ),
@@ -142,37 +145,23 @@ ui <- dashboardPage(
                      div("Volume Breakdown", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                      tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
                      boxPlus(
-                       title = "All Visits", width = 12, status = "primary", height = "500px",
+                       title = "All Visits", width = 12, status = "primary", 
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                       plotOutput("break_totalvisitsgraph", height="450px") %>% 
-                         withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_totalvisitstable") %>% 
+                       plotOutput("break_totalvisitsgraph", height="550px") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      boxPlus(
-                       title = "Exam Visits", width = 12, status = "primary", height = "500px",
+                       title = "Exam Visits", width = 12, status = "primary",
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                       plotOutput("break_examvisitsgraph", height="450px") %>% 
-                         withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_examvisitstable") %>% 
+                       plotOutput("break_examvisitsgraph", height="550px") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
                      ),
                      boxPlus(
-                       title = "Treatment Visits", width = 12, status = "primary", height = "500px",
+                       title = "Treatment Visits", width = 12, status = "primary", 
                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                       plotOutput("break_treatmentvisitsgraph", height="450px") %>% 
-                         withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_treatmentvisitstable") %>% 
+                       plotOutput("break_treatmentvisitsgraph", height="550px") %>% 
                          withSpinner(type = 5, color = "#d80b8c")
-                     ),
-                     boxPlus(
-                       title = "Lab Visits", width = 12, status = "primary", height = "500px",
-                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                       plotOutput("break_labvisitsgraph", height="450px") %>% 
-                         withSpinner(type = 5, color = "#d80b8c"), br(),
-                       tableOutput("break_labvisitstable") %>% 
-                         withSpinner(type = 5, color = "#d80b8c")
-                     ),
+                     )
                      
               )
       ), #Close Volume breakdown tab
@@ -186,8 +175,7 @@ ui <- dashboardPage(
     ), #Close tab Items
 # Conditional Filters ------------------------------------------------------------------------------------------------------    
     conditionalPanel(
-      condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' |
-        input.sbm == 'volumecomparison'", 
+      condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'", 
       column(2,
              fluidRow(
                column(2, offset = 1,
@@ -252,11 +240,11 @@ ui <- dashboardPage(
           )
         ),
         box(
-          title = "Select Provider Name:",
+          title = "Select Provider:",
           width = 12,
           height = "100px",
           solidHeader = FALSE,
-          pickerInput("selectedprovider",label=NULL,
+          pickerInput("selectedProvider",label=NULL,
                       choices=default_provider,
                       multiple=TRUE,
                       options = pickerOptions(
@@ -269,12 +257,12 @@ ui <- dashboardPage(
           )
         ),
         box(
-          title = "Select Reffered Provider Name:",
+          title = "Select Reffered Provider:",
           width = 12,
           height = "100px",
           solidHeader = FALSE,
-          pickerInput("selectedrefprovider",label=NULL,
-                      choices=default_refprovider,
+          pickerInput("selectedrefProvider",label=NULL,
+                      choices=default_refProvider,
                       multiple=TRUE,
                       options = pickerOptions(
                         liveSearch = TRUE,
@@ -282,26 +270,26 @@ ui <- dashboardPage(
                         selectedTextFormat = "count > 1",
                         countSelectedText = "{0}/{1} Providers",
                         dropupAuto = FALSE),
-                      selected = default_refprovider
+                      selected = default_refProvider
           )
         ),
-        box(
-          title = "Select Visit Type:",
-          width = 12,
-          height = "100px",
-          solidHeader = FALSE,
-          pickerInput("selectedvisitype",label=NULL,
-                      choices=default_visittype,
-                      multiple=TRUE,
-                      options = pickerOptions(
-                        liveSearch = TRUE,
-                        actionsBox = TRUE,
-                        selectedTextFormat = "count > 1",
-                        countSelectedText = "{0}/{1} Visit Types",
-                        dropupAuto = FALSE),
-                      selected = default_visittype
-          )
-        ),
+        # box(
+        #   title = "Select Visit Type:",
+        #   width = 12,
+        #   height = "100px",
+        #   solidHeader = FALSE,
+        #   pickerInput("selectedVisitType",label=NULL,
+        #               choices=default_visittype,
+        #               multiple=TRUE,
+        #               options = pickerOptions(
+        #                 liveSearch = TRUE,
+        #                 actionsBox = TRUE,
+        #                 selectedTextFormat = "count > 1",
+        #                 countSelectedText = "{0}/{1} Visit Types",
+        #                 dropupAuto = FALSE),
+        #               selected = default_visittype
+        #   )
+        # ),
         box(
           title = "Select Date Range:",
           width = 12, 
@@ -337,48 +325,48 @@ ui <- dashboardPage(
           )
       )# Close column
       
-    ),# Close conditional Panel
-    conditionalPanel(
-      condition = "input.sbm == 'volumecomparison'",
-      column(2, offset = 10,
-             box(
-               title = "Select Appointment Type:",
-               width = 12,
-               height = "100px",
-               solidHeader = FALSE,
-               pickerInput("selectedappointmenttype",label=NULL,
-                           choices = default_appttypes,
-                           multiple=TRUE,
-                           options = pickerOptions(
-                             liveSearch = TRUE,
-                             actionsBox = TRUE,
-                             selectedTextFormat = "count > 1", 
-                             countSelectedText = "{0}/{1} Appointemnt Types", 
-                             dropupAuto = FALSE),
-                           selected = default_appttypes
-               )    
-        
-      ),
-      box(
-        title = "Select Treatement Type:",
-        width = 12,
-        height = "100px",
-        solidHeader = FALSE,
-        pickerInput("selectedtreatmenttype",label=NULL,
-                    choices = default_treattype,
-                    multiple=TRUE,
-                    options = pickerOptions(
-                      liveSearch = TRUE,
-                      actionsBox = TRUE,
-                      selectedTextFormat = "count > 1", 
-                      countSelectedText = "{0}/{1} Appointemnt Types", 
-                      dropupAuto = FALSE),
-                    selected = default_treattype
-        )    
-        
-      )
-    )# Close column
-  ) #Close Conditional Panel
+    )# Close conditional Panel
+  #   conditionalPanel(
+  #     condition = "input.sbm == 'volumecomparison'",
+  #     column(2, offset = 10,
+  #            box(
+  #              title = "Select Appointment Type:",
+  #              width = 12,
+  #              height = "100px",
+  #              solidHeader = FALSE,
+  #              pickerInput("selectedappointmenttype",label=NULL,
+  #                          choices = default_appttypes,
+  #                          multiple=TRUE,
+  #                          options = pickerOptions(
+  #                            liveSearch = TRUE,
+  #                            actionsBox = TRUE,
+  #                            selectedTextFormat = "count > 1", 
+  #                            countSelectedText = "{0}/{1} Appointemnt Types", 
+  #                            dropupAuto = FALSE),
+  #                          selected = default_appttypes
+  #              )    
+  #       
+  #     ),
+  #     box(
+  #       title = "Select Treatement Type:",
+  #       width = 12,
+  #       height = "100px",
+  #       solidHeader = FALSE,
+  #       pickerInput("selectedtreatmenttype",label=NULL,
+  #                   choices = default_treattype,
+  #                   multiple=TRUE,
+  #                   options = pickerOptions(
+  #                     liveSearch = TRUE,
+  #                     actionsBox = TRUE,
+  #                     selectedTextFormat = "count > 1", 
+  #                     countSelectedText = "{0}/{1} Appointemnt Types", 
+  #                     dropupAuto = FALSE),
+  #                   selected = default_treattype
+  #       )    
+  #       
+  #     )
+  #   )# Close column
+  # ) #Close Conditional Panel
   ) #Close Fluid
   ) # Close Dashboard Body
 )# Close Dashboard Page
