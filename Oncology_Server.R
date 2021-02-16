@@ -7,109 +7,306 @@ server <- function(input, output, session) {
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
-                      choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus, "DEPT_SPECIALTY_NAME"]))
+                      choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Campus.Specialty"]))
     )},
     ignoreInit = TRUE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty),{
     updatePickerInput(session,
                       inputId = "selectedDepartment",
-                      choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus &
-                                                                      amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% input$selectedSpecialty, "DEPARTMENT_NAME"])) 
+                      choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                                      historical.data$Campus.Specialty %in% input$selectedSpecialty, "Department"])) 
     )},
     ignoreInit = TRUE)
-  
-  observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment,
-                 input$selectedvisitype),{
-                   updatePickerInput(session,
-                                     inputId = "selectedprovider",
-                                     choices = sort(unique(amb_df_groupings_unique[amb_df_groupings_unique$SITE %in% input$selectedCampus &
-                                                                                     amb_df_groupings_unique$DEPT_SPECIALTY_NAME %in% input$selectedSpecialty &
-                                                                                     amb_df_groupings_unique$DEPARTMENT_NAME %in% input$selectedDepartment, "PROV_NAME_WID"])) 
-                   )},
-               ignoreInit = TRUE)
-  
-  observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment,
-                 input$selectedvisitype, input$selectedprovider),{
-                   updatePickerInput(session,
-                                     inputId = "selectedrefprovider",
-                                     choices = NULL
-                   )},
-               ignoreInit = TRUE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment),{
-    updatePickerInput(session,
-                      inputId = "selectedvisitype",
-                      choices = NULL
-    )},
-    ignoreInit = TRUE)
+                   updatePickerInput(session,
+                                     inputId = "selectedProvider",
+                                     choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                                                     historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                                                     historical.data$Department %in% input$selectedDepartment, "Provider"])) 
+                   )},
+               ignoreInit = TRUE)
   
+  observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment, input$selectedProvider),{
+                   updatePickerInput(session,
+                                     inputId = "selectedrefProvider",
+                                     choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                                             historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                                             historical.data$Department %in% input$selectedDepartment &
+                                                                             historical.data$Provider %in% input$selectedProvider, "Ref.Provider"]))
+                   )},
+               ignoreInit = TRUE)
+  
+  # observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment),{
+  #   updatePickerInput(session,
+  #                     inputId = "selectedVisitType",
+  #                     choices = NULL
+  #   )},
+  #   ignoreInit = TRUE)
 
+# Reactive Data -----------------------------------------------------------------------------------------------------------------------
+  # All pre-processed data ============================================================================================================
+
+  dataAll <- reactive({
+    groupByFilters(all.data,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$selectedVisitType, input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
+
+  # [2.2] Arrived + No Show data ============================================================================================================
+  dataArrivedNoShow <- reactive({
+    groupByFilters(arrivedNoShow.data,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$selectedVisitType, input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
+  
+  # [2.3] Arrived data ============================================================================================================
+  dataArrived <- reactive({
+    groupByFilters(arrived.data,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
+  
+  # Canceled data -----------------------------------------------------------------------------------------------------------------------
+  dataCanceled<- reactive({
+    groupByFilters(canceled.data,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$selectedVisitType, input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
+
+  # Bumped data -----------------------------------------------------------------------------------------------------------------------
+  dataBumped<- reactive({
+    groupByFilters(bumped.data,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$selectedVisitType, input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
   
 # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
+
+    total_visits <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
+
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual All Visits\n"),
+           y = NULL, x = NULL, fill = NULL)+
+      theme_new_line()
+    
   })
   
-  output$trend_totalvisitstable <- function() {
-    
-  }
   
   output$trend_examvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits <- data %>% filter(AssociationListA == "Office") %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Exam Visits\n"), 
+           y = NULL, x = NULL, fill = NULL)+
+      theme_new_line()
+    
   })
   
-  output$trend_examvisitstable <- function() {
-    
-  }
   
   output$trend_treatmentvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits <- data %>% filter(AssociationListA == "Treatment") %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Treatment Visits\n"), 
+           y = NULL, x = NULL, fill = NULL)+
+      theme_new_line()
+    
   })
   
-  output$trend_treatmentvisitstable <- function() {
-    
-  }
   
   output$trend_labvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits <- data %>% filter(AssociationListA == "Labs") %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Lab Visits\n"), 
+           y = NULL, x = NULL, fill = NULL)+
+      theme_new_line()
+    
   })
   
-  output$trend_labvisitstable <- function() {
+  output$trend_visitstable <- renderPlot({
     
-  }
+    data <- dataArrived()
+    data <- arrived.data
+    
+    visits_tb <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+      spread(Appt.Year, total)
+    
+
+    total_val <- colSums(visits_tb[,-1])
+    cbind(total, total_val)
+    
+    visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
+      mutate(variance1 = )
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Lab Visits\n"), 
+           y = NULL, x = NULL, fill = NULL)+
+      theme_new_line()
+    
+  })
+  
+
 # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
   output$break_totalvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits_break <- data %>% filter(AssociationListA %in% c("Office","Treatment","Labs")) %>%
+                                            group_by(Appt.MonthYear, AssociationListA) %>% summarise(total = n())
+    
+    max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
+      geom_bar(position="stack",stat="identity", width=0.7)+
+      scale_fill_MountSinai('dark')+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      labs(title = paste0(site," ","All Visit Volume Composition\n"), 
+           y = "Patient Volume\n", x = NULL, fill = NULL)+
+      theme_new_line()+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      geom_text(aes(label=total), color="white", 
+                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                   size=5, fontface="bold.italic")
+    
   })
   
-  output$break_totalvisitstable <- function() {
-    
-  }
   
   output$break_examvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits_break <- data %>% filter(AssociationListA == "Office") %>%
+      group_by(Appt.MonthYear, AssociationListB) %>% summarise(total = n())
+    
+    max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
+      geom_bar(position="stack",stat="identity", width=0.7)+
+      scale_fill_MountSinai('dark', reverse = TRUE)+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      labs(title = paste0(site," ","Exam Visit Volume Composition\n"), 
+           y = "Patient Volume\n", x = NULL, fill = NULL)+
+      theme_new_line()+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      geom_text(aes(label=total), color="white", 
+                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                   size=5, fontface="bold.italic")
+    
   })
   
-  output$break_examvisitstable <- function() {
-    
-  }
   
   output$break_treatmentvisitsgraph <- renderPlot({
     
+    data <- dataArrived()
+    # data <- arrived.data
+    
+    total_visits_break <- data %>% filter(AssociationListA == "Treatment") %>%
+      group_by(Appt.MonthYear, AssociationListT) %>% summarise(total = n())
+    
+    max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
+    
+    if(length(unique(data$SITE)) == 1){
+      site <- unique(data$SITE)
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+      geom_bar(position="stack",stat="identity", width=0.7)+
+      scale_fill_MountSinai('dark', reverse = TRUE)+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      labs(title = paste0(site," ","Treatment Visit Volume Composition\n"), 
+           y = "Patient Volume\n", x = NULL, fill = NULL)+
+      theme_new_line()+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      geom_text(aes(label=total), color="white", 
+                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                   size=5, fontface="bold.italic")
+    
   })
   
-  output$break_treatmentvisitstable <- function() {
-    
-  }
-  
-  output$break_labvisitsgraph <- renderPlot({
-    
-  })
-  
-  output$break_labvisitstable <- function() {
-    
-  }
+
 # Volume Comparison Tab ------------------------------------------------------------------------------------------------------       
 
   
