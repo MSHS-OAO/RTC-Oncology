@@ -499,11 +499,11 @@ process_data <- function(access_data,slot_data){
   
   # Crosswalk Campus to Site by Department Name
   slot.data.raw$Campus_new <- site_ref$`Site`[match(slot.data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)]
-  slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- filter(slot.data.raw, Campus_new == "Oncology")
+  #slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
   
   # Data fields incldued for analysis
-  original.cols.slots <- c("Campus_new",
-                           "DEPT_SPECIALTY_NAME",
+  original.cols.slots <- c("DEPT_SPECIALTY_NAME",
                            "DEPARTMENT_NAME","PROVIDER_NAME",
                            "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                            "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
@@ -514,8 +514,7 @@ process_data <- function(access_data,slot_data){
   slot.data.subset <- slot.data.raw[original.cols.slots]
   
   # Rename data columns to match schduling data
-  new.cols.slots <- c("Campus",
-                      "Campus.Specialty",
+  new.cols.slots <- c("Campus.Specialty",
                       "Department","Provider",
                       "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                       "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
