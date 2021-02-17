@@ -292,13 +292,6 @@ ui <- dashboardPage(
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'", 
         column(2, 
-               fluidRow(
-                 column(2, offset = 1,
-                        actionButton("download1",
-                                     label = icon("download")),
-                        bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
-                                  "bottom", options = list(container = "body")))),
-               br(),
                box(
                  title = "Select Campus:",
                  width = 12,
@@ -414,7 +407,17 @@ ui <- dashboardPage(
                                dropupAuto = FALSE),
                              selected = unique(holid$holiday)
                  )
-               )
+               ),
+               fluidRow(
+                 column(2, offset = 4,
+                        actionButton("download1",
+                                     label = icon("download"),
+                                     style="color: #fff; background-color: #d80b8c; border-color: #d80b8c"),
+                        bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
+                                  "bottom", options = list(container = "body")
+                        )
+                  )
+                )
         )# Close column
         
       )# Close conditional Panel
