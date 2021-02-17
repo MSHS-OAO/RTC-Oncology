@@ -222,7 +222,7 @@ ui <- dashboardPage(
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       conditionalPanel(
         condition = "input.sbm == 'volumecomparison'", 
-        column(2, #offset=8, 
+        column(2,
                  box(
                    title = "Select Visit Type:",
                    width = 12,
