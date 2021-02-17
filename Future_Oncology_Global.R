@@ -714,4 +714,10 @@ if(out_of_date == 'TRUE'){ #check if out_of date is true
 }
 
 
+### (6) Data Subset -----------------------------------------------------------------------------------------------------
+max_date <- data.subset.new %>% filter(Appt.Status %in% c("Arrived"))
+max_date <- max(max_date$Appt.DateYear) ## Or Today's Date
+historical.data <- data.subset.new %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
+historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
+
 
