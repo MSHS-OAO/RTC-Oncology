@@ -761,45 +761,6 @@ timeOptions30m_filter <- c("07:00","07:30","08:00","08:30","09:00","09:30",
 monthOptions <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
 
 
-# # KPI Filters
-# KPIvolumeOptions <- c("Appointment Volume","Appointment Status")
-# KPIschedulingOptions <- c("Booked Rate","Fill Rate")
-# KPIaccessOptions <- c("New Patient Ratio","Appointment Lead Time","3rd Next Available")
-# KPIdayOfVisitOptions <- c("Cycle Time","Wait Time")
-# kpiOptions <- c("Patient Volume","Appointment Status",
-#                 "Booked Rate","Fill Rate",
-#                 "New Patient Ratio","New Patient Wait Time","3rd Next Available",
-#                 "Check-in to Room-in Time","Provider Time")
-
-# # Reference dataframes, vectors, etc.
-# daysOfWeek.Table <- data.hour.arrived %>% group_by(Appt.Day,Appt.DateYear) %>% dplyr::summarise(count = n()) ## Total Days in the Entire Data Set 
-# 
-# Time <- rep(timeOptionsHr, 7)
-# Day <- rep(daysOfWeek.options, each = 24)
-# byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
-# 
-# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
-# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
-# Time <- rep(timeOptionsHr, dateInData)
-# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (hour)
-# 
-# Time <- rep(timeOptions30m, 7)
-# Day <- rep(daysOfWeek.options, each = 48)
-# byDayTime30m.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (30-min)
-# 
-# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
-# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
-# Time <- rep(timeOptionsHr, dateInData)
-# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (30-min)
-# 
-# byTime.df <- as.data.frame(timeOptionsHr)
-# colnames(byTime.df) <- c("Time") ## Empty data frame for time (hour)
-# 
-# byTime30.df <- as.data.frame(timeOptions30m)
-# colnames(byTime30.df) <- c("Time") ## Empty data frame for time (hour)
-
-
-
 # (7) Data Reactive functions ---------------------------------------------------------------------------------
 
 ## Filtered Scheduling Data
