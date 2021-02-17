@@ -721,3 +721,15 @@ historical.data <- data.subset.new %>% filter(Appt.DateYear<= max_date) ## Filte
 historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
 
 
+## Other datasets
+all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
+arrived.data <- all.data %>% filter(Appt.Status %in% c("Arrived")) ## Arrived data: Arrived
+canceled.bumped.rescheduled.data <- all.data %>% filter(Appt.Status %in% c("Canceled","Bumped","Rescheduled")) ## Canceled data: canceled appointments only
+canceled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Canceled")) ## Canceled data: canceled appointments only
+bumped.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Bumped")) ## Bumped data: bumped appointments only
+rescheduled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Rescheduled")) ## Bumped data: bumped appointments only
+sameDay <- canceled.bumped.rescheduled.data %>% filter(Lead.Days == 0) # Same day canceled, rescheduled, bumped appts
+noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + No Show data: Arrived and No Show
+noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
+arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
+
