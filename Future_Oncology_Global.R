@@ -363,7 +363,11 @@ process_data <- function(access_data,slot_data){
   amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
   
-  data.raw <- amb_df_groupings_
+  amb_df_groupings_unique <-
+    amb_df_groupings_ %>% 
+    distinct(MRN, Appt.DTTM, Appt.Type, Provider, Appt.Status,  .keep_all = TRUE)
+  
+  data.raw <- amb_df_groupings_unique
   
   # Data fields incldued for analysis 
   original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID",
