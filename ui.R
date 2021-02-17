@@ -222,7 +222,7 @@ ui <- dashboardPage(
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       conditionalPanel(
         condition = "input.sbm == 'volumecomparison'", 
-        column(2, offset=8, 
+        column(2, #offset=8, 
                  box(
                    title = "Select Visit Type:",
                    width = 12,
@@ -273,29 +273,22 @@ ui <- dashboardPage(
                                  dropupAuto = FALSE),
                                selected = default_TreatmentType
                    )
-                 )
+                 ),
+                  box(
+                        title = "Compare by:",
+                        width = 12,
+                        height = "150px",
+                        solidHeader = FALSE,
+                        awesomeRadio(
+                          inputId = "comp_choices",
+                          label = NULL,
+                          choices = c("All", "Site", "Specialty", "Provider"),
+                          selected = "All",
+                          status = "info"
+                        )
+                      )
                )
       ), # Close Conditional Panel
-      
-      conditionalPanel(
-        condition = "input.sbm == 'volumecomparison'", 
-        column(2, offset=8, 
-               box(
-                 title = "Compare by:",
-                 width = 12,
-                 height = "150px",
-                 solidHeader = FALSE,
-                 awesomeRadio(
-                   inputId = "comp_choices",
-                   label = NULL, 
-                   choices = c("All", "Site", "Specialty", "Provider"),
-                   selected = "All",
-                   status = "info"
-                 )
-               )
-        )
-      ), # Close Conditional Panel
-      
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'", 
         column(2, 
