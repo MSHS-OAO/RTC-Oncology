@@ -316,15 +316,57 @@ process_data <- function(access_data,slot_data){
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
   data.raw$campus_new <- site_ref$`Site`[match(data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)] # Crosswalk Campus to Site by Department Name
-  data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
-  
+  #data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  data.raw <- filter(data.raw, campus_new == "Oncology")
   # Dummy columns until they are added to Clarity table: SEX, FPA
   data.raw$SEX <- "Male"
   data.raw$VITALS_TAKEN_TM <- ""
   data.raw$Provider_Leave_DTTM <- ""
   
+  
+###### Processing the Reference File
+  #read the mapping file that was provided by Marcy
+  mapping_file <- here("Data/EPIC Data - [Department ID] to Site - Oncology System Data Groupings 1.6.2020.xlsx")
+  
+  #from the mapping file import the department ID sheet
+  department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")
+  department_mapping <- department_mapping[1:(length(department_mapping)-2)]
+  
+  #returns string without leading or trailing white space
+  trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+  
+  ##remove the space at the end and at the beginning when applicable
+  department_mapping$`EPIC  Department` <- trim(department_mapping$`EPIC  Department`)
+  
+  #change column names for the department mapping
+  colnames(department_mapping) <- c("System", "DEPARTMENT_NAME", "DEPARTMENT_ID", "SITE", "ACTIVE", "Notes")
+  
+  #from the mapping file import the department PRC sheet
+  PRC_mapping <- read_excel(mapping_file, sheet = "Visit Type 'PRC Name' -Mappings")
+  PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
+  
+  ##remove the space at the end and at the beginning when applicable
+  PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+  
+  #####change all to first word capitalized
+  PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
+  PRC_mapping$`Association List : A` <- str_to_title(PRC_mapping$`Association List : A`)
+  
+  PRC_mapping$`Association List: B` <- str_to_title(PRC_mapping$`Association List: B`)
+  
+  PRC_mapping$`Association List: T` <- str_to_title(PRC_mapping$`Association List: T`)
+  
+  #change column names for the PRC mapping
+  colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "AssociationListT", "InPersonvsTele")
+  
+  #merge the ambulatory data with the grouping data
+  amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
+  amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
+  
+  data.raw <- amb_df_groupings_
+  
   # Data fields incldued for analysis 
-  original.cols <- c("campus_new","DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID",
+  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID",
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
                      "APPT_MADE_DTTM","APPT_DTTM","PRC_NAME","APPT_LENGTH","DERIVED_STATUS_DESC",
                      "APPT_CANC_DTTM", "CANCEL_REASON_NAME",
@@ -333,13 +375,14 @@ process_data <- function(access_data,slot_data){
                      "PHYS_ENTER_DTTM","Provider_Leave_DTTM",
                      "VISIT_END_DTTM","CHECKOUT_DTTM",
                      "TIME_IN_ROOM_MINUTES","CYCLE_TIME_MINUTES","VIS_NEW_TO_DEP_YN","LOS_NAME", "DEP_RPT_GRP_THIRTYONE", 
-                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C")
+                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C",
+                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
   
   # Subset raw data 
   data.subset <- data.raw[original.cols]
   
   # Rename data fields (columns) 
-  new.cols <- c("Campus","Campus.Specialty","Department","Provider",
+  new.cols <- c("Campus.Specialty","Department","Provider", "Ref.Provider",
                 "MRN","Patient.Name","Zip.Code","Sex","Birth.Date","Coverage",
                 "Appt.Made.DTTM","Appt.DTTM","Appt.Type","Appt.Dur","Appt.Status",
                 "Appt.Cancel.DTTM", "Cancel.Reason",
@@ -348,7 +391,8 @@ process_data <- function(access_data,slot_data){
                 "Providerin_DTTM","Providerout_DTTM",
                 "Visitend.DTTM","Checkout.DTTM",
                 "Time.in.room","Cycle.time","New.PT","Class.PT","Cadence",
-                "Appt.Source","Access.Center","Visit.Method","Resource")
+                "Appt.Source","Access.Center","Visit.Method","Resource",
+                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
   
   colnames(data.subset) <- new.cols
   
@@ -378,6 +422,9 @@ process_data <- function(access_data,slot_data){
   
   # Remove Provider ID from Provider Name column
   data.subset$Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Provider))
+  
+  # Remove Provider ID from Referring Provider Name column
+  data.subset$Ref.Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Ref.Provider))
   
   # New Patient Classification based on level of care ("LOS_NAME")
   data.subset$New.PT2 <- ifelse(is.na(data.subset$Class.PT), "",grepl("NEW", data.subset$Class.PT, fixed = TRUE))
@@ -452,28 +499,30 @@ process_data <- function(access_data,slot_data){
   
   # Crosswalk Campus to Site by Department Name
   slot.data.raw$Campus_new <- site_ref$`Site`[match(slot.data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)]
-  slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- filter(slot.data.raw, Campus_new == "Oncology")
+  #slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- merge(slot.data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   
   # Data fields incldued for analysis
-  original.cols.slots <- c("Campus_new",
-                           "DEPT_SPECIALTY_NAME",
+  original.cols.slots <- c("DEPT_SPECIALTY_NAME",
                            "DEPARTMENT_NAME","PROVIDER_NAME",
                            "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                            "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
                            "AVAIL_SLOTS","BOOKED_SLOTS","ARRIVED_SLOTS","CANCELED_SLOTS","NOSHOW_SLOTS","LEFTWOBEINGSEEN_SLOTS",
-                           "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","VISIT_PROV_STAFF_RESOURCE_C")
+                           "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","VISIT_PROV_STAFF_RESOURCE_C",
+                           "System", "DEPARTMENT_ID", "SITE", "ACTIVE","Notes")
   
   # Subset raw slot usage data
   slot.data.subset <- slot.data.raw[original.cols.slots]
   
   # Rename data columns to match schduling data
-  new.cols.slots <- c("Campus",
-                      "Campus.Specialty",
+  new.cols.slots <- c("Campus.Specialty",
                       "Department","Provider",
                       "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                       "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
                       "AVAIL_SLOTS","BOOKED_SLOTS","ARRIVED_SLOTS","CANCELED_SLOTS","NOSHOW_SLOTS","LEFTWOBEINGSEEN_SLOTS",
-                      "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","Resource")
+                      "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","Resource",
+                      "System", "DEPARTMENT_ID", "SITE", "ACTIVE","Notes")
   
   colnames(slot.data.subset) <- new.cols.slots
   
