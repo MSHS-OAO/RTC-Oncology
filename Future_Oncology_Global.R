@@ -735,3 +735,129 @@ noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + N
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
+### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
+
+# Mater Filters 
+daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun") ## Days of Week Filter
+
+timeOptionsHr <- c("00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00",
+                   "10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00",
+                   "20:00","21:00","22:00","23:00") ## Time Range by Hour Filter
+
+timeOptions30m <- c("00:00","00:30","01:00","01:30","02:00","02:30","03:00","03:30","04:00","04:30",
+                    "05:00","05:30","06:00","06:30","07:00","07:30","08:00","08:30","09:00","09:30",
+                    "10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
+                    "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30",
+                    "20:00","20:30","21:00","21:30","22:00","22:30","23:00","23:30") ## Time Range by 30min Filter
+
+timeOptionsHr_filter <- c("07:00","08:00","09:00",
+                          "10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00",
+                          "20:00") ## Time Range by Hour Filter
+
+timeOptions30m_filter <- c("07:00","07:30","08:00","08:30","09:00","09:30",
+                           "10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
+                           "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00") ## Time Range by 30min Filter
+
+monthOptions <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+
+
+# # KPI Filters
+# KPIvolumeOptions <- c("Appointment Volume","Appointment Status")
+# KPIschedulingOptions <- c("Booked Rate","Fill Rate")
+# KPIaccessOptions <- c("New Patient Ratio","Appointment Lead Time","3rd Next Available")
+# KPIdayOfVisitOptions <- c("Cycle Time","Wait Time")
+# kpiOptions <- c("Patient Volume","Appointment Status",
+#                 "Booked Rate","Fill Rate",
+#                 "New Patient Ratio","New Patient Wait Time","3rd Next Available",
+#                 "Check-in to Room-in Time","Provider Time")
+
+# # Reference dataframes, vectors, etc.
+# daysOfWeek.Table <- data.hour.arrived %>% group_by(Appt.Day,Appt.DateYear) %>% dplyr::summarise(count = n()) ## Total Days in the Entire Data Set 
+# 
+# Time <- rep(timeOptionsHr, 7)
+# Day <- rep(daysOfWeek.options, each = 24)
+# byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
+# 
+# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
+# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
+# Time <- rep(timeOptionsHr, dateInData)
+# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (hour)
+# 
+# Time <- rep(timeOptions30m, 7)
+# Day <- rep(daysOfWeek.options, each = 48)
+# byDayTime30m.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (30-min)
+# 
+# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
+# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
+# Time <- rep(timeOptionsHr, dateInData)
+# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (30-min)
+# 
+# byTime.df <- as.data.frame(timeOptionsHr)
+# colnames(byTime.df) <- c("Time") ## Empty data frame for time (hour)
+# 
+# byTime30.df <- as.data.frame(timeOptions30m)
+# colnames(byTime30.df) <- c("Time") ## Empty data frame for time (hour)
+
+
+
+# (7) Data Reactive functions ---------------------------------------------------------------------------------
+
+## Filtered Scheduling Data
+
+groupByFilters <- function(dt, campus, specialty, department, provider, refProvider, mindateRange, maxdateRange, daysofweek, holidays){
+  result <- dt %>% filter(SITE %in% campus, Campus.Specialty %in% specialty, Department %in% department, Provider %in% provider, Ref.Provider %in% refProvider,
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
+  return(result)
+}
+
+groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
+  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
+  return(result)
+}
+
+
+### Function for Value Boxes ------------------------------------------------------------------
+valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
+                          icon = NULL, color = "aqua", width = 4, href = NULL){
+  
+  shinydashboard:::validateColor(color)
+  
+  if (!is.null(icon))
+    shinydashboard:::tagAssert(icon, type = "i")
+  
+  info_icon <- tags$small(
+    tags$i(
+      class = "fa fa-info-circle fa-lg",
+      title = info,
+      `data-toggle` = "tooltip",
+      style = "color: rgba(255, 255, 255, 0.75);"
+    ),
+    # bs3 pull-right 
+    # bs4 float-right
+    class = "pull-right float-right"
+  )
+  
+  boxContent <- div(
+    class = paste0("small-box bg-", color),
+    div(
+      class = "inner",
+      h4(title),
+      if (!is.null(sparkobj)) info_icon,
+      h3(value),
+      if (!is.null(sparkobj)) sparkobj,
+      em(subtitle)
+    ),
+    # bs3 icon-large
+    # bs4 icon
+    if (!is.null(icon)) div(class = "icon-large icon", icon, style = "z-index; 0")
+  )
+  
+  if (!is.null(href)) 
+    boxContent <- a(href = href, boxContent)
+  
+  div(
+    class = if (!is.null(width)) paste0("col-sm-", width), 
+    boxContent
+  )
+}
+
