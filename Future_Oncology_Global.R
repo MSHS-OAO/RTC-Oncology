@@ -347,6 +347,7 @@ process_data <- function(access_data,slot_data){
   
   ##remove the space at the end and at the beginning when applicable
   PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+  PRC_mapping$`Sch VisitTypeName/ PRC Name` <- toupper(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
   
   #####change all to first word capitalized
   PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
@@ -454,6 +455,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new <- data.subset
   
   # Create additional columns for analysis 
+  data.subset.new$Appt.Type <- toupper(data.subset.new$Appt.Type)
   data.subset.new$Appt.DateYear <- as.Date(data.subset.new$Appt.DTTM, format="%Y-%m-%d") ## Create date-year column
   data.subset.new$Appt.MonthYear <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%Y-%m") ## Create month - year column
   data.subset.new$Appt.Date <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%m-%d") ## Create date column
@@ -533,6 +535,7 @@ process_data <- function(access_data,slot_data){
   colnames(slot.data.subset) <- new.cols.slots
   
   # Create additional columns for Slot Data
+  
   slot.data.subset$BOOKED_MINUTES <- slot.data.subset$BOOKED_MINUTES + slot.data.subset$CANCELED_MINUTES # Booked + Canceled Minutes 
   slot.data.subset$Appt.DTTM <- as.POSIXct(slot.data.subset$SLOT_BEGIN_TIME,format="%Y-%m-%d %H:%M:%S",tz=Sys.timezone(),origin = "1970-01-01")
   slot.data.subset$Appt.DateYear <- as.Date(slot.data.subset$SLOT_BEGIN_TIME, format="%Y-%m-%d") ## Create day of week colunm
