@@ -387,6 +387,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new <- data.subset
   
   # Create additional columns for analysis 
+  data.subset.new$Appt.Type <- toupper(data.subset.new$Appt.Type)
   data.subset.new$Appt.DateYear <- as.Date(data.subset.new$Appt.DTTM, format="%Y-%m-%d") ## Create date-year column
   data.subset.new$Appt.MonthYear <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%Y-%m") ## Create month - year column
   data.subset.new$Appt.Date <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%m-%d") ## Create date column
@@ -631,6 +632,9 @@ if(out_of_date == 'TRUE'){
 ### (3) Import Site/Department Mapping File --------------------------------------------------------------------------------------
 #read the mapping file that was provided by Marcy
 # mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
+data.subset.new$Appt.Type <- toupper(data.subset.new$Appt.Type)
+
+
 mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 
 #from the mapping file import the department ID sheet
@@ -652,6 +656,8 @@ PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
 
 ##remove the space at the end and at the beginning when applicable
 PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+PRC_mapping$`Sch VisitTypeName/ PRC Name` <- toupper(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+
 
 #####change all to first word capitalized
 PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
@@ -699,6 +705,7 @@ max_date <- amb_df_groupings_unique %>% filter(Appt.Status %in% c("Arrived"))
 max_date <- max(max_date$Appt.DateYear) ## Or Today's Date
 historical.data <- amb_df_groupings_unique %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
 historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
+
 
 # ## KPI datasets
 # kpi.all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 3*365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled

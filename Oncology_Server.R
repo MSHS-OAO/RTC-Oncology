@@ -122,8 +122,22 @@ server <- function(input, output, session) {
   output$trend_totalvisitsgraph <- renderPlot({
     
     data <- dataArrived()
-    # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
+    data <- arrived.data
+    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    # nrow(data)
+    # # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
+    # 
+    # nas <- data %>% filter(is.na(AssociationListA))
+    # nrow(nas)
+    # exc <- data %>% filter(AssociationListA == "Exclude")
+    # nrow(exc)
+    # exc[1,]
+    # 
+    # test <- data %>% filter(Appt.Type == "CHEMO FOLLOW UP")
+    # unique(test[,c("SITE","Appt.Type","AssociationListA")])
+    # unique(exc)
 
+    
     total_visits <- data %>%
       filter(AssociationListA %in% c("Office","Treatment","Labs")) %>%
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
@@ -320,7 +334,9 @@ server <- function(input, output, session) {
   output$break_treatmentvisitsgraph <- renderPlot({
     
     data <- dataArrived()
-    # data <- arrived.data
+    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    # nrow(data)
+    
     
     total_visits_break <- data %>% filter(AssociationListA == "Treatment") %>%
       group_by(Appt.MonthYear, AssociationListT) %>% summarise(total = n())
@@ -391,65 +407,73 @@ server <- function(input, output, session) {
     
     if(input$comp_choices == "All"){
       # Comparison by site
-      visit_comp_all <- data %>%
+      visit_comp <- data %>%
         group_by(Appt.MonthYear) %>% summarise(total = n())
       
-      graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total))+
+      graph <- ggplot(visit_comp, aes(x=Appt.MonthYear, y=total))+
         geom_bar(stat="identity", width=0.7, fill="#212070")+
         scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
         geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)
       
+      n_legend_key <- 5
+      
+      
     } else if(input$comp_choices == "Site"){
       # Comparison by site
-      visit_comp_site <- data %>%
+      visit_comp <- data %>%
         group_by(Appt.MonthYear, SITE) %>% summarise(total = n())
       
-      max <- visit_comp_site %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+      max <- visit_comp %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
       
-      graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
+      graph <- ggplot(visit_comp, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
         geom_bar(position="stack", stat="identity", width=0.7)+
         scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      n_legend_key <- ceiling(length(unique(visit_comp[[2]]))/5)
+      
       
     } else if(input$comp_choices == "Specialty"){
       # Comparison by specialty
-      visit_comp_specialty <- data %>%
+      visit_comp <- data %>%
         group_by(Appt.MonthYear, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
         mutate(specialty = paste0(SITE," - ",Campus.Specialty))
       
-      max <- visit_comp_specialty %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+      max <- visit_comp %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
       
-      graph <- ggplot(visit_comp_specialty, aes(x=Appt.MonthYear, y=total, group=specialty, fill=specialty))+
+      graph <- ggplot(visit_comp, aes(x=Appt.MonthYear, y=total, group=specialty, fill=specialty))+
         geom_bar(position="stack", stat="identity", width=0.7)+
         scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      n_legend_key <- ceiling(length(unique(visit_comp[[2]]))/5)
       
     } else{
       # Comparison by provider
-      visit_comp_prov <- data %>%
+      visit_comp <- data %>%
         group_by(Appt.MonthYear, Provider) %>% summarise(total = n())
       
-      max <- visit_comp_prov %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+      max <- visit_comp %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
       
-      graph <- ggplot(visit_comp_prov, aes(x=Appt.MonthYear, y=total, group=Provider, fill=Provider))+
+      graph <- ggplot(visit_comp, aes(x=Appt.MonthYear, y=total, group=Provider, fill=Provider))+
         geom_bar(position="stack", stat="identity", width=0.7)+
         scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      
+      n_legend_key <- ceiling(length(unique(visit_comp[[2]]))/5)
       
     }
     
     graph + 
       scale_fill_MountSinai('dark')+
-      labs(title = paste0("Monthly ",visitType, " Volume Breakdown by Site\n"), 
+      labs(title = paste0("Monthly ",visitType, " Volume Breakdown by ", input$comp_choices,"\n"), 
            caption = paste0("\nIncludes ",apptType),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(axis.text.x = element_text(angle = 40, hjust=1))
     
-  })
+  }, height = function(x) input$height)
   
   
   output$volumeCompTrend_grh <- renderPlot({
@@ -509,13 +533,13 @@ server <- function(input, output, session) {
     
     graph + 
       scale_color_MountSinai('dark')+
-      labs(title = paste0("Monthly ",visitType, " Volume Trend by Site\n"), 
+      labs(title = paste0("Monthly ",visitType, " Volume Trend by ",input$comp_choices,"\n"), 
            caption = paste0("\nIncludes ",apptType),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(axis.text.x = element_text(angle = 40, hjust=1))
     
-  })
+  }, height = function(x) input$height)
 
   
 } # Close Server
