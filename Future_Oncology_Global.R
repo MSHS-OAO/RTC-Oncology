@@ -363,6 +363,7 @@ process_data <- function(access_data,slot_data){
   amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
   
+  
   data.raw <- amb_df_groupings_
   
   # Data fields incldued for analysis 
@@ -395,6 +396,11 @@ process_data <- function(access_data,slot_data){
                 "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
   
   colnames(data.subset) <- new.cols
+  
+  #delete duplicates 
+  data.subset <-
+    data.subset %>% 
+    distinct(MRN, Appt.DTTM, Appt.Type, Provider, Appt.Status,  .keep_all = TRUE)
   
   # Format Date and Time Columns
   dttm.cols <- c("Birth.Date","Appt.Made.DTTM","Appt.DTTM","Appt.Cancel.DTTM",
@@ -710,4 +716,109 @@ if(out_of_date == 'TRUE'){ #check if out_of date is true
 }
 
 
+### (6) Data Subset -----------------------------------------------------------------------------------------------------
+max_date <- data.subset.new %>% filter(Appt.Status %in% c("Arrived"))
+max_date <- max(max_date$Appt.DateYear) ## Or Today's Date
+historical.data <- data.subset.new %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
+historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
+
+
+## Other datasets
+all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
+arrived.data <- all.data %>% filter(Appt.Status %in% c("Arrived")) ## Arrived data: Arrived
+canceled.bumped.rescheduled.data <- all.data %>% filter(Appt.Status %in% c("Canceled","Bumped","Rescheduled")) ## Canceled data: canceled appointments only
+canceled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Canceled")) ## Canceled data: canceled appointments only
+bumped.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Bumped")) ## Bumped data: bumped appointments only
+rescheduled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Rescheduled")) ## Bumped data: bumped appointments only
+sameDay <- canceled.bumped.rescheduled.data %>% filter(Lead.Days == 0) # Same day canceled, rescheduled, bumped appts
+noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + No Show data: Arrived and No Show
+noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
+arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
+
+### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
+
+# Mater Filters 
+daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun") ## Days of Week Filter
+
+timeOptionsHr <- c("00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00",
+                   "10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00",
+                   "20:00","21:00","22:00","23:00") ## Time Range by Hour Filter
+
+timeOptions30m <- c("00:00","00:30","01:00","01:30","02:00","02:30","03:00","03:30","04:00","04:30",
+                    "05:00","05:30","06:00","06:30","07:00","07:30","08:00","08:30","09:00","09:30",
+                    "10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
+                    "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30",
+                    "20:00","20:30","21:00","21:30","22:00","22:30","23:00","23:30") ## Time Range by 30min Filter
+
+timeOptionsHr_filter <- c("07:00","08:00","09:00",
+                          "10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00",
+                          "20:00") ## Time Range by Hour Filter
+
+timeOptions30m_filter <- c("07:00","07:30","08:00","08:30","09:00","09:30",
+                           "10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
+                           "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00") ## Time Range by 30min Filter
+
+monthOptions <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+
+
+# (7) Data Reactive functions ---------------------------------------------------------------------------------
+
+## Filtered Scheduling Data
+
+groupByFilters <- function(dt, campus, specialty, department, provider, refProvider, mindateRange, maxdateRange, daysofweek, holidays){
+  result <- dt %>% filter(SITE %in% campus, Campus.Specialty %in% specialty, Department %in% department, Provider %in% provider, Ref.Provider %in% refProvider,
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
+  return(result)
+}
+
+groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
+  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
+  return(result)
+}
+
+
+### Function for Value Boxes ------------------------------------------------------------------
+valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
+                          icon = NULL, color = "aqua", width = 4, href = NULL){
+  
+  shinydashboard:::validateColor(color)
+  
+  if (!is.null(icon))
+    shinydashboard:::tagAssert(icon, type = "i")
+  
+  info_icon <- tags$small(
+    tags$i(
+      class = "fa fa-info-circle fa-lg",
+      title = info,
+      `data-toggle` = "tooltip",
+      style = "color: rgba(255, 255, 255, 0.75);"
+    ),
+    # bs3 pull-right 
+    # bs4 float-right
+    class = "pull-right float-right"
+  )
+  
+  boxContent <- div(
+    class = paste0("small-box bg-", color),
+    div(
+      class = "inner",
+      h4(title),
+      if (!is.null(sparkobj)) info_icon,
+      h3(value),
+      if (!is.null(sparkobj)) sparkobj,
+      em(subtitle)
+    ),
+    # bs3 icon-large
+    # bs4 icon
+    if (!is.null(icon)) div(class = "icon-large icon", icon, style = "z-index; 0")
+  )
+  
+  if (!is.null(href)) 
+    boxContent <- a(href = href, boxContent)
+  
+  div(
+    class = if (!is.null(width)) paste0("col-sm-", width), 
+    boxContent
+  )
+}
 
