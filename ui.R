@@ -459,19 +459,37 @@ ui <- dashboardPage(
           # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
         ), # Close Drop Down Button
         br(),
-        dropdown(
+        
+        tags$head(
+          tags$style(HTML("
+                  #download1 {
+                    background: #fff;
+                    color: #1d89ff;
+                    padding: 8px 15px;
+                    font-size: 24px;
+                    font-family: inherit;
+                    height: 54px;
+                    width: 54px;
+                    line-height: 44px;
+                    outline: none;
+                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.18), 0 1px 5px 0 rgba(0,0,0,.15);
+                    border-radius: 50%;
+                    border-color: transparent;
+
+                    }
+
+                    "))
+        ),
+        actionButton("download1",
+                     label = icon("download")
                  
-                 style = "material-circle", size = "lg", right = TRUE, status = "default",
-                 icon = icon("download"), width = "300px",
-                 
-                 tooltip = tooltipOptions(title = "Download (PNG) the current tab.")
-                 
-                 # bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
-                 #           "bottom", options = list(container = "body")
-                 # )
+        ),
+                 bsTooltip("download1", "Download (PNG) the current tab.",
+                           "right", options = list(container = "body")
+                 )
                  
                  # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
-        ) # Close Drop Down Button
+        #) # Close Drop Down Button
       ) # Close Conditional Panel
       
       
@@ -497,4 +515,4 @@ ui <- dashboardPage(
   ) # Close Dashboard Body
 )# Close Dashboard Page
 
-shinyApp(ui, server)
+#shinyApp(ui, server)
