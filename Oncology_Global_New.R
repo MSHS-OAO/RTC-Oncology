@@ -632,8 +632,6 @@ if(out_of_date == 'TRUE'){
 ### (3) Import Site/Department Mapping File --------------------------------------------------------------------------------------
 #read the mapping file that was provided by Marcy
 # mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
-data.subset.new$Appt.Type <- toupper(data.subset.new$Appt.Type)
-
 
 mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 

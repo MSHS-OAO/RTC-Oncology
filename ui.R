@@ -132,25 +132,25 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_totalvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_examvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_treatmentvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Lab Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_labvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_labvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -176,19 +176,19 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_totalvisitsgraph", height="550px") %>% 
+                         plotOutput("break_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_examvisitsgraph", height="550px") %>% 
+                         plotOutput("break_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_treatmentvisitsgraph", height="550px") %>% 
+                         plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -210,7 +210,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         plotOutput("volumeCompTrend_grh", height="700px") %>%
+                         plotOutput("volumeCompTrend_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        )
                        
@@ -223,9 +223,8 @@ ui <- dashboardPage(
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
-        
         # Customize dropDownButton color scheme
-        tags$style(".btn-pink {background-color: #d80b8c; color: #ffffff;}"),
+        # tags$style("dropDown1 {background-color: #d80b8c; color: #ffffff;}"),
         
         dropdown(
           box(
@@ -344,17 +343,18 @@ ui <- dashboardPage(
                         selected = unique(holid$holiday)
             )
           ),
-          numericInput("height", "height", 300),
-          circle = TRUE, right = TRUE, color = "fuchsia",
-          icon = icon("gear"), width = "300px",
           
-          tooltip = tooltipOptions(title = "Click to see inputs !")
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("filter"), width = "300px",
+          tooltip = tooltipOptions(title = "Set filters for graphs/tables.")
+          
         ) # Close Drop Down Button
       ),# Close conditional Panel
       
       conditionalPanel(
         condition = "input.sbm == 'volumecomparison'", 
         br(), 
+        # tags$style("dropDown2 {background-color: #d80b8c; color: #ffffff;}"),
         dropdown(
           box(
             title = "Select Visit Type:",
@@ -420,22 +420,51 @@ ui <- dashboardPage(
               status = "info"
             )
           ),
-          style = "material-circle", size = "lg", right = TRUE, status = "pink",
-          icon = icon("gear"), width = "300px",
           
-          tooltip = tooltipOptions(title = "Click to see inputs !")
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("filter"), width = "300px",
+          tooltip = tooltipOptions(title = "Set additional filters for graphs/tables.")
+          
         ) # Close Drop Down Button
       ), # Close Conditional Panel
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
         br(),
-        dropdown("download1",
+        dropdown(
+          box(
+            title = "Change height:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            sliderInput(
+              inputId = "plotHeight",
+              label = NULL, 
+              value = 650, min = 450, max = 2000,
+              ticks = FALSE
+            )
+          ),
+          
+          # numericInput("height", "height", 300),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("gear"), width = "300px",
+          
+          tooltip = tooltipOptions(title = "Format graphs.")
+          
+          # bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
+          #           "bottom", options = list(container = "body")
+          # )
+          
+          # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
+        ), # Close Drop Down Button
+        br(),
+        dropdown(
                  
-                 circle = TRUE, right = TRUE,   color = "fuchsia",
+                 style = "material-circle", size = "lg", right = TRUE, status = "default",
                  icon = icon("download"), width = "300px",
                  
-                 tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
+                 tooltip = tooltipOptions(title = "Download (PNG) the current tab.")
                  
                  # bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
                  #           "bottom", options = list(container = "body")
