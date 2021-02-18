@@ -109,6 +109,8 @@ suppressMessages({
   library(shinyscreenshot)
   library(fasttime)
   library(shinycssloaders)
+  library(patchwork)
+  library(ggtext)
 })
 
 # ### (0) Maximize R Memory Size 
@@ -260,19 +262,37 @@ theme_new_line <- function(base_size = 12,
           plot.margin = margin(30,30,30,30))
 }
 
-
-
+#added a theme for the tables
+table_theme <- function(){
+    theme(
+      panel.grid.minor = element_line(size = 0.3, colour = "black"),
+      panel.grid.major = element_blank(),
+      axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
+      axis.text.x = element_text(size = 20, angle=0, colour = "black"),
+      axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
+      legend.position = "none",
+      plot.title = element_blank(),
+      panel.border = element_rect(colour = "black", fill = NA, size=1),
+      axis.line.x = element_line(colour = "black", size=1))
+}
 
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
 #singleday_path <<- here("Data/Access/SingleDay")
 #monthly_path <<- here("Data/Access/Monthly")
-monthly_access <<- here("Data/Access/Monthly")
-monthly_slot <<- here("Data/Slot/Monthly")
-singleday_access <<- here("Data/Access/SingleDay")
-singleday_slot <<- here("Data/Slot/SingleDay")
+#monthly_access <<- here("Data/Access/Monthly")
+#monthly_slot <<- here("Data/Slot/Monthly")
+#singleday_access <<- here("Data/Access/SingleDay")
+#singleday_slot <<- here("Data/Slot/SingleDay")
 
+ifelse (list.files("J://") == "Presidents", user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects", 
+        user_directory <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects")
+
+monthly_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/Monthly")
+monthly_slot <-paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/Monthly")
+singleday_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/SingleDay")
+singleday_slot <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/SingleDay")
 
 # Set Working Directory (PILOT)
 #wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
@@ -280,9 +300,9 @@ singleday_slot <<- here("Data/Slot/SingleDay")
 # wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
 
 
-wdpath <- here::here()
+#wdpath <- here::here()
 
-setwd(wdpath)
+#setwd(wdpath)
 
 
 #master.data.new_new <- data_all
@@ -295,8 +315,8 @@ process_data <- function(access_data,slot_data){
   slot.data.raw <- slot_data
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
-  site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
-  
+  #site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
+  site_ref <- read_excel(paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Ambulatory Department Mapping (Master).xlsx"),sheet = "Mapping")
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
@@ -411,7 +431,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new$Resource <- ifelse(data.subset.new$Resource == 1, "Provider", "Resource")
   
   ## Identify US Holidays in Data 
-  hld <- holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
+  hld <- tis::holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
   holid <- as.Date(as.character(hld), format = "%Y%m%d")
   names(holid) <- names(hld)
   holid <- as.data.frame(holid)
@@ -487,7 +507,7 @@ process_data <- function(access_data,slot_data){
 
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
-                            pattern = "*.csv", full.names = F))) 
+                            pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv" , full.names = F))) 
 }
 
 singleday_path_part <- function(singleday){
@@ -498,7 +518,7 @@ singleday_path_part <- function(singleday){
 
 readin_data_all <- function(){
   data_all <<- list.files(path = monthly_path,     # Identify all csv files in folder
-                          pattern = "*.csv", full.names = TRUE) %>%   
+                          pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%   
     lapply(read_csv) %>%                                            # Store all files in list
     bind_rows()
   return(data_all)
@@ -574,13 +594,17 @@ check_singleday(singleday_slot,monthly_slot)
 # Load Data Files
 ## Scheduling Data
 if (!(exists("access.data.raw"))){ 
-  access.data.raw <<- list.files(path = "Data/Access/Monthly",
-                                 pattern = "*.csv", full.names = TRUE) %>%
+  #access.data.raw <<- list.files(path = "Data/Access/Monthly",
+  #                               pattern = "*.csv", full.names = TRUE) %>%
+  access.data.raw <- list.files(path = monthly_access,
+                                 pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
   
-  slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
-                               pattern = "*.csv", full.names = TRUE) %>%
+  #slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
+  #                             pattern = "*.csv", full.names = TRUE) %>%
+  slot.data.raw <- list.files(path = monthly_slot,
+                               pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
   
@@ -631,7 +655,9 @@ if(out_of_date == 'TRUE'){
 ### (3) Import Site/Department Mapping File --------------------------------------------------------------------------------------
 #read the mapping file that was provided by Marcy
 # mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
-mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
+#mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
+
+mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
 
 #from the mapping file import the department ID sheet
 department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")

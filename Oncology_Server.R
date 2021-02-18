@@ -269,18 +269,31 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
+    g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
       geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
+      scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","All Visit Volume Composition\n"), 
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
+      labs(title = paste0(site," ","All Visit Volume Composition\n"),x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
+    
+    g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListA")+
+      theme_minimal() +
+      table_theme()
+
+    library(patchwork)
+    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 2))
+    
     
   })
   
@@ -301,7 +314,7 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
+    g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
@@ -313,6 +326,19 @@ server <- function(input, output, session) {
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
+    
+    g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListB")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 2))
     
   })
   
@@ -333,7 +359,7 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+    g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
@@ -345,6 +371,19 @@ server <- function(input, output, session) {
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
+    
+    g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListT")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 2))
     
   })
   
