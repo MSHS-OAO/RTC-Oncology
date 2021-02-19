@@ -123,10 +123,10 @@ server <- function(input, output, session) {
     
     data <- dataArrived()
     # data <- arrived.data
-    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2021-02")
     # nrow(data)
-    # # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
-    # 
+    # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
+
     # nas <- data %>% filter(is.na(AssociationListA))
     # nrow(nas)
     # exc <- data %>% filter(AssociationListA == "Exclude")

@@ -17,7 +17,7 @@
 # # require(htmltools)
 # # library(htmltools)
 # # update.packages("htmltools")
-# 
+#  
 # # Packages from the process mapping codes [NEED TO BE CLEANED UP]
 # install.packages('shinydashboard')
 # install.packages('dplyr')
@@ -161,7 +161,9 @@ MountSinai_palettes <- list(
                             "med purple","med pink","med blue","med grey", 
                             "light purple","light pink","light blue","light grey"),
   
-  `main`  = MountSinai_cols("dark purple","dark grey","dark pink","med blue","light pink","light blue","light grey"),
+  `dark`  =  MountSinai_cols("dark purple","dark grey","dark pink","dark blue"),
+  
+  `main`  = MountSinai_cols("dark purple","dark grey","dark pink","dark blue","med purple","med pink","med blue","med grey"),
   
   `purple`  = MountSinai_cols("dark purple","med purple","light purple"),
   
@@ -236,39 +238,26 @@ theme_new_line <- function(base_size = 12,
                            base_family = "Calibri",
                            base_line_size = base_size / 170,
                            base_rect_size = base_size / 170) {
-  theme_minimal(
+  theme_bw(
     base_size = base_size,
     base_family = base_family,
     base_line_size = base_line_size
   ) %+replace%
-    theme(
-      plot.title = element_text(
-        hjust = 0.5,
-        face = "bold",
-        size = 20,
-        margin = margin(0, 0, 30, 0)
-      ),
-      legend.position = "top",
-      legend.text = element_text(size = "12"),
-      legend.direction = "horizontal",
-      legend.key.size = unit(1.0, "cm"),
-      legend.title = element_blank(),
-      axis.title = element_text(size = "14"),
-      axis.text = element_text(size = "14"),
-      axis.title.x = element_blank(),
-      axis.title.y = element_text(margin = margin(r = 5)),
-      axis.text.x = element_text(
-        angle = 90,
-        hjust = 0.5,
-        margin = margin(t = 10)
-      ),
-      axis.text.y = element_text(margin = margin(l = 5, r = 5)),
-      panel.grid.minor = element_blank(),
-      panel.border = element_blank(),
-      panel.background = element_blank(),
-      axis.line = element_line(size = 0.3, colour = "black"),
-      plot.margin = margin(30, 30, 30, 30)
-    )
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 24),
+          plot.subtitle = element_text(hjust=0.5, size = 16, face = "italic"),
+          plot.caption = element_text(hjust = 0, size = 12, face = "italic"),
+          legend.position = "top",
+          legend.text = element_text(size="18"),
+          legend.direction = "horizontal",
+          legend.key.size = unit(1.0,"cm"),
+          legend.title = element_blank(),
+          axis.title = element_text(size="18"),
+          axis.text = element_text(size="18"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(size = 0.3, colour = "black"),
+          plot.margin = margin(30,30,30,30))
 }
 
 
