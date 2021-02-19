@@ -17,7 +17,7 @@
 # # require(htmltools)
 # # library(htmltools)
 # # update.packages("htmltools")
-# 
+#  
 # # Packages from the process mapping codes [NEED TO BE CLEANED UP]
 # install.packages('shinydashboard')
 # install.packages('dplyr')
@@ -46,6 +46,9 @@
 # install.packages("sjmisc")
 # install.packages("shinyBS")
 # install.packages("shinyscreenshot")
+# install.packages("patchwork")
+# install.packages("ggtext")
+# install.packages("janitor")
 
 
 suppressMessages({
@@ -109,6 +112,9 @@ suppressMessages({
   library(shinyscreenshot)
   library(fasttime)
   library(shinycssloaders)
+  library(patchwork)
+  library(ggtext)
+  library(janitor)
 })
 
 # ### (0) Maximize R Memory Size 
@@ -161,7 +167,9 @@ MountSinai_palettes <- list(
                             "med purple","med pink","med blue","med grey", 
                             "light purple","light pink","light blue","light grey"),
   
-  `main`  = MountSinai_cols("dark purple","dark grey","dark pink","med blue","light pink","light blue","light grey"),
+  `dark`  =  MountSinai_cols("dark purple","dark grey","dark pink","dark blue"),
+  
+  `main`  = MountSinai_cols("dark purple","dark grey","dark pink","dark blue","med purple","med pink","med blue","med grey"),
   
   `purple`  = MountSinai_cols("dark purple","med purple","light purple"),
   
@@ -236,44 +244,42 @@ theme_new_line <- function(base_size = 12,
                            base_family = "Calibri",
                            base_line_size = base_size / 170,
                            base_rect_size = base_size / 170) {
-  theme_minimal(
+  theme_bw(
     base_size = base_size,
     base_family = base_family,
     base_line_size = base_line_size
   ) %+replace%
-    theme(
-      plot.title = element_text(
-        hjust = 0.5,
-        face = "bold",
-        size = 20,
-        margin = margin(0, 0, 30, 0)
-      ),
-      legend.position = "top",
-      legend.text = element_text(size = "12"),
-      legend.direction = "horizontal",
-      legend.key.size = unit(1.0, "cm"),
-      legend.title = element_blank(),
-      axis.title = element_text(size = "14"),
-      axis.text = element_text(size = "14"),
-      axis.title.x = element_blank(),
-      axis.title.y = element_text(margin = margin(r = 5)),
-      axis.text.x = element_text(
-        angle = 90,
-        hjust = 0.5,
-        margin = margin(t = 10)
-      ),
-      axis.text.y = element_text(margin = margin(l = 5, r = 5)),
-      panel.grid.minor = element_blank(),
-      panel.border = element_blank(),
-      panel.background = element_blank(),
-      axis.line = element_line(size = 0.3, colour = "black"),
-      plot.margin = margin(30, 30, 30, 30)
-    )
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 24),
+          plot.subtitle = element_text(hjust=0.5, size = 16, face = "italic"),
+          plot.caption = element_text(hjust = 0, size = 12, face = "italic"),
+          legend.position = "top",
+          legend.text = element_text(size="18"),
+          legend.direction = "horizontal",
+          legend.key.size = unit(1.0,"cm"),
+          legend.title = element_blank(),
+          axis.title = element_text(size="18"),
+          axis.text = element_text(size="18"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(size = 0.3, colour = "black"),
+          plot.margin = margin(30,30,30,30))
 }
 
-
-
-
+#added a theme for the tables
+table_theme <- function(){
+  theme(
+    panel.grid.minor = element_line(size = 0.3, colour = "black"),
+    panel.grid.major = element_blank(),
+    axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
+    legend.position = "none",
+    plot.title = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA, size=1),
+    axis.line.x = element_line(colour = "black", size=1),
+    plot.margin=unit(c(-0.5,1,1,1), "cm"))
+}
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
@@ -378,7 +384,7 @@ process_data <- function(access_data,slot_data){
                      "VISIT_END_DTTM","CHECKOUT_DTTM",
                      "TIME_IN_ROOM_MINUTES","CYCLE_TIME_MINUTES","VIS_NEW_TO_DEP_YN","LOS_NAME", "DEP_RPT_GRP_THIRTYONE", 
                      "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C",
-                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
+                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID", "InPersonvsTele")
   
   # Subset raw data 
   data.subset <- data.raw[original.cols]
@@ -394,7 +400,7 @@ process_data <- function(access_data,slot_data){
                 "Visitend.DTTM","Checkout.DTTM",
                 "Time.in.room","Cycle.time","New.PT","Class.PT","Cadence",
                 "Appt.Source","Access.Center","Visit.Method","Resource",
-                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID")
+                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID","InPersonvsTele")
   
   colnames(data.subset) <- new.cols
   
@@ -737,6 +743,24 @@ sameDay <- canceled.bumped.rescheduled.data %>% filter(Lead.Days == 0) # Same da
 noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + No Show data: Arrived and No Show
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
+
+
+### Zip Code Analysis =======================================
+zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
+data("zipcode")
+
+population.data <- arrived.data
+population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
+population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
+
+population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
+
+################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
+population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
+
+# nrow(population.data)
+# nrow(population.data_filtered)
+
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
 

@@ -129,10 +129,10 @@ server <- function(input, output, session) {
     
     data <- dataArrived()
     # data <- arrived.data
-    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    # data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2021-02")
     # nrow(data)
-    # # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
-    # 
+    # data <- arrived.data %>% filter(SITE %in% c("DBC","RTC","MSW"))
+
     # nas <- data %>% filter(is.na(AssociationListA))
     # nrow(nas)
     # exc <- data %>% filter(AssociationListA == "Exclude")
@@ -796,8 +796,8 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 
 
-n <- 3
-hline <- seq(0.5, 0.5*n, by= 0.5)
-class(as.vector(hline))
+# n <- 3
+# hline <- seq(0.5, 0.5*n, by= 0.5)
+# class(as.vector(hline))
 
 
