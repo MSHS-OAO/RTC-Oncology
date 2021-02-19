@@ -34,19 +34,19 @@ default_visitType <- sort(unique(historical.data[historical.data$SITE %in% defau
                                                    historical.data$Ref.Provider %in% default_refProvider, "AssociationListA"]))
 
 default_ApptType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                   historical.data$Campus.Specialty %in% default_specialties &
-                                                   historical.data$Department %in% default_departments &
-                                                   historical.data$Provider %in% default_provider & 
-                                                   historical.data$Ref.Provider %in% default_refProvider &
-                                                  historical.data$AssociationListA %in% default_visitType, "AssociationListB"]))
-
-default_TreatmentType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
                                                   historical.data$Campus.Specialty %in% default_specialties &
                                                   historical.data$Department %in% default_departments &
                                                   historical.data$Provider %in% default_provider & 
                                                   historical.data$Ref.Provider %in% default_refProvider &
-                                                  historical.data$AssociationListA %in% default_visitType &
-                                                  historical.data$AssociationListB %in% default_ApptType, "AssociationListT"]))
+                                                  historical.data$AssociationListA %in% default_visitType, "AssociationListB"]))
+
+default_TreatmentType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                       historical.data$Campus.Specialty %in% default_specialties &
+                                                       historical.data$Department %in% default_departments &
+                                                       historical.data$Provider %in% default_provider & 
+                                                       historical.data$Ref.Provider %in% default_refProvider &
+                                                       historical.data$AssociationListA %in% default_visitType &
+                                                       historical.data$AssociationListB %in% default_ApptType, "AssociationListT"]))
 
 
 
@@ -84,9 +84,19 @@ ui <- dashboardPage(
     
     sidebarMenu(id = "sbm",
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
-                         menuSubItem("Overview", tabName = "volumetrend"),
+                         menuSubItem("Trend", tabName = "volumetrend"),
                          menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          menuSubItem("Comparison", tabName = "volumecomparison")
+                ),
+                menuItem("Unique Patients", tabName = "uniquePts", icon = icon("user-plus")
+                         # menuSubItem("Trend", tabName = "volumetrend"),
+                         # menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                         # menuSubItem("Comparison", tabName = "volumecomparison")
+                ),
+                menuItem("Population", tabName = "population", icon = icon("map-marked")
+                         # menuSubItem("Trend", tabName = "volumetrend"),
+                         # menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                         # menuSubItem("Comparison", tabName = "volumecomparison")
                 )
                 
     ) # Close sidebarMenu
@@ -128,29 +138,29 @@ ui <- dashboardPage(
         tabItem(tabName = "volumetrend",
                 div("Volume Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-                column(10,
+                column(11,
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_totalvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_examvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_treatmentvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Lab Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_labvisitsgraph", height="550px") %>% 
+                         plotOutput("trend_labvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -172,23 +182,23 @@ ui <- dashboardPage(
         tabItem(tabName = "volumebreakdown",
                 div("Volume Breakdown", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-                column(10,
+                column(11,
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_totalvisitsgraph", height="550px") %>% 
+                         plotOutput("break_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_examvisitsgraph", height="550px") %>% 
+                         plotOutput("break_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_treatmentvisitsgraph", height="550px") %>% 
+                         plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -204,223 +214,315 @@ ui <- dashboardPage(
         tabItem(tabName = "volumecomparison",
                 div("Volume Comparison", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-                column(8,
+                column(11,
                        boxPlus(
                          title = "Visit Volume Comparison", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("volumeCompTotal_grh", height="650px") %>%
+                         plotOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         plotOutput("volumeCompTrend_grh", height="650px") %>%
+                         plotOutput("volumeCompTrend_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        )
-  
+                       
                        
                 ) #Close column
         )# Close volume Comparison
       ), #Close tab Items
       
+      # Unique Patients Tab ------------------------------------------------------------------------------------------------------
+      # tabItem(tabName = "uniquePts",
+      #         div("Unique Patients Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+      #         tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+      #         column(11,
+      #                boxPlus(
+      #                  title = "All Visits", width = 12, status = "primary", 
+      #                  solidHeader = TRUE, collapsible = TRUE, closable = TRUE
+      #                )
+      #         )
+      # ), #Close Volume breakdown tab
+      
+      
+      
+      
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
+      
+      conditionalPanel(
+        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
+        # Customize dropDownButton color scheme
+        # tags$style("dropDown1 {background-color: #d80b8c; color: #ffffff;}"),
+        
+        dropdown(
+          box(
+            title = "Select Campus:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedCampus",label=NULL,
+                        choices = campus_choices,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1", 
+                          countSelectedText = "{0}/{1} Campuses", 
+                          dropupAuto = FALSE),
+                        selected = default_campus)),
+          box(
+            title = "Select Specialty:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedSpecialty",label=NULL,
+                        choices = default_specialties,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Specialties",
+                          dropupAuto = FALSE),
+                        selected = default_specialties
+            )
+          ),
+          box(
+            title = "Select Department:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedDepartment",label=NULL,
+                        choices=default_departments,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Departments",
+                          dropupAuto = FALSE),
+                        selected = default_departments
+            )
+          ),
+          box(
+            title = "Select Provider:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedProvider",label=NULL,
+                        choices=default_provider,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Providers",
+                          dropupAuto = FALSE),
+                        selected = default_provider
+            )
+          ),
+          box(
+            title = "Select Reffered Provider:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedrefProvider",label=NULL,
+                        choices=default_refProvider,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Providers",
+                          dropupAuto = FALSE),
+                        selected = default_refProvider
+            )
+          ),
+          box(
+            title = "Select Date Range:",
+            width = 12, 
+            height = "100px",
+            solidHeader = FALSE, 
+            dateRangeInput("dateRange", label = NULL,
+                           start = dateRange_min, end = dateRange_max,
+                           min = dateRange_min, max = dateRange_max
+            )
+          ),
+          box(
+            title = "Select Days of Week:",
+            width = 12, 
+            solidHeader = FALSE, 
+            selectInput("daysOfWeek",label = NULL,
+                        choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
+                        multiple=TRUE, selectize=TRUE
+            )
+          ),
+          box(
+            title = "Select Holidays to Exclude:",
+            width = 12,
+            solidHeader = FALSE,
+            pickerInput("excludeHolidays",label=NULL,
+                        choices= unique(holid$holiday),
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          dropupAuto = FALSE),
+                        selected = unique(holid$holiday)
+            )
+          ),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("filter"), width = "300px",
+          tooltip = tooltipOptions(title = "Set filters for graphs/tables.")
+          
+        ) # Close Drop Down Button
+      ),# Close conditional Panel
+      
       conditionalPanel(
         condition = "input.sbm == 'volumecomparison'", 
-        column(2,
-                 box(
-                   title = "Select Visit Type:",
-                   width = 12,
-                   height = "100px",
-                   solidHeader = FALSE,
-                   pickerInput("selectedVisitType",label=NULL,
-                               choices=default_visitType,
-                               multiple=TRUE,
-                               options = pickerOptions(
-                                 liveSearch = TRUE,
-                                 actionsBox = TRUE,
-                                 selectedTextFormat = "count > 1",
-                                 countSelectedText = "{0}/{1} Visit Types",
-                                 dropupAuto = FALSE),
-                               selected = default_visitType
-                   )
-                 ),
-                 box(
-                   title = "Select Appointment Type:",
-                   width = 12,
-                   height = "100px",
-                   solidHeader = FALSE,
-                   pickerInput("selectedApptType",label=NULL,
-                               choices=default_ApptType,
-                               multiple=TRUE,
-                               options = pickerOptions(
-                                 liveSearch = TRUE,
-                                 actionsBox = TRUE,
-                                 selectedTextFormat = "count > 1",
-                                 countSelectedText = "{0}/{1} Visit Types",
-                                 dropupAuto = FALSE),
-                               selected = default_ApptType
-                   )
-                 ),
-                 box(
-                   title = "Select Treatment Type:",
-                   width = 12,
-                   height = "100px",
-                   solidHeader = FALSE,
-                   pickerInput("selectedTreatmentType",label=NULL,
-                               choices=default_TreatmentType,
-                               multiple=TRUE,
-                               options = pickerOptions(
-                                 liveSearch = TRUE,
-                                 actionsBox = TRUE,
-                                 selectedTextFormat = "count > 1",
-                                 countSelectedText = "{0}/{1} Visit Types",
-                                 dropupAuto = FALSE),
-                               selected = default_TreatmentType
-                   )
-                 ),
-                  box(
-                        title = "Compare by:",
-                        width = 12,
-                        height = "150px",
-                        solidHeader = FALSE,
-                        awesomeRadio(
-                          inputId = "comp_choices",
-                          label = NULL,
-                          choices = c("All", "Site", "Specialty", "Provider"),
-                          selected = "All",
-                          status = "info"
-                        )
-                      )
-               )
+        br(), 
+        # tags$style("dropDown2 {background-color: #d80b8c; color: #ffffff;}"),
+        dropdown(
+          box(
+            title = "Select Visit Type:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedVisitType",label=NULL,
+                        choices=default_visitType,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Visit Types",
+                          dropupAuto = FALSE),
+                        selected = default_visitType
+            )
+          ),
+          box(
+            title = "Select Appointment Type:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedApptType",label=NULL,
+                        choices=default_ApptType,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Visit Types",
+                          dropupAuto = FALSE),
+                        selected = default_ApptType
+            )
+          ),
+          box(
+            title = "Select Treatment Type:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            pickerInput("selectedTreatmentType",label=NULL,
+                        choices=default_TreatmentType,
+                        multiple=TRUE,
+                        options = pickerOptions(
+                          liveSearch = TRUE,
+                          actionsBox = TRUE,
+                          selectedTextFormat = "count > 1",
+                          countSelectedText = "{0}/{1} Visit Types",
+                          dropupAuto = FALSE),
+                        selected = default_TreatmentType
+            )
+          ),
+          box(
+            title = "Compare by:",
+            width = 12,
+            height = "160px",
+            solidHeader = FALSE,
+            awesomeRadio(
+              inputId = "comp_choices",
+              label = NULL,
+              choices = c("All", "Site", "Specialty", "Provider"),
+              selected = "All",
+              status = "info"
+            )
+          ),
+          
+          box(
+            title = "Analysis by:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            awesomeRadio(
+              inputId = "analysis_type",
+              label = NULL,
+              choices = c("Monthly", "Weekly"),
+              selected = "Monthly",
+              status = "info"
+            )
+          ),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("filter"), width = "300px",
+          tooltip = tooltipOptions(title = "Set additional filters for graphs/tables.")
+          
+        ) # Close Drop Down Button
       ), # Close Conditional Panel
+      
       conditionalPanel(
-        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'", 
-        column(2, 
-               box(
-                 title = "Select Campus:",
-                 width = 12,
-                 height = "100px",
-                 solidHeader = FALSE,
-                 pickerInput("selectedCampus",label=NULL,
-                             choices = campus_choices,
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               selectedTextFormat = "count > 1", 
-                               countSelectedText = "{0}/{1} Campuses", 
-                               dropupAuto = FALSE),
-                             selected = default_campus)),
-               box(
-                 title = "Select Specialty:",
-                 width = 12,
-                 height = "100px",
-                 solidHeader = FALSE,
-                 pickerInput("selectedSpecialty",label=NULL,
-                             choices = default_specialties,
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               selectedTextFormat = "count > 1",
-                               countSelectedText = "{0}/{1} Specialties",
-                               dropupAuto = FALSE),
-                             selected = default_specialties
-                 )
-               ),
-               box(
-                 title = "Select Department:",
-                 width = 12,
-                 height = "100px",
-                 solidHeader = FALSE,
-                 pickerInput("selectedDepartment",label=NULL,
-                             choices=default_departments,
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               selectedTextFormat = "count > 1",
-                               countSelectedText = "{0}/{1} Departments",
-                               dropupAuto = FALSE),
-                             selected = default_departments
-                 )
-               ),
-               box(
-                 title = "Select Provider:",
-                 width = 12,
-                 height = "100px",
-                 solidHeader = FALSE,
-                 pickerInput("selectedProvider",label=NULL,
-                             choices=default_provider,
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               selectedTextFormat = "count > 1",
-                               countSelectedText = "{0}/{1} Providers",
-                               dropupAuto = FALSE),
-                             selected = default_provider
-                 )
-               ),
-               box(
-                 title = "Select Reffered Provider:",
-                 width = 12,
-                 height = "100px",
-                 solidHeader = FALSE,
-                 pickerInput("selectedrefProvider",label=NULL,
-                             choices=default_refProvider,
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               selectedTextFormat = "count > 1",
-                               countSelectedText = "{0}/{1} Providers",
-                               dropupAuto = FALSE),
-                             selected = default_refProvider
-                 )
-               ),
-               box(
-                 title = "Select Date Range:",
-                 width = 12, 
-                 height = "100px",
-                 solidHeader = FALSE, 
-                 dateRangeInput("dateRange", label = NULL,
-                                start = dateRange_min, end = dateRange_max,
-                                min = dateRange_min, max = dateRange_max
-                 )
-               ),
-               box(
-                 title = "Select Days of Week:",
-                 width = 12, 
-                 solidHeader = FALSE, 
-                 selectInput("daysOfWeek",label = NULL,
-                             choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
-                             multiple=TRUE, selectize=TRUE
-                 )
-               ),
-               box(
-                 title = "Select Holidays to Exclude:",
-                 width = 12,
-                 solidHeader = FALSE,
-                 pickerInput("excludeHolidays",label=NULL,
-                             choices= unique(holid$holiday),
-                             multiple=TRUE,
-                             options = pickerOptions(
-                               liveSearch = TRUE,
-                               actionsBox = TRUE,
-                               dropupAuto = FALSE),
-                             selected = unique(holid$holiday)
-                 )
-               ),
-               fluidRow(
-                 column(2, offset = 4,
-                        actionButton("download1",
-                                     label = icon("download"),
-                                     style="color: #fff; background-color: #d80b8c; border-color: #d80b8c"),
-                        bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
-                                  "bottom", options = list(container = "body")
-                        )
-                  )
-                )
-        )# Close column
+        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
+        br(),
+        dropdown(
+          box(
+            title = "Change height:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            sliderInput(
+              inputId = "plotHeight",
+              label = NULL, 
+              value = 650, min = 450, max = 2000,
+              ticks = FALSE
+            )
+          ),
+          
+          # numericInput("height", "height", 300),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("gear"), width = "300px",
+          
+          tooltip = tooltipOptions(title = "Format graphs.")
+          
+        ), # Close Drop Down Button
+        br(),
         
-      )# Close conditional Panel
+        tags$head(
+          tags$style(HTML("
+                  #download1 {
+                    background: #fff;
+                    color: #1d89ff;
+                    padding: 8px 15px;
+                    font-size: 24px;
+                    font-family: inherit;
+                    height: 54px;
+                    width: 54px;
+                    line-height: 44px;
+                    outline: none;
+                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.18), 0 1px 5px 0 rgba(0,0,0,.15);
+                    border-radius: 50%;
+                    border-color: transparent;}"))),
+        
+        actionButton("download1",
+                     label = icon("download")),
+        
+                 bsTooltip("download1", "Download (PNG) current tab.",
+                           "right", options = list(container = "body")
+                 )
+                 
+                 # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
+        #) # Close Drop Down Button
+      ) # Close Conditional Panel
+      
     ) #Close Fluid
   ) # Close Dashboard Body
 )# Close Dashboard Page
+
+#shinyApp(ui, server)

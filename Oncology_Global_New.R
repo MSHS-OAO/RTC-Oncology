@@ -17,7 +17,7 @@
 # # require(htmltools)
 # # library(htmltools)
 # # update.packages("htmltools")
-# 
+#  
 # # Packages from the process mapping codes [NEED TO BE CLEANED UP]
 # install.packages('shinydashboard')
 # install.packages('dplyr')
@@ -281,28 +281,18 @@ table_theme <- function(){
 
 #singleday_path <<- here("Data/Access/SingleDay")
 #monthly_path <<- here("Data/Access/Monthly")
-#monthly_access <<- here("Data/Access/Monthly")
-#monthly_slot <<- here("Data/Slot/Monthly")
-#singleday_access <<- here("Data/Access/SingleDay")
-#singleday_slot <<- here("Data/Slot/SingleDay")
-
-ifelse (list.files("J://") == "Presidents", user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects", 
-        user_directory <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects")
-
-monthly_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/Monthly")
-monthly_slot <-paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/Monthly")
-singleday_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/SingleDay")
-singleday_slot <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/SingleDay")
+monthly_access <<- here("Data/Access/Monthly")
+monthly_slot <<- here("Data/Slot/Monthly")
+singleday_access <<- here("Data/Access/SingleDay")
+singleday_slot <<- here("Data/Slot/SingleDay")
 
 # Set Working Directory (PILOT)
 #wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 #wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 # wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
 
-
-#wdpath <- here::here()
-
-#setwd(wdpath)
+wdpath <- here::here()
+setwd(wdpath)
 
 
 #master.data.new_new <- data_all
@@ -315,8 +305,11 @@ process_data <- function(access_data,slot_data){
   slot.data.raw <- slot_data
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
-  #site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
-  site_ref <- read_excel(paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Ambulatory Department Mapping (Master).xlsx"),sheet = "Mapping")
+  site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
+  zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
+  # zipcode_ref <-  read_excel(file.choose())
+  
+  
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
@@ -407,6 +400,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new <- data.subset
   
   # Create additional columns for analysis 
+  data.subset.new$Appt.Type <- toupper(data.subset.new$Appt.Type)
   data.subset.new$Appt.DateYear <- as.Date(data.subset.new$Appt.DTTM, format="%Y-%m-%d") ## Create date-year column
   data.subset.new$Appt.MonthYear <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%Y-%m") ## Create month - year column
   data.subset.new$Appt.Date <- format(as.Date(data.subset.new$Appt.DTTM, format="%m/%d/%Y"), "%m-%d") ## Create date column
@@ -507,7 +501,7 @@ process_data <- function(access_data,slot_data){
 
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
-                            pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv" , full.names = F))) 
+                            pattern = "*.csv" , full.names = F))) 
 }
 
 singleday_path_part <- function(singleday){
@@ -518,7 +512,7 @@ singleday_path_part <- function(singleday){
 
 readin_data_all <- function(){
   data_all <<- list.files(path = monthly_path,     # Identify all csv files in folder
-                          pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%   
+                          pattern = "*.csv", full.names = TRUE) %>%   
     lapply(read_csv) %>%                                            # Store all files in list
     bind_rows()
   return(data_all)
@@ -594,17 +588,15 @@ check_singleday(singleday_slot,monthly_slot)
 # Load Data Files
 ## Scheduling Data
 if (!(exists("access.data.raw"))){ 
-  #access.data.raw <<- list.files(path = "Data/Access/Monthly",
-  #                               pattern = "*.csv", full.names = TRUE) %>%
-  access.data.raw <- list.files(path = monthly_access,
-                                 pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
+  access.data.raw <<- list.files(path = "Data/Access/Monthly",
+                                 pattern = "*.csv", full.names = TRUE) %>%
+  
     lapply(read_csv) %>%
     rbind.fill()
   
-  #slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
-  #                             pattern = "*.csv", full.names = TRUE) %>%
-  slot.data.raw <- list.files(path = monthly_slot,
-                               pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
+  slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
+                               pattern = "*.csv", full.names = TRUE) %>%
+  
     lapply(read_csv) %>%
     rbind.fill()
   
@@ -657,7 +649,7 @@ if(out_of_date == 'TRUE'){
 # mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
 #mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 
-mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
+mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 
 #from the mapping file import the department ID sheet
 department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")
@@ -678,6 +670,8 @@ PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
 
 ##remove the space at the end and at the beginning when applicable
 PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+PRC_mapping$`Sch VisitTypeName/ PRC Name` <- toupper(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+
 
 #####change all to first word capitalized
 PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
@@ -726,6 +720,7 @@ max_date <- max(max_date$Appt.DateYear) ## Or Today's Date
 historical.data <- amb_df_groupings_unique %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
 historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
 
+
 # ## KPI datasets
 # kpi.all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 3*365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
 # kpi.arrivedNoShow.data <- kpi.all.data %>% filter(Appt.Status %in% c("Arrived","No Show"))  ## Arrived + No Show data: Arrived and No Show
@@ -746,6 +741,24 @@ noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + N
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
+
+
+
+
+### Zip Code Analysis =======================================
+data("zipcode")
+
+population.data <- arrived.data
+population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
+population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
+
+population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
+
+################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
+population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
+
+# nrow(population.data)
+# nrow(population.data_filtered)
 
 # ## Slot datasets
 # past.slot.data <- slot.data.subset %>% filter(Appt.DTTM <= max_date, Appt.DTTM >= max_date - 365)
