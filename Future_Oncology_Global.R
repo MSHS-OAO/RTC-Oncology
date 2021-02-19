@@ -744,6 +744,23 @@ noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + N
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
+
+### Zip Code Analysis =======================================
+data("zipcode")
+
+population.data <- arrived.data
+population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
+population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
+
+population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
+
+################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
+population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
+
+# nrow(population.data)
+# nrow(population.data_filtered)
+
+
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
 
 # Mater Filters 
