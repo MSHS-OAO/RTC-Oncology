@@ -268,12 +268,13 @@ table_theme <- function(){
       panel.grid.minor = element_line(size = 0.3, colour = "black"),
       panel.grid.major = element_blank(),
       axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
-      axis.text.x = element_text(size = 18, angle=0, colour = "black"),
+      axis.text.x = element_blank(),
       axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
       legend.position = "none",
       plot.title = element_blank(),
       panel.border = element_rect(colour = "black", fill = NA, size=1),
-      axis.line.x = element_line(colour = "black", size=1))
+      axis.line.x = element_line(colour = "black", size=1),
+      plot.margin=unit(c(-0.5,1,1,1), "cm"))
 }
 
 
