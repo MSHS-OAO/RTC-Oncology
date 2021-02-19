@@ -716,7 +716,7 @@ server <- function(input, output, session) {
                        label = mytext,
                        labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")
       ) %>%
-      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", positionyo = "bottomright") %>%
+      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", position = "bottomright") %>%
       addAwesomeMarkers(
         lng=-73.943324, lat=40.79171,
         label='Mount Sinai Hospital',
