@@ -295,7 +295,7 @@ server <- function(input, output, session) {
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","All Visit Volume Composition\n"),x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -303,7 +303,7 @@ server <- function(input, output, session) {
     
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface  = "bold")+
       geom_hline(yintercept = c(1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
@@ -341,7 +341,7 @@ server <- function(input, output, session) {
       labs(title = paste0(site," ","Exam Visit Volume Composition\n"), 
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -349,8 +349,8 @@ server <- function(input, output, session) {
     
     g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-      geom_text(size = 5, vjust = "center", hjust = "center")+
-      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListB")+
@@ -388,7 +388,7 @@ server <- function(input, output, session) {
       labs(title = paste0(site," ","Treatment Visit Volume Composition\n"), 
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90))+
+      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -396,8 +396,8 @@ server <- function(input, output, session) {
     
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-      geom_text(size = 5, vjust = "center", hjust = "center")+
-      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface = 'bold')+
+      geom_hline(yintercept = c(2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListT")+
