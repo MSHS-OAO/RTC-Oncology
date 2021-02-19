@@ -93,8 +93,8 @@ ui <- dashboardPage(
                          # menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          # menuSubItem("Comparison", tabName = "volumecomparison")
                 ),
-                menuItem("Population", tabName = "population", icon = icon("map-marked")
-                         # menuSubItem("Trend", tabName = "volumetrend"),
+                menuItem("Population", tabName = "population", icon = icon("map-marked"),
+                         menuSubItem("Zip Code Analysis", tabName = "zipCode")
                          # menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          # menuSubItem("Comparison", tabName = "volumecomparison")
                 )
@@ -226,28 +226,48 @@ ui <- dashboardPage(
                        
                        
                 ) #Close column
-        )# Close volume Comparison
-      ), #Close tab Items
+        ), # Close volume Comparison
+        
+        # Unique Patients Tab ------------------------------------------------------------------------------------------------------
+        # tabItem(tabName = "uniquePts",
+        #         div("Unique Patients Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+        #         tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+        #         column(11,
+        #                boxPlus(
+        #                  title = "All Visits", width = 12, status = "primary", 
+        #                  solidHeader = TRUE, collapsible = TRUE, closable = TRUE
+        #                )
+        #         )
+        # ), #Close Volume breakdown tab
+        
+        
+        # Population Zip Code Analysis Tab ------------------------------------------------------------------------------------------------------
+        tabItem(tabName = "zipCode",
+                div("Patient Zip Code Analysis", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Arrived Patients by Zip Code", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         fluidRow(
+                         column(8, leafletOutput("zipCode_map", height = "800px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")),
+                         column(4, tableOutput("zipCode_tb") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")))
+                       )
+                )
+        ) # Close Zip Code tab
+        
+      ), # Close Main tab Items
       
-      # Unique Patients Tab ------------------------------------------------------------------------------------------------------
-      # tabItem(tabName = "uniquePts",
-      #         div("Unique Patients Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-      #         tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-      #         column(11,
-      #                boxPlus(
-      #                  title = "All Visits", width = 12, status = "primary", 
-      #                  solidHeader = TRUE, collapsible = TRUE, closable = TRUE
-      #                )
-      #         )
-      # ), #Close Volume breakdown tab
-      
-      
+
       
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
       conditionalPanel(
-        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
+        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | input.sbm == 'zipCode'",
         # Customize dropDownButton color scheme
         # tags$style("dropDown1 {background-color: #d80b8c; color: #ffffff;}"),
         
@@ -468,7 +488,7 @@ ui <- dashboardPage(
       ), # Close Conditional Panel
       
       conditionalPanel(
-        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison'",
+        condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | input.sbm == 'zipCode'",
         br(),
         dropdown(
           box(

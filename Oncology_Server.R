@@ -117,6 +117,12 @@ server <- function(input, output, session) {
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType)
   })
   
+  # Arrived population data -------------------------------------------------------------------------------------------------------------
+  dataArrivedPop <- reactive({
+    groupByFilters(population.data_filtered,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
   
 # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
@@ -298,7 +304,7 @@ server <- function(input, output, session) {
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
       geom_text(size = 5, vjust = "center", hjust = "center")+
-      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListA")+
@@ -699,18 +705,19 @@ server <- function(input, output, session) {
   ## Bubble Map by Zip Code
   output$zipCode_map <- renderLeaflet({
     
-    newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n()))
-    newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
+    newdata <- dataArrivedPop() %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
+    # newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
     
     # Create a color palette with handmade bins.
     mybins <- round(seq(min(newdata$total), max(newdata$total), length.out=5),0)
     mypalette <- colorBin(palette=MountSinai_palettes$pinkBlue, domain=quakes$mag, na.color="transparent", bins=mybins)
     
+    all <- sum(newdata$total)
+    
     # Prepare the text for the tooltip:
     mytext <- paste(
-      "Total Visits: ", newdata$total, "<br/>", 
-      "Latitude: ", newdata$latitude, "<br/>", 
-      "Longitude: ", newdata$longitude, sep="") %>%
+      "Total Visits: ", newdata$total, "<br/>",
+      "% of Total: ", paste0(round(newdata$total/all,2)*100, "%")) %>%
       lapply(htmltools::HTML)
     
     # Set icons for each MSHS hospital
@@ -726,9 +733,9 @@ server <- function(input, output, session) {
       setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
       addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%
       addCircleMarkers(~longitude, ~latitude, 
-                       fillColor = ~mypalette(total), fillOpacity = 0.7, color="white", radius= ~total^(1/2.5), stroke=FALSE,
+                       fillColor = ~mypalette(total), fillOpacity = 0.7, color="white", radius= ~total^(1/2), stroke=FALSE,
                        label = mytext,
-                       labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "13px", direction = "auto")
+                       labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")
       ) %>%
       addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", position = "bottomright") %>%
       addAwesomeMarkers(
@@ -764,13 +771,45 @@ server <- function(input, output, session) {
     
   })
   
-  ## Bubble Map by Zip Code
+  ## Breakdown of Arrived Visits by Zip Code
   output$zipCode_tb <- function(){
     
-    newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n()))
-    newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
+    data <- dataArrivedPop()
+    # data <- population.data_filtered
     
+    zip_table <- data %>% group_by(`Zip Code Layer: A`) %>% summarise(total = n()) %>%
+      arrange(-total) %>%
+      mutate(perc = round(total/sum(total),2)*100) %>%
+      adorn_totals("row") %>%
+      mutate(perc = paste0(perc,"%"))
+      
+    manhattan <- data %>% group_by(`Zip Code Layer: B`) %>% summarise(total = n()) %>%
+      mutate(perc = paste0(round(total/sum(total),2)*100, "%")) %>%
+      filter(`Zip Code Layer: B` %in% c("Lower-Manhattan", "Middle-Manhattan", "Upper-Manhattan")) %>%
+      `colnames<-` (c("Zip Code Layer: A","total","perc"))
+
+    row_start <- which(zip_table$`Zip Code Layer: A` == "Manhattan") 
+
+    table_1 <- zip_table[1:row_start,]
+    table_2 <- zip_table[row_start+1:nrow(zip_table),]
+    
+    final_tb <- rbind(table_1, manhattan, table_2) %>% drop_na()
+ 
+    final_tb %>%
+      kable(escape = F, 
+            col.names = c("Zip Code Layer A - B", "Total Arrived", "Percent of Total")) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 18) %>%
+      add_header_above(c("Total Patients Arrived by Zipcode" = length(zip_table)),
+                       background = "#d80b8c", color = "white", font_size = 18, align = "center") %>%
+      add_indent(c(row_start+1, row_start+2, row_start+3), level_of_indent = 2) %>%
+      row_spec(1:nrow(final_tb), background = "	#e6e6e6", color = "black") %>%
+      row_spec(c(row_start+1, row_start+2, row_start+3), background = "#f2f2f2") %>%
+      row_spec(nrow(final_tb), background = "#fcc9e9", color = "black", bold = T) 
+   
   }
+  
+  
+  
   
 } # Close Server
 

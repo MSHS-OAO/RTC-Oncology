@@ -46,6 +46,9 @@
 # install.packages("sjmisc")
 # install.packages("shinyBS")
 # install.packages("shinyscreenshot")
+# install.packages("patchwork")
+# install.packages("ggtext")
+# install.packages("janitor")
 
 
 suppressMessages({
@@ -111,6 +114,7 @@ suppressMessages({
   library(shinycssloaders)
   library(patchwork)
   library(ggtext)
+  library(janitor)
 })
 
 # ### (0) Maximize R Memory Size 
@@ -275,7 +279,6 @@ table_theme <- function(){
       panel.border = element_rect(colour = "black", fill = NA, size=1),
       axis.line.x = element_line(colour = "black", size=1))
 }
-
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
