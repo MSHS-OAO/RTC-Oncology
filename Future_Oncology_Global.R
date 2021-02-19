@@ -317,7 +317,7 @@ process_data <- function(access_data,slot_data){
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
   site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
-  
+  zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
