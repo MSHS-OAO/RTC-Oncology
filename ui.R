@@ -84,9 +84,19 @@ ui <- dashboardPage(
     
     sidebarMenu(id = "sbm",
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
-                         menuSubItem("Overview", tabName = "volumetrend"),
+                         menuSubItem("Trend", tabName = "volumetrend"),
                          menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          menuSubItem("Comparison", tabName = "volumecomparison")
+                ),
+                menuItem("Unique Patients", tabName = "uniquePts", icon = icon("user-plus")
+                         # menuSubItem("Trend", tabName = "volumetrend"),
+                         # menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                         # menuSubItem("Comparison", tabName = "volumecomparison")
+                ),
+                menuItem("Population", tabName = "population", icon = icon("map-marked")
+                         # menuSubItem("Trend", tabName = "volumetrend"),
+                         # menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                         # menuSubItem("Comparison", tabName = "volumecomparison")
                 )
                 
     ) # Close sidebarMenu
@@ -218,6 +228,21 @@ ui <- dashboardPage(
                 ) #Close column
         )# Close volume Comparison
       ), #Close tab Items
+      
+      # Unique Patients Tab ------------------------------------------------------------------------------------------------------
+      # tabItem(tabName = "uniquePts",
+      #         div("Unique Patients Trend", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+      #         tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+      #         column(11,
+      #                boxPlus(
+      #                  title = "All Visits", width = 12, status = "primary", 
+      #                  solidHeader = TRUE, collapsible = TRUE, closable = TRUE
+      #                )
+      #         )
+      # ), #Close Volume breakdown tab
+      
+      
+      
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
@@ -421,6 +446,20 @@ ui <- dashboardPage(
             )
           ),
           
+          box(
+            title = "Analysis by:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            awesomeRadio(
+              inputId = "analysis_type",
+              label = NULL,
+              choices = c("Monthly", "Weekly"),
+              selected = "Monthly",
+              status = "info"
+            )
+          ),
+          
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("filter"), width = "300px",
           tooltip = tooltipOptions(title = "Set additional filters for graphs/tables.")
@@ -452,11 +491,6 @@ ui <- dashboardPage(
           
           tooltip = tooltipOptions(title = "Format graphs.")
           
-          # bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
-          #           "bottom", options = list(container = "body")
-          # )
-          
-          # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
         ), # Close Drop Down Button
         br(),
         
@@ -474,42 +508,18 @@ ui <- dashboardPage(
                     outline: none;
                     box-shadow: 0 2px 5px 0 rgba(0,0,0,.18), 0 1px 5px 0 rgba(0,0,0,.15);
                     border-radius: 50%;
-                    border-color: transparent;
-
-                    }
-
-                    "))
-        ),
+                    border-color: transparent;}"))),
+        
         actionButton("download1",
-                     label = icon("download")
-                 
-        ),
-                 bsTooltip("download1", "Download (PNG) the current tab.",
+                     label = icon("download")),
+        
+                 bsTooltip("download1", "Download (PNG) current tab.",
                            "right", options = list(container = "body")
                  )
                  
                  # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
         #) # Close Drop Down Button
       ) # Close Conditional Panel
-      
-      
-      
-      
-      
-      
-      # 
-      #       fluidRow(
-      #         column(2, offset = 4,
-      #                actionButton("download1",
-      #                             label = icon("download"),
-      #                             style="color: #fff; background-color: #d80b8c; border-color: #d80b8c"),
-      #                bsTooltip("download1", "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs",
-      #                          "bottom", options = list(container = "body")
-      #                )
-      #         )
-      #       ),
-      
-      
       
     ) #Close Fluid
   ) # Close Dashboard Body

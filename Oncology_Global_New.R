@@ -265,19 +265,10 @@ theme_new_line <- function(base_size = 12,
 
 
 ### (2) Import Data ----------------------------------------------------------------------------------
-
-#singleday_path <<- here("Data/Access/SingleDay")
-#monthly_path <<- here("Data/Access/Monthly")
 monthly_access <<- here("Data/Access/Monthly")
 monthly_slot <<- here("Data/Slot/Monthly")
 singleday_access <<- here("Data/Access/SingleDay")
 singleday_slot <<- here("Data/Slot/SingleDay")
-
-
-# Set Working Directory (PILOT)
-#wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-#wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-# wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
 
 
 wdpath <- here::here()
@@ -296,6 +287,9 @@ process_data <- function(access_data,slot_data){
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
   site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
+  zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
+  # zipcode_ref <-  read_excel(file.choose())
+  
   
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
@@ -725,6 +719,24 @@ noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + N
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
+
+
+
+
+### Zip Code Analysis =======================================
+data("zipcode")
+
+population.data <- arrived.data
+population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
+population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
+
+population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
+
+################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
+population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
+
+# nrow(population.data)
+# nrow(population.data_filtered)
 
 # ## Slot datasets
 # past.slot.data <- slot.data.subset %>% filter(Appt.DTTM <= max_date, Appt.DTTM >= max_date - 365)
