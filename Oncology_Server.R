@@ -795,8 +795,8 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 
 
-n <- 3
-hline <- seq(0.5, 0.5*n, by= 0.5)
-class(as.vector(hline))
+# n <- 3
+# hline <- seq(0.5, 0.5*n, by= 0.5)
+# class(as.vector(hline))
 
 

@@ -263,7 +263,9 @@ ui <- dashboardPage(
       
 
       
-      
+      tags$head(tags$style(HTML("#dropdownbutton {
+                      color: #212070;;}
+               "))),
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
       conditionalPanel(
@@ -391,7 +393,8 @@ ui <- dashboardPage(
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("filter"), width = "300px",
-          tooltip = tooltipOptions(title = "Set filters for graphs/tables.")
+          tooltip = tooltipOptions(title = "Set filters for graphs/tables."),
+          inputId = "dropdownbutton"
           
         ) # Close Drop Down Button
       ),# Close conditional Panel
@@ -482,7 +485,8 @@ ui <- dashboardPage(
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("filter"), width = "300px",
-          tooltip = tooltipOptions(title = "Set additional filters for graphs/tables.")
+          tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+          inputId = "dropdownbutton"
           
         ) # Close Drop Down Button
       ), # Close Conditional Panel
@@ -509,7 +513,8 @@ ui <- dashboardPage(
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("gear"), width = "300px",
           
-          tooltip = tooltipOptions(title = "Format graphs.")
+          tooltip = tooltipOptions(title = "Format graphs."),
+          inputId = "dropdownbutton"
           
         ), # Close Drop Down Button
         br(),
@@ -518,7 +523,7 @@ ui <- dashboardPage(
           tags$style(HTML("
                   #download1 {
                     background: #fff;
-                    color: #1d89ff;
+                    color: #212070;
                     padding: 8px 15px;
                     font-size: 24px;
                     font-family: inherit;
