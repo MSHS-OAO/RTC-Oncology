@@ -117,6 +117,12 @@ server <- function(input, output, session) {
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType)
   })
   
+  # Arrived population data -------------------------------------------------------------------------------------------------------------
+  dataArrivedPop <- reactive({
+    groupByFilters(population.data_filtered,
+                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
   
 # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
@@ -283,12 +289,11 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
+    g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
       geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
+      scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","All Visit Volume Composition\n"), 
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
+      labs(title = paste0(site," ","All Visit Volume Composition\n"),x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90))+
       geom_text(aes(label=total), color="white", 
@@ -296,8 +301,22 @@ server <- function(input, output, session) {
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
     
+    g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListA")+
+      theme_minimal() +
+      table_theme()
+
+    library(patchwork)
+    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 2))
+    
+    
   }, height = function(x) input$plotHeight)
-  
+
   
   output$break_examvisitsgraph <- renderPlot({
     
@@ -315,7 +334,7 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
+    g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
@@ -328,8 +347,21 @@ server <- function(input, output, session) {
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
     
+    g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListB")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 2))
+    
   }, height = function(x) input$plotHeight)
-  
+
   
   output$break_treatmentvisitsgraph <- renderPlot({
     
@@ -349,7 +381,7 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+    g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
@@ -362,33 +394,24 @@ server <- function(input, output, session) {
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
     
+    g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "AssociationListT")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 2))
+    
   }, height = function(x) input$plotHeight)
-  
-  # output$break_visitstable <- function(){
-  #   
-  #   data <- dataArrived()
-  #   data <- arrived.data
-  #   
-  #   visits_tb <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
-  #     spread(Appt.Year, total)
-  #   
-  #   
-  #   months <- append(unique(visits_tb$Appt.Month),"Total")
-  #   
-  #   total_val <- colSums(visits_tb[,-1])
-  #   visits_tb <- rbind(visits_tb, total_val)
-  #   
-  #   visits_tb$Appt.Month <- months
-  #   
-  #   visits_tb <- variance 
-  #   
-  #   visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
-  #   visits_tb$variance_perc <- visits_tb
-  #   
-  # }
-  
 
-# Volume Comparison Tab ------------------------------------------------------------------------------------------------------  
+
+# Volume Comparison Tab ------------------------------------------------------------------------------------------------------
+  #Volume Comparison Tab - Total Breakdown
   output$volumeCompTotal_grh <- renderPlot({
     
     data <- dataArrived_filtered()
@@ -406,58 +429,128 @@ server <- function(input, output, session) {
     
     
     if(input$comp_choices == "All"){
-      # Comparison by site
-      visit_comp_all <- data %>%
-        group_by(Appt.MonthYear) %>% summarise(total = n())
       
-      graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total))+
-        geom_bar(stat="identity", width=0.7, fill="#212070")+
-        scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
-        geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)
+      if(input$analysis_type == "Monthly"){
+        # Comparison by site
+        visit_comp_all <- data %>%
+          group_by(Appt.MonthYear) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total))+
+          geom_bar(stat="identity", width=0.7, fill="#212070")+
+          scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
+          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)
+      } else{
+        # Comparison by site
+        visit_comp_all <- data %>%
+          group_by(Appt.Week) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_all, aes(x=Appt.Week, y=total))+
+          geom_bar(stat="identity", fill="#212070")+
+          scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
+          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+        
+      }
+      
       
     } else if(input$comp_choices == "Site"){
-      # Comparison by site
-      visit_comp_site <- data %>%
-        group_by(Appt.MonthYear, SITE) %>% summarise(total = n())
       
-      max <- visit_comp_site %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
       
-      graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
-        geom_bar(position="stack", stat="identity", width=0.7)+
-        scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-        stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                     size=5, fontface="bold.italic")
+      if(input$analysis_type == "Monthly"){
+        # Comparison by site
+        visit_comp_site <- data %>%
+          group_by(Appt.MonthYear, SITE) %>% summarise(total = n())
+        
+        max <- visit_comp_site %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
+          geom_bar(position="stack", stat="identity", width=0.7)+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                       size=5, fontface="bold.italic")
+        
+      } else{
+        # Comparison by site
+        visit_comp_site <- data %>%
+          group_by(Appt.Week, SITE) %>% summarise(total = n())
+        
+        max <- visit_comp_site %>% group_by(Appt.Week) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_site, aes(x=Appt.Week, y=total, group=SITE, fill=SITE))+
+          geom_bar(position="stack", stat="identity")+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
+                       size=5, fontface="bold.italic")+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
       
     } else if(input$comp_choices == "Specialty"){
-      # Comparison by specialty
-      visit_comp_specialty <- data %>%
-        group_by(Appt.MonthYear, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
-        mutate(specialty = paste0(SITE," - ",Campus.Specialty))
       
-      max <- visit_comp_specialty %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
-      
-      graph <- ggplot(visit_comp_specialty, aes(x=Appt.MonthYear, y=total, group=specialty, fill=specialty))+
-        geom_bar(position="stack", stat="identity", width=0.7)+
-        scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-        stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                     size=5, fontface="bold.italic")
+      if(input$analysis_type == "Monthly"){
+        # Comparison by specialty
+        visit_comp_specialty <- data %>%
+          group_by(Appt.MonthYear, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
+          mutate(specialty = paste0(SITE," - ",Campus.Specialty))
+        
+        max <- visit_comp_specialty %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_specialty, aes(x=Appt.MonthYear, y=total, group=specialty, fill=specialty))+
+          geom_bar(position="stack", stat="identity", width=0.7)+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                       size=5, fontface="bold.italic")
+        
+      } else{
+        # Comparison by specialty
+        visit_comp_specialty <- data %>%
+          group_by(Appt.Week, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
+          mutate(specialty = paste0(SITE," - ",Campus.Specialty))
+        
+        max <- visit_comp_specialty %>% group_by(Appt.Week) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_specialty, aes(x=Appt.Week, y=total, group=specialty, fill=specialty))+
+          geom_bar(position="stack", stat="identity")+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
+                       size=5, fontface="bold.italic")+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
       
     } else{
-      # Comparison by provider
-      visit_comp_prov <- data %>%
-        group_by(Appt.MonthYear, Provider) %>% summarise(total = n())
       
-      max <- visit_comp_prov %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
       
-      graph <- ggplot(visit_comp_prov, aes(x=Appt.MonthYear, y=total, group=Provider, fill=Provider))+
-        geom_bar(position="stack", stat="identity", width=0.7)+
-        scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-        stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                     size=5, fontface="bold.italic")
-      
+      if(input$analysis_type == "Monthly"){
+        # Comparison by provider
+        visit_comp_prov <- data %>%
+          group_by(Appt.MonthYear, Provider) %>% summarise(total = n())
+        
+        max <- visit_comp_prov %>% group_by(Appt.MonthYear) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_prov, aes(x=Appt.MonthYear, y=total, group=Provider, fill=Provider))+
+          geom_bar(position="stack", stat="identity", width=0.7)+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+                       size=5, fontface="bold.italic")
+        
+      } else{
+        # Comparison by provider
+        visit_comp_prov <- data %>%
+          group_by(Appt.Week, Provider) %>% summarise(total = n())
+        
+        max <- visit_comp_prov %>% group_by(Appt.Week) %>% summarise(total = sum(total))
+        
+        graph <- ggplot(visit_comp_prov, aes(x=Appt.Week, y=total, group=Provider, fill=Provider))+
+          geom_bar(position="stack", stat="identity", width=0.7)+
+          scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
+          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
+                       size=5, fontface="bold.italic")+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
     }
     
     graph + 
+      geom_text(aes(label=total), color="white", 
+                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       scale_fill_MountSinai('dark')+
       labs(title = paste0("Monthly ",visitType, " Volume Breakdown by Site\n"), 
            caption = paste0("\nIncludes ",apptType),
@@ -468,6 +561,7 @@ server <- function(input, output, session) {
   }, height = function(x) input$plotHeight)
   
   
+  # Volume Comparison Tab - Trend Graphs
   output$volumeCompTrend_grh <- renderPlot({
     
     data <- dataArrived_filtered()
@@ -485,42 +579,94 @@ server <- function(input, output, session) {
     
     
     if(input$comp_choices == "All"){
-      # Comparison by site
-      visit_comp_all <- data %>%
-        group_by(Appt.MonthYear) %>% summarise(total = n())
       
-      graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total, group=1))+
-        geom_line(size=1.1)+
-        geom_point(size=3)
+      if(input$analysis_type == "Monthly"){
+        # Comparison by site
+        visit_comp_all <- data %>%
+          group_by(Appt.MonthYear) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total, group=1))+
+          geom_line(size=1.1)+
+          geom_point(size=3)
+        
+      } else{
+        # Comparison by site
+        visit_comp_all <- data %>%
+          group_by(Appt.Week) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_all, aes(x=Appt.Week, y=total, group=1))+
+          geom_line(size=1.1)+
+          geom_point(size=3)+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
       
     } else if(input$comp_choices == "Site"){
-      # Comparison by site
-      visit_comp_site <- data %>%
-        group_by(Appt.MonthYear, SITE) %>% summarise(total = n())
       
-      graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE))+
-        geom_line(aes(color=SITE), size=1.1)+
-        geom_point(aes(color=SITE), size=3)
+      if(input$analysis_type == "Monthly"){
+        # Comparison by site
+        visit_comp_site <- data %>%
+          group_by(Appt.MonthYear, SITE) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE))+
+          geom_line(aes(color=SITE), size=1.1)+
+          geom_point(aes(color=SITE), size=3)
+        
+      } else{
+        # Comparison by site
+        visit_comp_site <- data %>%
+          group_by(Appt.Week, SITE) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_site, aes(x=Appt.Week, y=total, group=SITE))+
+          geom_line(aes(color=SITE), size=1.1)+
+          geom_point(aes(color=SITE), size=3)+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
       
     } else if(input$comp_choices == "Specialty"){
-      # Comparison by specialty
-      visit_comp_specialty <- data %>%
-        group_by(Appt.MonthYear, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
-        mutate(specialty = paste0(SITE," - ",Campus.Specialty))
       
-      graph <- ggplot(visit_comp_specialty, aes(x=Appt.MonthYear, y=total, group=specialty))+
-        geom_line(aes(color=specialty), size=1.1)+
-        geom_point(aes(color=specialty), size=3)
+      if(input$analysis_type == "Monthly"){
+        # Comparison by specialty
+        visit_comp_specialty <- data %>%
+          group_by(Appt.MonthYear, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
+          mutate(specialty = paste0(SITE," - ",Campus.Specialty))
+        
+        graph <- ggplot(visit_comp_specialty, aes(x=Appt.MonthYear, y=total, group=specialty))+
+          geom_line(aes(color=specialty), size=1.1)+
+          geom_point(aes(color=specialty), size=3)
+        
+      } else{
+        # Comparison by specialty
+        visit_comp_specialty <- data %>%
+          group_by(Appt.Week, SITE, Campus.Specialty) %>% summarise(total = n()) %>%
+          mutate(specialty = paste0(SITE," - ",Campus.Specialty))
+        
+        graph <- ggplot(visit_comp_specialty, aes(x=Appt.Week, y=total, group=specialty))+
+          geom_line(aes(color=specialty), size=1.1)+
+          geom_point(aes(color=specialty), size=3)+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
       
     } else{
-      # Comparison by provider
-      visit_comp_prov <- data %>%
-        group_by(Appt.MonthYear, Provider) %>% summarise(total = n())
       
-      graph <- ggplot(visit_comp_prov, aes(x=Appt.MonthYear, y=total, group=Provider))+
-        geom_line(aes(color=Provider), size=1.1)+
-        geom_point(aes(color=Provider), size=3)
-      
+      if(input$analysis_type == "Monthly"){
+        # Comparison by provider
+        visit_comp_prov <- data %>%
+          group_by(Appt.MonthYear, Provider) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_prov, aes(x=Appt.MonthYear, y=total, group=Provider))+
+          geom_line(aes(color=Provider), size=1.1)+
+          geom_point(aes(color=Provider), size=3)
+        
+      } else{
+        # Comparison by provider
+        visit_comp_prov <- data %>%
+          group_by(Appt.Week, Provider) %>% summarise(total = n())
+        
+        graph <- ggplot(visit_comp_prov, aes(x=Appt.Week, y=total, group=Provider))+
+          geom_line(aes(color=Provider), size=1.1)+
+          geom_point(aes(color=Provider), size=3)+
+          scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
+      }
     }
     
     graph + 
@@ -532,8 +678,125 @@ server <- function(input, output, session) {
       theme(axis.text.x = element_text(angle = 40, hjust=1))
     
   }, height = function(x) input$plotHeight)
+  
+  
+  # Population - Zip Code Analysis Tab --------------------------------------------------------------------------------------------
+  ## Bubble Map by Zip Code
+  output$zipCode_map <- renderLeaflet({
+    
+    newdata <- dataArrivedPop() %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
+    # newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
+    
+    # Create a color palette with handmade bins.
+    mybins <- round(seq(min(newdata$total), max(newdata$total), length.out=5),0)
+    mypalette <- colorBin(palette=MountSinai_palettes$pinkBlue, domain=quakes$mag, na.color="transparent", bins=mybins)
+    
+    all <- sum(newdata$total)
+    
+    # Prepare the text for the tooltip:
+    mytext <- paste(
+      "Total Visits: ", newdata$total, "<br/>",
+      "% of Total: ", paste0(round(newdata$total/all,2)*100, "%")) %>%
+      lapply(htmltools::HTML)
+    
+    # Set icons for each MSHS hospital
+    icons <- awesomeIcons(
+      icon = 'hospital-o',
+      lib = 'fa',
+      iconColor = "white",
+      markerColor = "lightgray")
+    
+    # Visit volume map 
+    leaflet(newdata) %>% 
+      addTiles()  %>% 
+      setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
+      addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%
+      addCircleMarkers(~longitude, ~latitude, 
+                       fillColor = ~mypalette(total), fillOpacity = 0.7, color="white", radius= ~total^(1/2), stroke=FALSE,
+                       label = mytext,
+                       labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")
+      ) %>%
+      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", positionyo = "bottomright") %>%
+      addAwesomeMarkers(
+        lng=-73.943324, lat=40.79171,
+        label='Mount Sinai Hospital',
+        icon = icons,
+        labelOptions = labelOptions(noHide = T, textsize='15px', textOnly = TRUE,
+                                    style=list('font-weight'= 'bold'))) %>%
+      addAwesomeMarkers(
+        lng=-73.92606, lat=40.77084,
+        label='Mount Sinai Queens',
+        icon = icons,
+        labelOptions = labelOptions(noHide = T, textsize='15px', textOnly = TRUE,
+                                    style=list('font-weight'= 'bold'))) %>%
+      addAwesomeMarkers(
+        lng=-73.98840, lat=40.73139,
+        label='Mount Sinai Union Square',
+        icon = icons,
+        labelOptions = labelOptions(noHide = T, textsize='15px', textOnly = TRUE,
+                                    style=list('font-weight'= 'bold'))) %>%
+      addAwesomeMarkers(
+        lng=-73.99181, lat=40.76719,
+        label='Mount Sinai West',
+        icon = icons,
+        labelOptions = labelOptions(noHide = T, textsize='15px', textOnly = TRUE,
+                                    style=list('font-weight'= 'bold'))) %>%
+      addAwesomeMarkers(
+        lng=-73.96316, lat=40.79834,
+        label="Mount Sinai Morningside",
+        icon = icons,
+        labelOptions = labelOptions(noHide = T, textsize='15px', textOnly = TRUE,
+                                    style=list('font-weight'= 'bold')))
+    
+  })
+  
+  ## Breakdown of Arrived Visits by Zip Code
+  output$zipCode_tb <- function(){
+    
+    data <- dataArrivedPop()
+    # data <- population.data_filtered
+    
+    zip_table <- data %>% group_by(`Zip Code Layer: A`) %>% summarise(total = n()) %>%
+      arrange(-total) %>%
+      mutate(perc = round(total/sum(total),2)*100) %>%
+      adorn_totals("row") %>%
+      mutate(perc = paste0(perc,"%"))
+      
+    manhattan <- data %>% group_by(`Zip Code Layer: B`) %>% summarise(total = n()) %>%
+      mutate(perc = paste0(round(total/sum(total),2)*100, "%")) %>%
+      filter(`Zip Code Layer: B` %in% c("Lower-Manhattan", "Middle-Manhattan", "Upper-Manhattan")) %>%
+      `colnames<-` (c("Zip Code Layer: A","total","perc"))
 
+    row_start <- which(zip_table$`Zip Code Layer: A` == "Manhattan") 
+
+    table_1 <- zip_table[1:row_start,]
+    table_2 <- zip_table[row_start+1:nrow(zip_table),]
+    
+    final_tb <- rbind(table_1, manhattan, table_2) %>% drop_na()
+ 
+    final_tb %>%
+      kable(escape = F, 
+            col.names = c("Zip Code Layer A - B", "Total Arrived", "Percent of Total")) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 18) %>%
+      add_header_above(c("Total Patients Arrived by Zipcode" = length(zip_table)),
+                       background = "#d80b8c", color = "white", font_size = 18, align = "center") %>%
+      add_indent(c(row_start+1, row_start+2, row_start+3), level_of_indent = 2) %>%
+      row_spec(1:nrow(final_tb), background = "	#e6e6e6", color = "black") %>%
+      row_spec(c(row_start+1, row_start+2, row_start+3), background = "#f2f2f2") %>%
+      row_spec(nrow(final_tb), background = "#fcc9e9", color = "black", bold = T) 
+   
+  }
+  
+  
+  
   
 } # Close Server
 
 shinyApp(ui, server)
+
+
+n <- 3
+hline <- seq(0.5, 0.5*n, by= 0.5)
+class(as.vector(hline))
+
+

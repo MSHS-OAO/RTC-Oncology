@@ -46,6 +46,9 @@
 # install.packages("sjmisc")
 # install.packages("shinyBS")
 # install.packages("shinyscreenshot")
+# install.packages("patchwork")
+# install.packages("ggtext")
+# install.packages("janitor")
 
 
 suppressMessages({
@@ -109,6 +112,9 @@ suppressMessages({
   library(shinyscreenshot)
   library(fasttime)
   library(shinycssloaders)
+  library(patchwork)
+  library(ggtext)
+  library(janitor)
 })
 
 # ### (0) Maximize R Memory Size 
@@ -260,9 +266,20 @@ theme_new_line <- function(base_size = 12,
           plot.margin = margin(30,30,30,30))
 }
 
-
-
-
+#added a theme for the tables
+table_theme <- function(){
+  theme(
+    panel.grid.minor = element_line(size = 0.3, colour = "black"),
+    panel.grid.major = element_blank(),
+    axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
+    legend.position = "none",
+    plot.title = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA, size=1),
+    axis.line.x = element_line(colour = "black", size=1),
+    plot.margin=unit(c(-0.5,1,1,1), "cm"))
+}
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
@@ -273,15 +290,12 @@ monthly_slot <<- here("Data/Slot/Monthly")
 singleday_access <<- here("Data/Access/SingleDay")
 singleday_slot <<- here("Data/Slot/SingleDay")
 
-
 # Set Working Directory (PILOT)
 #wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 #wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 # wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
 
-
 wdpath <- here::here()
-
 setwd(wdpath)
 
 
@@ -296,6 +310,9 @@ process_data <- function(access_data,slot_data){
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
   site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
+  zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
+  # zipcode_ref <-  read_excel(file.choose())
+  
   
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
@@ -412,7 +429,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new$Resource <- ifelse(data.subset.new$Resource == 1, "Provider", "Resource")
   
   ## Identify US Holidays in Data 
-  hld <- holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
+  hld <- tis::holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
   holid <- as.Date(as.character(hld), format = "%Y%m%d")
   names(holid) <- names(hld)
   holid <- as.data.frame(holid)
@@ -488,7 +505,7 @@ process_data <- function(access_data,slot_data){
 
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
-                            pattern = "*.csv", full.names = F))) 
+                            pattern = "*.csv" , full.names = F))) 
 }
 
 singleday_path_part <- function(singleday){
@@ -577,11 +594,13 @@ check_singleday(singleday_slot,monthly_slot)
 if (!(exists("access.data.raw"))){ 
   access.data.raw <<- list.files(path = "Data/Access/Monthly",
                                  pattern = "*.csv", full.names = TRUE) %>%
+  
     lapply(read_csv) %>%
     rbind.fill()
   
   slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
                                pattern = "*.csv", full.names = TRUE) %>%
+  
     lapply(read_csv) %>%
     rbind.fill()
   
@@ -632,6 +651,7 @@ if(out_of_date == 'TRUE'){
 ### (3) Import Site/Department Mapping File --------------------------------------------------------------------------------------
 #read the mapping file that was provided by Marcy
 # mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
+#mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 
 mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
 
@@ -725,6 +745,24 @@ noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + N
 noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
+
+
+
+
+### Zip Code Analysis =======================================
+data("zipcode")
+
+population.data <- arrived.data
+population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
+population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
+
+population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
+
+################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
+population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
+
+# nrow(population.data)
+# nrow(population.data_filtered)
 
 # ## Slot datasets
 # past.slot.data <- slot.data.subset %>% filter(Appt.DTTM <= max_date, Appt.DTTM >= max_date - 365)
