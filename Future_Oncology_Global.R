@@ -46,6 +46,9 @@
 # install.packages("sjmisc")
 # install.packages("shinyBS")
 # install.packages("shinyscreenshot")
+# install.packages("patchwork")
+# install.packages("ggtext")
+# install.packages("janitor")
 
 
 suppressMessages({
@@ -109,6 +112,9 @@ suppressMessages({
   library(shinyscreenshot)
   library(fasttime)
   library(shinycssloaders)
+  library(patchwork)
+  library(ggtext)
+  library(janitor)
 })
 
 # ### (0) Maximize R Memory Size 
@@ -260,9 +266,20 @@ theme_new_line <- function(base_size = 12,
           plot.margin = margin(30,30,30,30))
 }
 
-
-
-
+#added a theme for the tables
+table_theme <- function(){
+  theme(
+    panel.grid.minor = element_line(size = 0.3, colour = "black"),
+    panel.grid.major = element_blank(),
+    axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
+    legend.position = "none",
+    plot.title = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA, size=1),
+    axis.line.x = element_line(colour = "black", size=1),
+    plot.margin=unit(c(-0.5,1,1,1), "cm"))
+}
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
