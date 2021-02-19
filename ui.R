@@ -469,7 +469,7 @@ ui <- dashboardPage(
           box(
             title = "Analysis by:",
             width = 12,
-            height = "100px",
+            height = "110px",
             solidHeader = FALSE,
             awesomeRadio(
               inputId = "analysis_type",

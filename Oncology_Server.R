@@ -295,7 +295,7 @@ server <- function(input, output, session) {
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","All Visit Volume Composition\n"),x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -303,11 +303,7 @@ server <- function(input, output, session) {
     
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-<<<<<<< HEAD
       geom_text(size = 5, vjust = "center", hjust = "center")+
-=======
-      geom_text(size = 5, vjust = "center", hjust = "center", fontface  = "bold")+
->>>>>>> 5f136795833e0ec0e244a78b7c537cf7ea537af7
       geom_hline(yintercept = c(1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
@@ -345,7 +341,7 @@ server <- function(input, output, session) {
       labs(title = paste0(site," ","Exam Visit Volume Composition\n"), 
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -353,8 +349,8 @@ server <- function(input, output, session) {
     
     g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-      geom_text(size = 5, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListB")+
@@ -392,7 +388,7 @@ server <- function(input, output, session) {
       labs(title = paste0(site," ","Treatment Visit Volume Composition\n"), 
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
+      theme(axis.title.y = element_text(size = 12, angle = 90))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -400,8 +396,8 @@ server <- function(input, output, session) {
     
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
-      geom_text(size = 5, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = c(2.5), colour='black')+
+      geom_text(size = 5, vjust = "center", hjust = "center")+
+      geom_hline(yintercept = c(0.5, 1.5, 2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListT")+
@@ -413,29 +409,6 @@ server <- function(input, output, session) {
     
   }, height = function(x) input$plotHeight)
 
-  # output$break_visitstable <- function(){
-  #   
-  #   data <- dataArrived()
-  #   data <- arrived.data
-  #   
-  #   visits_tb <- data %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
-  #     spread(Appt.Year, total)
-  #   
-  #   
-  #   months <- append(unique(visits_tb$Appt.Month),"Total")
-  #   
-  #   total_val <- colSums(visits_tb[,-1])
-  #   visits_tb <- rbind(visits_tb, total_val)
-  #   
-  #   visits_tb$Appt.Month <- months
-  #   
-  #   visits_tb <- variance 
-  #   
-  #   visits_tb$variance1 <- visits_tb[,3]-visits_tb[,2]
-  #   visits_tb$variance_perc <- visits_tb
-  #   
-  # }
-  
 
 # Volume Comparison Tab ------------------------------------------------------------------------------------------------------
   #Volume Comparison Tab - Total Breakdown
@@ -576,6 +549,8 @@ server <- function(input, output, session) {
     }
     
     graph + 
+      geom_text(aes(label=total), color="white", 
+                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       scale_fill_MountSinai('dark')+
       labs(title = paste0("Monthly ",visitType, " Volume Breakdown by Site\n"), 
            caption = paste0("\nIncludes ",apptType),
@@ -741,7 +716,7 @@ server <- function(input, output, session) {
                        label = mytext,
                        labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")
       ) %>%
-      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", position = "bottomright") %>%
+      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", positionyo = "bottomright") %>%
       addAwesomeMarkers(
         lng=-73.943324, lat=40.79171,
         label='Mount Sinai Hospital',
@@ -818,6 +793,7 @@ server <- function(input, output, session) {
 } # Close Server
 
 shinyApp(ui, server)
+
 
 n <- 3
 hline <- seq(0.5, 0.5*n, by= 0.5)
