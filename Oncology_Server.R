@@ -255,7 +255,7 @@ server <- function(input, output, session) {
       kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
       add_header_above(c("Total Visit Volume" = 3),
                       color = "black", font_size = 22, align = "center") %>%
-      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#212070", color = "white")
+      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#d80b8c", color = "white")
     
     # months <- append(unique(visits_tb$Appt.Month),"Total")
     # 
@@ -779,8 +779,9 @@ server <- function(input, output, session) {
             col.names = c("Zip Code Layer A - B", "Total Arrived", "Percent of Total")) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 18) %>%
       add_header_above(c("Total Patients Arrived by Zipcode" = length(zip_table)),
-                       background = "#d80b8c", color = "white", font_size = 18, align = "center") %>%
+                       color = "black", font_size = 20, align = "center") %>%
       add_indent(c(row_start+1, row_start+2, row_start+3), level_of_indent = 2) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       row_spec(1:nrow(final_tb), background = "	#e6e6e6", color = "black") %>%
       row_spec(c(row_start+1, row_start+2, row_start+3), background = "#f2f2f2") %>%
       row_spec(nrow(final_tb), background = "#fcc9e9", color = "black", bold = T) 
