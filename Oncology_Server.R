@@ -263,22 +263,43 @@ server <- function(input, output, session) {
 
     data <- dataArrived()
     # data <- arrived.data
-
+    
+    #get the total patients per year
+    visits_tb_yearly <- data %>% 
+      filter(AssociationListA %in% input$annualVolSummary) %>%
+      group_by(Appt.Year) %>% summarise(total = n()) %>%
+      spread(Appt.Year, total)
+    visits_tb_yearly$Appt.Month <- "TOTAL Annual  Comparison"
+    visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+    
+    #get the total patients per year per month
     visits_tb <- data %>% 
       filter(AssociationListA %in% input$annualVolSummary) %>%
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
       spread(Appt.Year, total)
     
+    #include all the months needed
     visits_tb <- visits_tb[match(monthOptions, visits_tb$Appt.Month),]
     visits_tb$Appt.Month <- monthOptions
     
-    visits_tb %>%
+    #bind the total visits per month per year with the total yeraly visits 
+    visits_tb_total <- rbind(visits_tb, visits_tb_yearly)
+    
+    #calculate the difference between the two years
+    #to do: make itn more dynamic 
+    
+    visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+
+    visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
+    
+    visits_tb_total %>%
       kable(escape = F, align = "c",
-            col.names = c("Month", "2020", "2021")) %>%
+            col.names = c("Month", "2020", "2021", "Variance \n (2020-2021)", "% Variance \n (2020-2021)")) %>%
       kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
-      add_header_above(c("Total Visit Volume" = 3),
-                      color = "black", font_size = 22, align = "center") %>%
-      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#d80b8c", color = "white")
+      add_header_above(c("Total Visit Volume" = 3, "Volume Variance" = 2),  background = "#7f7f7f", color = "white", font_size = 22, align = "center") %>%
+      column_spec(column = c(1, 3, 5), border_right = "thin solid lightgray") %>%
+      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#7f7f7f", color = "white") %>%
+      row_spec(row = 13, bold = TRUE, background = "#a5a7a5", color = "white")
     
     # months <- append(unique(visits_tb$Appt.Month),"Total")
     # 
