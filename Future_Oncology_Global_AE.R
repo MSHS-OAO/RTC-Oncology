@@ -283,50 +283,108 @@ table_theme <- function(){
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
-#singleday_path <<- here("Data/Access/SingleDay")
-#monthly_path <<- here("Data/Access/Monthly")
-monthly_access <<- here("Data/Access/Monthly")
-monthly_slot <<- here("Data/Slot/Monthly")
-singleday_access <<- here("Data/Access/SingleDay")
-singleday_slot <<- here("Data/Slot/SingleDay")
+# Define file paths for use later in the script
+#monthly_access <<- here("Data/Access/Monthly")
+#monthly_slot <<- here("Data/Slot/Monthly")
+#singleday_access <<- here("Data/Access/SingleDay")
+#singleday_slot <<- here("Data/Slot/SingleDay")
+
+ifelse (list.files("J://") == "Presidents", user_directory <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects", 
+        user_directory <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects")
+
+monthly_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/Monthly")
+monthly_slot <-paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/Monthly")
+singleday_access <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Access/SingleDay")
+singleday_slot <- paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Slot/SingleDay")
+
 
 # Set Working Directory (PILOT)
 #wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 #wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
 # wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
 
-wdpath <- here::here()
-setwd(wdpath)
+
+#wdpath <- here::here()
+
+#setwd(wdpath)
 
 
 #master.data.new_new <- data_all
+
 
 # ## Utilization Data
 # data.hour.scheduled <- read_csv("Data/Utilization/data.hour.scheduled.pilotV1.csv")
 # data.hour.arrived <- read_csv("Data/Utilization/data.hour.arrived.pilotV1.csv")
 
+
+# process_data function includes reading in the mapping file creating an renaming slot and access columns
+# the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
+
 process_data <- function(access_data,slot_data){
   slot.data.raw <- slot_data
   ## Site-Dept Reference File
   #site_ref <-  read_xlsx("Data/Department Site Crosswalk 8-24-2020.xlsx", col_names = TRUE, na = c("", "NA")) 
-  site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
-  zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
-  # zipcode_ref <-  read_excel(file.choose())
-  
+  #site_ref <- read_excel("Data/Ambulatory Department Mapping (Master).xlsx",sheet = "Mapping")
+  site_ref <- read_excel(paste0(user_directory, "/System Operations/Ambulatory Dashboard/Pilot Application v1/Data/Ambulatory Department Mapping (Master).xlsx"),sheet = "Mapping")
   
   ### (3) Pre-process data ----------------------------------------------------------------------------------
   # SCheduling Data Pre-processing
   data.raw <- access_data # Assign scheduling Data
   data.raw$campus_new <- site_ref$`Site`[match(data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)] # Crosswalk Campus to Site by Department Name
-  data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
-  
+  #data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  data.raw <- filter(data.raw, campus_new == "Oncology")
   # Dummy columns until they are added to Clarity table: SEX, FPA
   data.raw$SEX <- "Male"
   data.raw$VITALS_TAKEN_TM <- ""
   data.raw$Provider_Leave_DTTM <- ""
   
+  
+###### Processing the Reference File
+  #read the mapping file that was provided by Marcy
+  #mapping_file <- here("Data/EPIC Data - [Department ID] to Site - Oncology System Data Groupings 1.6.2020.xlsx")
+  mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
+  
+  #from the mapping file import the department ID sheet
+  department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")
+  department_mapping <- department_mapping[1:(length(department_mapping)-2)]
+  
+  #returns string without leading or trailing white space
+  trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+  
+  ##remove the space at the end and at the beginning when applicable
+  department_mapping$`EPIC  Department` <- trim(department_mapping$`EPIC  Department`)
+  
+  #change column names for the department mapping
+  colnames(department_mapping) <- c("System", "DEPARTMENT_NAME", "DEPARTMENT_ID", "SITE", "ACTIVE", "Notes")
+  
+  #from the mapping file import the department PRC sheet
+  PRC_mapping <- read_excel(mapping_file, sheet = "Visit Type 'PRC Name' -Mappings")
+  PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
+  
+  ##remove the space at the end and at the beginning when applicable
+  PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+  PRC_mapping$`Sch VisitTypeName/ PRC Name` <- toupper(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
+  
+  #####change all to first word capitalized
+  PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
+  PRC_mapping$`Association List : A` <- str_to_title(PRC_mapping$`Association List : A`)
+  
+  PRC_mapping$`Association List: B` <- str_to_title(PRC_mapping$`Association List: B`)
+  
+  PRC_mapping$`Association List: T` <- str_to_title(PRC_mapping$`Association List: T`)
+  
+  #change column names for the PRC mapping
+  colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "AssociationListT", "InPersonvsTele")
+  
+  #merge the ambulatory data with the grouping data
+  amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
+  amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
+  
+  
+  data.raw <- amb_df_groupings_
+  
   # Data fields incldued for analysis 
-  original.cols <- c("campus_new","DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID", "REFERRING_PROV_NAME_WID",
+  original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID",
                      "MRN","PAT_NAME","ZIP_CODE","SEX","BIRTH_DATE","FINCLASS",
                      "APPT_MADE_DTTM","APPT_DTTM","PRC_NAME","APPT_LENGTH","DERIVED_STATUS_DESC",
                      "APPT_CANC_DTTM", "CANCEL_REASON_NAME",
@@ -335,13 +393,14 @@ process_data <- function(access_data,slot_data){
                      "PHYS_ENTER_DTTM","Provider_Leave_DTTM",
                      "VISIT_END_DTTM","CHECKOUT_DTTM",
                      "TIME_IN_ROOM_MINUTES","CYCLE_TIME_MINUTES","VIS_NEW_TO_DEP_YN","LOS_NAME", "DEP_RPT_GRP_THIRTYONE", 
-                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C")
+                     "APPT_ENTRY_USER_NAME_WID", "ACCESS_CENTER_SCHEDULED_YN", "VISIT_METHOD", "VISIT_PROV_STAFF_RESOURCE_C",
+                     "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID", "InPersonvsTele")
   
   # Subset raw data 
   data.subset <- data.raw[original.cols]
   
   # Rename data fields (columns) 
-  new.cols <- c("Campus","Campus.Specialty","Department","Provider", "Ref.Provider",
+  new.cols <- c("Campus.Specialty","Department","Provider", "Ref.Provider",
                 "MRN","Patient.Name","Zip.Code","Sex","Birth.Date","Coverage",
                 "Appt.Made.DTTM","Appt.DTTM","Appt.Type","Appt.Dur","Appt.Status",
                 "Appt.Cancel.DTTM", "Cancel.Reason",
@@ -350,9 +409,15 @@ process_data <- function(access_data,slot_data){
                 "Providerin_DTTM","Providerout_DTTM",
                 "Visitend.DTTM","Checkout.DTTM",
                 "Time.in.room","Cycle.time","New.PT","Class.PT","Cadence",
-                "Appt.Source","Access.Center","Visit.Method","Resource")
+                "Appt.Source","Access.Center","Visit.Method","Resource",
+                "SITE", "System", "ACTIVE", "Notes", "AssociationListA","AssociationListB","AssociationListT", "DEPARTMENT_ID","InPersonvsTele")
   
   colnames(data.subset) <- new.cols
+  
+  #delete duplicates 
+  data.subset <-
+    data.subset %>% 
+    distinct(MRN, Appt.DTTM, Appt.Type, Provider, Appt.Status,  .keep_all = TRUE)
   
   # Format Date and Time Columns
   dttm.cols <- c("Birth.Date","Appt.Made.DTTM","Appt.DTTM","Appt.Cancel.DTTM",
@@ -380,6 +445,8 @@ process_data <- function(access_data,slot_data){
   
   # Remove Provider ID from Provider Name column
   data.subset$Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Provider))
+  
+  # Remove Provider ID from Referring Provider Name column
   data.subset$Ref.Provider <- trimws(gsub("\\[.*?\\]", "", data.subset$Ref.Provider))
   
   # New Patient Classification based on level of care ("LOS_NAME")
@@ -429,7 +496,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new$Resource <- ifelse(data.subset.new$Resource == 1, "Provider", "Resource")
   
   ## Identify US Holidays in Data 
-  hld <- tis::holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
+  hld <- holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
   holid <- as.Date(as.character(hld), format = "%Y%m%d")
   names(holid) <- names(hld)
   holid <- as.data.frame(holid)
@@ -456,32 +523,35 @@ process_data <- function(access_data,slot_data){
   
   # Crosswalk Campus to Site by Department Name
   slot.data.raw$Campus_new <- site_ref$`Site`[match(slot.data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)]
-  slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- filter(slot.data.raw, Campus_new == "Oncology")
+  #slot.data.raw <- slot.data.raw %>% filter(!Campus_new == "NA") %>% filter(!Campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
+  slot.data.raw <- merge(slot.data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   
   # Data fields incldued for analysis
-  original.cols.slots <- c("Campus_new",
-                           "DEPT_SPECIALTY_NAME",
+  original.cols.slots <- c("DEPT_SPECIALTY_NAME",
                            "DEPARTMENT_NAME","PROVIDER_NAME",
                            "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                            "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
                            "AVAIL_SLOTS","BOOKED_SLOTS","ARRIVED_SLOTS","CANCELED_SLOTS","NOSHOW_SLOTS","LEFTWOBEINGSEEN_SLOTS",
-                           "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","VISIT_PROV_STAFF_RESOURCE_C")
+                           "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","VISIT_PROV_STAFF_RESOURCE_C",
+                           "System", "DEPARTMENT_ID", "SITE", "ACTIVE","Notes")
   
   # Subset raw slot usage data
   slot.data.subset <- slot.data.raw[original.cols.slots]
   
   # Rename data columns to match schduling data
-  new.cols.slots <- c("Campus",
-                      "Campus.Specialty",
+  new.cols.slots <- c("Campus.Specialty",
                       "Department","Provider",
                       "SLOT_BEGIN_TIME","NUM_APTS_SCHEDULED","SLOT_LENGTH",
                       "AVAIL_MINUTES","BOOKED_MINUTES","ARRIVED_MINUTES","CANCELED_MINUTES","NOSHOW_MINUTES","LEFTWOBEINGSEEN_MINUTES",
                       "AVAIL_SLOTS","BOOKED_SLOTS","ARRIVED_SLOTS","CANCELED_SLOTS","NOSHOW_SLOTS","LEFTWOBEINGSEEN_SLOTS",
-                      "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","Resource")
+                      "ORG_REG_OPENINGS","ORG_OVBK_OPENINGS","PRIVATE_YN","DAY_UNAVAIL_YN","TIME_UNAVAIL_YN","DAY_HELD_YN","TIME_HELD_YN","OUTSIDE_TEMPLATE_YN","Resource",
+                      "System", "DEPARTMENT_ID", "SITE", "ACTIVE","Notes")
   
   colnames(slot.data.subset) <- new.cols.slots
   
   # Create additional columns for Slot Data
+  
   slot.data.subset$BOOKED_MINUTES <- slot.data.subset$BOOKED_MINUTES + slot.data.subset$CANCELED_MINUTES # Booked + Canceled Minutes 
   slot.data.subset$Appt.DTTM <- as.POSIXct(slot.data.subset$SLOT_BEGIN_TIME,format="%Y-%m-%d %H:%M:%S",tz=Sys.timezone(),origin = "1970-01-01")
   slot.data.subset$Appt.DateYear <- as.Date(slot.data.subset$SLOT_BEGIN_TIME, format="%Y-%m-%d") ## Create day of week colunm
@@ -503,25 +573,42 @@ process_data <- function(access_data,slot_data){
   return(reuturn_list)
 }
 
+#takes in a single argument, a monthly file path, and returns a list of the file names within that folder 
+#monthly_path_part <- function(monthly){
+#  return(as.list(list.files(path = monthly,     # Identify all csv files in folder
+#                            pattern = "*.csv", full.names = F))) 
+#}
+
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
-                            pattern = "*.csv" , full.names = F))) 
+                            pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv" , full.names = F))) 
 }
 
+#takes in a single argument, a singleday file path, and returns a list of the file names within that folder 
 singleday_path_part <- function(singleday){
   return(as.list(list.files(path = singleday,     # Identify all csv files in folder
                             pattern = "*.csv", full.names = F))) 
 } 
 
 
+#readin_data_all <- function(){
+#  data_all <<- list.files(path = monthly_path,     # Identify all csv files in folder
+#                          pattern = "*.csv", full.names = TRUE) %>%   
+#    lapply(read_csv) %>%                                            # Store all files in list
+#    bind_rows()
+#  return(data_all)
+#}
+
 readin_data_all <- function(){
   data_all <<- list.files(path = monthly_path,     # Identify all csv files in folder
-                          pattern = "*.csv", full.names = TRUE) %>%   
+                          pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%   
     lapply(read_csv) %>%                                            # Store all files in list
     bind_rows()
   return(data_all)
 }
 
+#takes in a single input, a single day file path, and reads in all the files within 
+#that folder.  The function returns a data frame containing all the data within the folder
 read_singleday <- function(singleday){
   dataset <- NULL
   for (data in list.files(singleday,pattern = ".*csv", full.names = T)){
@@ -534,6 +621,8 @@ read_singleday <- function(singleday){
   }
 }
 
+#functions takes in a data frame(slot or access data) input and returns the 
+#max date within that data frame
 max_date_data_type <- function(data_type){
   if(!is.null(slot.data.raw$SLOT_BEGIN_TIME)){
     max_date_data_all <- date(max(slot.data.raw$SLOT_BEGIN_TIME))
@@ -543,6 +632,9 @@ max_date_data_type <- function(data_type){
   return(max_date_data_all)
 } 
 
+
+#Function takes in a singleday and monthly file path and returns the max date in monthly,
+# max month of monthly, and max month in singleday
 max_date <- function(singleday,monthly){ 
   monthly_months <- data.frame(Date = file_path_sans_ext(monthly_path_part(monthly)))
   max_file_monthly <- max(as.Date(monthly_months$Date, "%Y-%m-%d",origin = "1970-01-01"))
@@ -561,6 +653,13 @@ max_date <- function(singleday,monthly){
   return(max_date_list)
 }
 
+#Function takes in a singleday and monthly file path, if there is a file in 
+#singleday detected then this will read in the file/s using the read_singleday function
+#(decribed above) and checks to see if the months in the the single day and monthly 
+# folders are the same using max_date function (described above) to return the months
+# if they match the singleday data will be appended to the respective monthly file
+#else it will create a new monthly file for the new month data
+#Lastly it will remove all the files in singleday since all new data is contained within monthly
 
 check_singleday <- function(singleday,monthly){
   filein_singleday = !is_empty(singleday_path_part(singleday))
@@ -585,24 +684,42 @@ check_singleday <- function(singleday,monthly){
   
 }
 
+#check_singleday (described above) function call for slot and access data
 check_singleday(singleday_access,monthly_access)
 check_singleday(singleday_slot,monthly_slot)
 
 
 # Load Data Files
 ## Scheduling Data
+
+#if statement to check if data already exists if it doesn't then read in all data
+# from the slot and access monthly files and assign them to access.data.raw and slot.data.raw
+# this will also create the data.subset.new, slot.data.subset, and holid by using the
+# process_data function (described above)
+
 if (!(exists("access.data.raw"))){ 
-  access.data.raw <<- list.files(path = "Data/Access/Monthly",
-                                 pattern = "*.csv", full.names = TRUE) %>%
+  #access.data.raw <<- list.files(path = "Data/Access/Monthly",
+   #                              pattern = "*.csv", full.names = TRUE) %>%
+    #lapply(read_csv) %>%
+    #rbind.fill()
   
+  #slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
+   #                            pattern = "*.csv", full.names = TRUE) %>%
+    #lapply(read_csv) %>%
+    #rbind.fill()
+  
+  access.data.raw <- list.files(path = monthly_access,
+                                pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
   
-  slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
-                               pattern = "*.csv", full.names = TRUE) %>%
-  
+  #slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
+  #                             pattern = "*.csv", full.names = TRUE) %>%
+  slot.data.raw <- list.files(path = monthly_slot,
+                              pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
+  
   
   process_data_run <- process_data(access.data.raw,slot.data.raw)
   data.subset.new <- process_data_run[[2]]
@@ -612,126 +729,44 @@ if (!(exists("access.data.raw"))){
 
 
 
-max_date_access <- max_date_data_type(data.subset.new)
-max_date_monthly_access <- max_date(singleday_access,monthly_access)[[1]]
-out_of_date <- !(isTRUE((all.equal(max_date_access,max_date_monthly_access))))
+max_date_access <- max_date_data_type(data.subset.new) # get the max date in data.subset.new
+max_date_monthly_access <- max_date(singleday_access,monthly_access)[[1]] #get the max date in the monthly access folder
+out_of_date <- !(isTRUE((all.equal(max_date_access,max_date_monthly_access)))) #checks to see if the data.subset.new is out of date with what is in the monthly folder
 max_date_slot <- max_date_data_type(slot.data.raw)
 #max_date_monthly_slot <- max_date(singleday_slot,monthly_slot)[[1]]
 max_date_monthly_slot <- max_date_monthly_access
 
-if(out_of_date == 'TRUE'){
-  missing_dates_monthly_access <- data.frame(Date = format(as.Date(as.Date(max_date_access+1):as.Date(max_date_monthly_access), origin="1970-01-01"), "%m-%d-%Y"))
-  max_month_monthly_access <- format(max_date_monthly_access,"%m")
+
+
+if(out_of_date == 'TRUE'){ #check if out_of date is true
+  missing_dates_monthly_access <- data.frame(Date = format(as.Date(as.Date(max_date_access+1):as.Date(max_date_monthly_access), origin="1970-01-01"), "%m-%d-%Y")) # makes a data frame that contains the missing dates from data.subset.new
+  max_month_monthly_access <- format(max_date_monthly_access,"%m") 
   curr_year <- format(Sys.Date(), "%Y")
-  recent_monthly_filepath_access <- paste0(monthly_access,"/",curr_year,"-",max_month_monthly_access,"-01.csv")
-  recent_monthly_data_access <- read_csv(recent_monthly_filepath_access)
-  missing_date_data_access <- subset(recent_monthly_data_access, APPT_DTTM >= (max_date_access+1))
+  recent_monthly_filepath_access <- paste0(monthly_access,"/",curr_year,"-",max_month_monthly_access,"-01.csv")# creates the file path to the mosr recent monthly file
+  recent_monthly_data_access <- read_csv(recent_monthly_filepath_access)# reads in the data from the created most recent monthly file path
+  missing_date_data_access <- subset(recent_monthly_data_access, APPT_DTTM >= (max_date_access+1))# subsets the data to include only the missing data (determined above)
   #data_all  <- bind_rows(data_all,missing_date_data)
-  missing_dates_monthly_slot <- data.frame(Date = format(as.Date(as.Date(max_date_slot+1):as.Date(max_date_monthly_slot), origin="1970-01-01"), "%m-%d-%Y"))
+  missing_dates_monthly_slot <- data.frame(Date = format(as.Date(as.Date(max_date_slot+1):as.Date(max_date_monthly_slot), origin="1970-01-01"), "%m-%d-%Y"))# makes a data frame that contains the missing dates from slot.data.raw
   max_month_monthly_slot <- month(max_date_monthly_slot)
-  recent_monthly_filepath_slot <- paste0(monthly_slot,"/",curr_year,"-",max_month_monthly_access,"-01.csv")
-  recent_monthly_data_slot <- read_csv(recent_monthly_filepath_slot)
-  missing_date_data_slot <- subset(recent_monthly_data_slot, SLOT_BEGIN_TIME >= (max_date_access+1))
+  recent_monthly_filepath_slot <- paste0(monthly_slot,"/",curr_year,"-",max_month_monthly_access,"-01.csv")# Creates the file path for the most recent month in the slot monthly folder
+  recent_monthly_data_slot <- read_csv(recent_monthly_filepath_slot) # reads in the slot monthly data from the create path above
+  missing_date_data_slot <- subset(recent_monthly_data_slot, SLOT_BEGIN_TIME >= (max_date_access+1)) # subsets the data to include only the missing data (determined above)
   
   
-  processed_dataset <- process_data(missing_date_data_access,missing_date_data_slot)
-  slot.data.subset.missing <- processed_dataset[[1]]
-  data.subset.new.missing <- processed_dataset[[2]]
-  slot.data.subset <- bind_rows(slot.data.subset,slot.data.subset.missing)
-  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing)
-  #slot.comb.path <- paste0(combined_path_slot,"/",max_date_monthly)
-  #access.comb.path <- paste0(combined_path_access,"/",max_date_monthly)
-  #file.remove(list.files(path = slot.data.subset,pattern = "*.rds", full.names = T))
-  #file.remove(list.files(path = data.subset.new,pattern = "*.rds", full.names = T))
-  # slot.data.subset <- process_data(data_all)[[1]]
-  # data.subset.new <- process_data(data_all)[[2]]
+  processed_dataset <- process_data(missing_date_data_access,missing_date_data_slot) #using the process_data function pre processes only the missing data for slot and access
+  slot.data.subset.missing <- processed_dataset[[1]] # gets the processed slot data from above
+  data.subset.new.missing <- processed_dataset[[2]] #gets the processed access data from above
+  slot.data.subset <- bind_rows(slot.data.subset,slot.data.subset.missing) #amends the missing slot data to slot.data.subset
+  data.subset.new <- bind_rows(data.subset.new,data.subset.new.missing) # amends the missing access data to data.subset.new
 }
 
 
-### (3) Import Site/Department Mapping File --------------------------------------------------------------------------------------
-#read the mapping file that was provided by Marcy
-# mapping_file <- choose.files(default = paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/*.*"), caption = "Select mapping file")
-#mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
-
-mapping_file <- choose.files("/Data/*.*", caption = "Select mapping file")
-
-#from the mapping file import the department ID sheet
-department_mapping <- read_excel(mapping_file, sheet = "OncSystem - Dept ID Mappings")
-department_mapping <- department_mapping[1:(length(department_mapping)-2)]
-
-#returns string without leading or trailing white space
-trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-
-##remove the space at the end and at the beginning when applicable
-department_mapping$`EPIC  Department` <- trim(department_mapping$`EPIC  Department`)
-
-#change column names for the department mapping
-colnames(department_mapping) <- c("System", "DEPARTMENT_NAME", "DEPARTMENT_ID", "SITE", "ACTIVE", "Notes")
-
-#from the mapping file import the department PRC sheet
-PRC_mapping <- read_excel(mapping_file, sheet = "Visit Type 'PRC Name' -Mappings")
-PRC_mapping <- PRC_mapping[1:(length(PRC_mapping)-2)]
-
-##remove the space at the end and at the beginning when applicable
-PRC_mapping$`Sch VisitTypeName/ PRC Name` <- trim(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
-PRC_mapping$`Sch VisitTypeName/ PRC Name` <- toupper(PRC_mapping$`Sch VisitTypeName/ PRC Name`)
-
-
-#####change all to first word capitalized
-PRC_mapping$`Association List : A`[PRC_mapping$`Association List : A` == "Lab"] <- "Labs"
-PRC_mapping$`Association List : A` <- str_to_title(PRC_mapping$`Association List : A`)
-
-PRC_mapping$`Association List: B` <- str_to_title(PRC_mapping$`Association List: B`)
-
-PRC_mapping$`Association List: T` <- str_to_title(PRC_mapping$`Association List: T`)
-
-#change column names for the PRC mapping
-colnames(PRC_mapping) <- c("PRC_NAME", "AssociationListA", "AssociationListB", "AssociationListT", "InPersonvsTele")
-
-
-### (4) Merge pre-processed data and mapping file ----------------------------------------------------------------------------------
-
-#merge the ambulatory data with the grouping data
-amb_df_groupings <- merge(data.subset.new, department_mapping, by.x=c("Department"), by.y=c("DEPARTMENT_NAME"), all.x = TRUE)
-
-# Oncology departments mapped as Oncology in Amb Care Mapping but not in Oncology Mapping ==========================================
-# test <- amb_df_groupings %>% filter(is.na(System))
-# missing <- filter(test, grepl('Oncology', Campus.Specialty))
-# missing.depts <- unique(missing[,c("Campus.Specialty","Department")])
-
-amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by.x=c("Appt.Type"), by.y=c("PRC_NAME"), all.x = TRUE)
-
-# test2 <- amb_df_groupings_ %>% filter(!is.na(System))
-# missing_PRC <- test2 %>% filter(is.na(ACTIVE))
-
-############################## FILTER OUT ONCOLOGY DATA ONLY #######################################################################
-amb_df_groupings_ <- amb_df_groupings_ %>% filter(!is.na(System))
-
-
-### (5) Filter Out Duplicates ------------------------------------------------------------------------------------------------------
-
-#only keep unique visits --> unique visits are defined as the visits with different
-#MRN, appt date time, PRC name, provider name, and appt status 
-amb_df_groupings_unique <-
-  amb_df_groupings_ %>% 
-  distinct(MRN, Appt.DTTM, Appt.Type, Provider, Appt.Status,  .keep_all = TRUE)
-
-
-
 ### (6) Data Subset -----------------------------------------------------------------------------------------------------
-max_date <- amb_df_groupings_unique %>% filter(Appt.Status %in% c("Arrived"))
+max_date <- data.subset.new %>% filter(Appt.Status %in% c("Arrived"))
 max_date <- max(max_date$Appt.DateYear) ## Or Today's Date
-historical.data <- amb_df_groupings_unique %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
+historical.data <- data.subset.new %>% filter(Appt.DateYear<= max_date) ## Filter out historical data only
 historical.data$Ref.Provider[is.na(historical.data$Ref.Provider)] <- "NONE"
 
-
-# ## KPI datasets
-# kpi.all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 3*365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
-# kpi.arrivedNoShow.data <- kpi.all.data %>% filter(Appt.Status %in% c("Arrived","No Show"))  ## Arrived + No Show data: Arrived and No Show
-# kpi.arrived.data <- kpi.arrivedNoShow.data %>% filter(Appt.Status %in% c("Arrived")) ## Arrived data: Arrived
-# kpi.canceled.bumped.data <- kpi.all.data %>% filter(Appt.Status %in% c("Canceled","Bumped")) ## Arrived data: Arrived
-# kpi.canceled.data <- kpi.canceled.bumped.data %>% filter(Appt.Status %in% c("Canceled")) ## Canceled data: canceled appointments only
-# kpi.bumped.data <-kpi.canceled.bumped.data %>% filter(Appt.Status %in% c("Bumped")) ## Bumped data: bumped appointments only
 
 ## Other datasets
 all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
@@ -746,27 +781,24 @@ noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped
 arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
 
 
+### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
+#zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
+zipcode_ref <- read_excel(paste0(user_directory, "/Service Lines/Oncology/Data/Docs from Marcy/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx"))
 
-
-### Zip Code Analysis =======================================
 data("zipcode")
 
-zipcode_ref <-  read_excel("Data/Oncology System Data - Zip Code Groupings 2.18.2021.xlsx")
 population.data <- arrived.data
 population.data$new_zip <- clean.zipcodes(population.data$Zip.Code)
 population.data <- merge(population.data, zipcode_ref, by.x="new_zip", by.y="Zip Code", all.x = TRUE)
 
 population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", all.x = TRUE)
 
-################ FILTER OUT DATA WITH ONCOLOGY ZIP CODE GROUPER MAPPING #########################################################################
 population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
-
-nrow(population.data)
-nrow(population.data_filtered)
+### Missing zip codes in Zip Code Grouper filer?
 
 
-### Unique Visits Analysis ==================================
+### Unique Visits Analysis ----------------------------------------------------------------------------------------------
 uniquePts.data <- arrived.data
 
 uniquePts.all.data <- uniquePts.data %>%
@@ -774,7 +806,7 @@ uniquePts.all.data <- uniquePts.data %>%
          uniqueSystemMonth = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
                                                           grep("Appt.Month", colnames(uniquePts.data)))]),
          uniqueSite = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
-                                                          grep("SITE", colnames(uniquePts.data)))]),
+                                                   grep("SITE", colnames(uniquePts.data)))]),
          uniqueSiteMonth = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
                                                         grep("SITE", colnames(uniquePts.data)),
                                                         grep("Month", colnames(uniquePts.data)))]))
@@ -783,161 +815,30 @@ uniquePts.office.data <- uniquePts.data %>% filter(AssociationListA == "Office")
 uniquePts.office.data <- uniquePts.office.data %>%
   mutate(uniqueSystem = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)))]),
          uniqueSystemMonth = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                          grep("Appt.Month", colnames(uniquePts.office.data)))]),
+                                                                 grep("Appt.Month", colnames(uniquePts.office.data)))]),
          uniqueSite = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                   grep("SITE", colnames(uniquePts.office.data)))]),
+                                                          grep("SITE", colnames(uniquePts.office.data)))]),
          uniqueSiteMonth = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                        grep("SITE", colnames(uniquePts.office.data)),
-                                                        grep("Month", colnames(uniquePts.office.data)))]))
-
+                                                               grep("SITE", colnames(uniquePts.office.data)),
+                                                               grep("Month", colnames(uniquePts.office.data)))]))
 
 uniquePts.treatment.data <- uniquePts.data %>% filter(AssociationListA == "Treatment") 
 uniquePts.treatment.data <- uniquePts.treatment.data %>%
   mutate(uniqueSystem = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)))]),
          uniqueSystemMonth = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                          grep("Appt.Month", colnames(uniquePts.treatment.data)))]),
+                                                                    grep("Appt.Month", colnames(uniquePts.treatment.data)))]),
          uniqueSite = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                   grep("SITE", colnames(uniquePts.treatment.data)))]),
+                                                             grep("SITE", colnames(uniquePts.treatment.data)))]),
          uniqueSiteMonth = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                        grep("SITE", colnames(uniquePts.treatment.data)),
-                                                        grep("Month", colnames(uniquePts.treatment.data)))]),
+                                                                  grep("SITE", colnames(uniquePts.treatment.data)),
+                                                                  grep("Month", colnames(uniquePts.treatment.data)))]),
          uniqueSiteMonthProv = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                            grep("SITE", colnames(uniquePts.treatment.data)),
-                                                            grep("Month", colnames(uniquePts.treatment.data)),
-                                                            grep("Ref.Provider", colnames(uniquePts.treatment.data)))]))
+                                                                      grep("SITE", colnames(uniquePts.treatment.data)),
+                                                                      grep("Month", colnames(uniquePts.treatment.data)),
+                                                                      grep("Ref.Provider", colnames(uniquePts.treatment.data)))]))
 
 
-# ## Slot datasets
-# past.slot.data <- slot.data.subset %>% filter(Appt.DTTM <= max_date, Appt.DTTM >= max_date - 365)
-# future.slot.data <- slot.data.subset %>% filter(Appt.DTTM > max_date, Appt.DTTM <= max_date + 90)
-# 
-# 
-# ### (5) Pre-processing Space Utilization Dataframe --------------------------------------------------------------------------------------
-# # Filter utilization data in last 60 days
-# scheduled.data <- arrivedNoShow.data %>% filter(Appt.DTTM >= max_date - 60*24*60*60) ## All appts scheduled
-# 
-# # Function for formatting date and time by hour
-# system_date <- function(time){
-#   result <- as.POSIXct(paste0(as.character(Sys.Date())," ",time), format="%Y-%m-%d %H:%M:%S")
-#   return(result)
-# }
-# 
-# util.function <- function(time, df){
-#   result <- ifelse(system_date(time) %within% df$time.interval == TRUE, 
-#                    ifelse(difftime(df$Appt.End.Time, system_date(time), units = "mins") >= 60, 60,
-#                           as.numeric(difftime(df$Appt.End.Time, system_date(time), units = "mins"))),
-#                    ifelse(floor_date(df$Appt.Start.Time, "hour") == system_date(time),
-#                           ifelse(floor_date(df$Appt.End.Time, "hour") == system_date(time),
-#                                  difftime(df$Appt.End.Time, df$Appt.Start.Time, units = "mins"),
-#                                  difftime(system_date(time) + 60*60, df$Appt.Start.Time, units = "mins")), 0))
-#   return(result)
-# }
-# 
-# 
-# # Pre-process Utilization by Hour based on Scheduled Appointment Times --------------------------------------------------
-# data.hour.scheduled <- scheduled.data
-# data.hour.scheduled$actual.visit.dur <- data.hour.scheduled$Appt.Dur
-# 
-# data.hour.scheduled$Appt.Start <- as.POSIXct(data.hour.scheduled$Appt.DTTM, format = "%H:%M")
-# data.hour.scheduled$Appt.End <- as.POSIXct(data.hour.scheduled$Appt.Start + data.hour.scheduled$Appt.Dur*60, format = "%H:%M")
-# 
-# data.hour.scheduled$Appt.Start.Time <- as.POSIXct(paste0(Sys.Date()," ", format(data.hour.scheduled$Appt.Start, format="%H:%M:%S")))
-# data.hour.scheduled$Appt.End.Time <- as.POSIXct(paste0(Sys.Date()," ", format(data.hour.scheduled$Appt.End, format="%H:%M:%S")))
-# 
-# 
-# data.hour.scheduled$time.interval <- interval(data.hour.scheduled$Appt.Start.Time, data.hour.scheduled$Appt.End.Time)
-# 
-# # Excluding visits without Roomin or Visit End Tines 
-# data.hour.scheduled$`00:00` <- util.function("00:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`01:00` <- util.function("01:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`02:00` <- util.function("02:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`03:00` <- util.function("03:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`04:00` <- util.function("04:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`05:00` <- util.function("05:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`06:00` <- util.function("06:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`07:00` <- util.function("07:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`08:00` <- util.function("08:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`09:00` <- util.function("09:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`10:00` <- util.function("10:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`11:00` <- util.function("11:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`12:00` <- util.function("12:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`13:00` <- util.function("13:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`14:00` <- util.function("14:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`15:00` <- util.function("15:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`16:00` <- util.function("16:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`17:00` <- util.function("17:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`18:00` <- util.function("18:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`19:00` <- util.function("19:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`20:00` <- util.function("20:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`21:00` <- util.function("21:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`22:00` <- util.function("22:00:00", data.hour.scheduled)  
-# data.hour.scheduled$`23:00` <- util.function("23:00:00", data.hour.scheduled)  
-# 
-# # Data Validation
-# # colnames(data.hour.scheduled[89])
-# data.hour.scheduled$sum <- rowSums(data.hour.scheduled [,66:89])
-# data.hour.scheduled$actual <- as.numeric(difftime(data.hour.scheduled$Appt.End.Time, data.hour.scheduled$Appt.Start.Time, units = "mins"))
-# data.hour.scheduled$comparison <- ifelse(data.hour.scheduled$sum ==data.hour.scheduled$actual, 0, 1)
-# # nrow(data.hour.scheduled %>% filter(comparison == 1))/nrow(data.hour.scheduled)
-# data.hour.scheduled <- data.hour.scheduled %>% filter(comparison == 0)
-# 
-# 
-# # Pre-process Utilization by Hour based on Actual Room in to Visit End Times ---------------------------------------------------
-# data.hour.arrived.all <- scheduled.data %>% filter(Appt.Status == "Arrived")
-# data.hour.arrived.all$actual.visit.dur <- round(difftime(data.hour.arrived.all$Visitend.DTTM, data.hour.arrived.all$Roomin.DTTM, units = "mins"))
-# 
-# ########### Analysis of % of visits with actual visit start and end times ############
-# # nrow(data.hour.arrived %>% filter(!is.na(Roomin.DTTM) & !is.na(Visitend.DTTM)))/nrow(data.hour.arrived)
-# 
-# data.hour.arrived.all$Appt.Start <- format(strptime(as.ITime(data.hour.arrived.all$Roomin.DTTM), "%H:%M:%S"),'%H:%M:%S')
-# data.hour.arrived.all$Appt.Start <- as.POSIXct(data.hour.arrived.all$Appt.Start, format = "%H:%M")
-# data.hour.arrived.all$Appt.End <- as.POSIXct(data.hour.arrived.all$Appt.Start + data.hour.arrived.all$actual.visit.dur, format = "%H:%M")
-# 
-# data.hour.arrived.all$Appt.Start.Time <- data.hour.arrived.all$Appt.Start
-# data.hour.arrived.all$Appt.End.Time <- data.hour.arrived.all$Appt.End
-# 
-# data.hour.arrived.all$time.interval <- interval(data.hour.arrived.all$Appt.Start.Time, data.hour.arrived.all$Appt.End.Time)
-# 
-# # Excluding visits without Roomin or Visit End Tines 
-# data.hour.arrived <- data.hour.arrived.all %>% filter(actual.visit.dur > 0)
-# 
-# data.hour.arrived$`00:00` <- util.function("00:00:00", data.hour.arrived)
-# data.hour.arrived$`01:00` <- util.function("01:00:00", data.hour.arrived)
-# data.hour.arrived$`02:00` <- util.function("02:00:00", data.hour.arrived)
-# data.hour.arrived$`03:00` <- util.function("03:00:00", data.hour.arrived)
-# data.hour.arrived$`04:00` <- util.function("04:00:00", data.hour.arrived)
-# data.hour.arrived$`05:00` <- util.function("05:00:00", data.hour.arrived)
-# data.hour.arrived$`06:00` <- util.function("06:00:00", data.hour.arrived)
-# data.hour.arrived$`07:00` <- util.function("07:00:00", data.hour.arrived)  
-# data.hour.arrived$`08:00` <- util.function("08:00:00", data.hour.arrived)  
-# data.hour.arrived$`09:00` <- util.function("09:00:00", data.hour.arrived)  
-# data.hour.arrived$`10:00` <- util.function("10:00:00", data.hour.arrived)  
-# data.hour.arrived$`11:00` <- util.function("11:00:00", data.hour.arrived)  
-# data.hour.arrived$`12:00` <- util.function("12:00:00", data.hour.arrived)  
-# data.hour.arrived$`13:00` <- util.function("13:00:00", data.hour.arrived)  
-# data.hour.arrived$`14:00` <- util.function("14:00:00", data.hour.arrived)  
-# data.hour.arrived$`15:00` <- util.function("15:00:00", data.hour.arrived)  
-# data.hour.arrived$`16:00` <- util.function("16:00:00", data.hour.arrived)  
-# data.hour.arrived$`17:00` <- util.function("17:00:00", data.hour.arrived)  
-# data.hour.arrived$`18:00` <- util.function("18:00:00", data.hour.arrived)  
-# data.hour.arrived$`19:00` <- util.function("19:00:00", data.hour.arrived)  
-# data.hour.arrived$`20:00` <- util.function("20:00:00", data.hour.arrived)  
-# data.hour.arrived$`21:00` <- util.function("21:00:00", data.hour.arrived)
-# data.hour.arrived$`22:00` <- util.function("22:00:00", data.hour.arrived)
-# data.hour.arrived$`23:00` <- util.function("23:00:00", data.hour.arrived)
-# 
-# # Data Validation
-# # colnames(data.hour.arrived[89])
-# data.hour.arrived$sum <- rowSums(data.hour.arrived [,66:89])
-# data.hour.arrived$actual <- as.numeric(difftime(data.hour.arrived$Appt.End.Time, data.hour.arrived$Appt.Start.Time, units = "mins"))
-# data.hour.arrived$comparison <- ifelse(data.hour.arrived$sum ==data.hour.arrived$actual, 0, 1)
-# data.hour.arrived <- data.hour.arrived %>% filter(comparison == 0)
-# 
-# # Combine Utilization Data
-# data.hour.scheduled$util.type <- "scheduled"
-# data.hour.arrived$util.type <- "arrived"
-# scheduled.utilization.data <- rbind(data.hour.scheduled, data.hour.arrived)
-# arrived.utilization.data <- rbind(data.hour.scheduled %>% filter(Appt.Status == "Arrived"), data.hour.arrived)
+
 
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
@@ -966,45 +867,6 @@ timeOptions30m_filter <- c("07:00","07:30","08:00","08:30","09:00","09:30",
 monthOptions <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
 
 
-# # KPI Filters
-# KPIvolumeOptions <- c("Appointment Volume","Appointment Status")
-# KPIschedulingOptions <- c("Booked Rate","Fill Rate")
-# KPIaccessOptions <- c("New Patient Ratio","Appointment Lead Time","3rd Next Available")
-# KPIdayOfVisitOptions <- c("Cycle Time","Wait Time")
-# kpiOptions <- c("Patient Volume","Appointment Status",
-#                 "Booked Rate","Fill Rate",
-#                 "New Patient Ratio","New Patient Wait Time","3rd Next Available",
-#                 "Check-in to Room-in Time","Provider Time")
-
-# # Reference dataframes, vectors, etc.
-# daysOfWeek.Table <- data.hour.arrived %>% group_by(Appt.Day,Appt.DateYear) %>% dplyr::summarise(count = n()) ## Total Days in the Entire Data Set 
-# 
-# Time <- rep(timeOptionsHr, 7)
-# Day <- rep(daysOfWeek.options, each = 24)
-# byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
-# 
-# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
-# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
-# Time <- rep(timeOptionsHr, dateInData)
-# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (hour)
-# 
-# Time <- rep(timeOptions30m, 7)
-# Day <- rep(daysOfWeek.options, each = 48)
-# byDayTime30m.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (30-min)
-# 
-# dateInData <- length(unique(data.hour.arrived$Appt.DateYear))
-# Date <- rep(unique(data.hour.arrived$Appt.DateYear), each = 24)
-# Time <- rep(timeOptionsHr, dateInData)
-# byDateTime.df <- as.data.frame(cbind(Date,Time)) ## Empty data frame for date and time (30-min)
-# 
-# byTime.df <- as.data.frame(timeOptionsHr)
-# colnames(byTime.df) <- c("Time") ## Empty data frame for time (hour)
-# 
-# byTime30.df <- as.data.frame(timeOptions30m)
-# colnames(byTime30.df) <- c("Time") ## Empty data frame for time (hour)
-
-
-
 # (7) Data Reactive functions ---------------------------------------------------------------------------------
 
 ## Filtered Scheduling Data
@@ -1019,7 +881,7 @@ groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
   result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
   return(result)
 }
-                 
+
 
 ### Function for Value Boxes ------------------------------------------------------------------
 valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
