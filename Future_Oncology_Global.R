@@ -404,6 +404,10 @@ process_data <- function(access_data,slot_data){
   
   colnames(data.subset) <- new.cols
   
+  #include only Office, Labs, and Treatment from Association List A
+  data.subset <- data.subset %>%
+    filter(AssociationListA %in% c("Office","Treatment","Labs")) 
+  
   #delete duplicates 
   data.subset <-
     data.subset %>% 

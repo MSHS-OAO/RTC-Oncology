@@ -363,7 +363,15 @@ ui <- dashboardPage(
 
       
       tags$head(tags$style(HTML("#dropdownbutton {
-                      color: #212070;;}"))),
+                      color: #212070;}
+               "))),
+      tags$head(tags$style(HTML("#dropdownbutton1 {
+                      color: #212070;}
+               "))),
+      tags$head(tags$style(HTML("#dropdownheight {
+                      color: #212070;}
+               "))),
+
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
       conditionalPanel(
@@ -583,7 +591,7 @@ ui <- dashboardPage(
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("filter"), width = "300px",
           tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
-          inputId = "dropdownbutton"
+          inputId = "dropdownbutton1"
           
         ) # Close Drop Down Button
       ), # Close Conditional Panel
@@ -612,7 +620,7 @@ ui <- dashboardPage(
           icon = icon("gear"), width = "300px",
           
           tooltip = tooltipOptions(title = "Format graphs."),
-          inputId = "dropdownbutton"
+          inputId = "dropdownheight"
           
         ), # Close Drop Down Button
         br(),
