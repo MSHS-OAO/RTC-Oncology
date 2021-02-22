@@ -496,7 +496,7 @@ process_data <- function(access_data,slot_data){
   data.subset.new$Resource <- ifelse(data.subset.new$Resource == 1, "Provider", "Resource")
   
   ## Identify US Holidays in Data 
-  hld <- holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
+  hld <- tis::holidaysBetween(min(data.subset.new$Appt.DTTM, na.rm=TRUE), max(data.subset.new$Appt.DTTM, na.rm=TRUE))
   holid <- as.Date(as.character(hld), format = "%Y%m%d")
   names(holid) <- names(hld)
   holid <- as.data.frame(holid)
