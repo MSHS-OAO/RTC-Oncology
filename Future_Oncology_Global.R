@@ -49,6 +49,9 @@
 # install.packages("patchwork")
 # install.packages("ggtext")
 # install.packages("janitor")
+# packageurl <- "https://cran.r-project.org/src/contrib/Archive/zipcode/zipcode_1.0.tar.gz"
+# install.packages(packageurl, repos=NULL, type="source")
+
 
 
 suppressMessages({
