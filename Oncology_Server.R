@@ -389,7 +389,7 @@ server <- function(input, output, session) {
   output$break_treatmentvisitsgraph <- renderPlot({
     
     data <- dataArrived()
-    data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    #data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
     # nrow(data)
     
     
