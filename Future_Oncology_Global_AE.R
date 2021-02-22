@@ -585,7 +585,7 @@ process_data <- function(access_data,slot_data){
 
 monthly_path_part <- function(monthly){
   return(as.list(list.files(path = monthly,     # Identify all csv files in folder
-                            pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv" , full.names = F))) 
+                            pattern = "(2020)|(2021)-(01)|(12)-01.csv" , full.names = F))) 
 }
 
 #takes in a single argument, a singleday file path, and returns a list of the file names within that folder 
@@ -604,8 +604,8 @@ singleday_path_part <- function(singleday){
 #}
 
 readin_data_all <- function(){
-  data_all <<- list.files(path = monthly_path,     # Identify all csv files in folder
-                          pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%   
+  data_all <- list.files(path = monthly_path,     # Identify all csv files in folder
+                          pattern =  "(2020)|(2021)-(01)|(12)-01.csv", full.names = TRUE) %>%   
     lapply(read_csv) %>%                                            # Store all files in list
     bind_rows()
   return(data_all)
@@ -713,14 +713,14 @@ if (!(exists("access.data.raw"))){
     #rbind.fill()
   
   access.data.raw <- list.files(path = monthly_access,
-                                pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
+                                pattern =  "(2020)|(2021)-(01)|(12)-01.csv" , full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
   
   #slot.data.raw <<- list.files(path = "Data/Slot/Monthly",
   #                             pattern = "*.csv", full.names = TRUE) %>%
   slot.data.raw <- list.files(path = monthly_slot,
-                              pattern = "(2021)\\-[0-9]{2}\\-[0-9]{2}.csv", full.names = TRUE) %>%
+                              pattern =  "(2020)|(2021)-(01)|(12)-01.csv" , full.names = TRUE) %>%
     lapply(read_csv) %>%
     rbind.fill()
   
