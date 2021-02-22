@@ -363,7 +363,6 @@ ui <- dashboardPage(
 
       
       tags$head(tags$style(HTML("#dropdownbutton {
-<<<<<<< HEAD
                       color: #212070;}
                "))),
       tags$head(tags$style(HTML("#dropdownbutton1 {
@@ -372,9 +371,7 @@ ui <- dashboardPage(
       tags$head(tags$style(HTML("#dropdownheight {
                       color: #212070;}
                "))),
-=======
-                      color: #212070;;}"))),
->>>>>>> c4eb423f8e69b43e0cd4beb129f94fd43bd8aa9c
+
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
       conditionalPanel(
