@@ -639,7 +639,7 @@ server <- function(input, output, session) {
   output$volumeCompTrend_grh <- renderPlot({
     
     data <- dataArrived_filtered()
-    # data <- arrived.data
+    data <- arrived.data
     
     if(length(unique(data$AssociationListA)) == 1){
       visitType <- unique(data$AssociationListA)

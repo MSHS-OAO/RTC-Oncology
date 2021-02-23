@@ -236,7 +236,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          valueBoxOutput("uniqueAllSystem", width=4) %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
+                           withSpinner(type = 5, color = "#d80b8c"), hr(),
                          column(12,
                                 plotOutput("uniqueAllSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
@@ -253,10 +253,10 @@ ui <- dashboardPage(
                              solidHeader = FALSE, 
                              radioButtons("selectedUniquePts", label=NULL,
                                           choices = c("System","Site"),
-                                          selected = "System"))),
+                                          selected = "System"))), hr(),
                          column(12,
                                 plotOutput("uniqueAllTrend", height = "auto") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"),
+                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllMonth", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
                          )
@@ -273,7 +273,7 @@ ui <- dashboardPage(
                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                         br(),
                         valueBoxOutput("uniqueOfficeSystem", width=4) %>%
-                          withSpinner(type = 5, color = "#d80b8c"),
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
                         column(12,
                                plotOutput("uniqueOfficeSite", height = "auto") %>%
                                  withSpinner(type = 5, color = "#d80b8c"))
@@ -290,10 +290,10 @@ ui <- dashboardPage(
                                  solidHeader = FALSE, 
                                  radioButtons("selectedUniquePts2", label=NULL,
                                               choices = c("System","Site"),
-                                              selected = "System"))),
+                                              selected = "System"))), hr(),
                         column(12,
                                plotOutput("uniqueOfficeTrend", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"),
+                                 withSpinner(type = 5, color = "#d80b8c"), hr(),
                                plotOutput("uniqueOfficeMonth", height = "auto") %>%
                                  withSpinner(type = 5, color = "#d80b8c"))
                       )
@@ -310,7 +310,7 @@ ui <- dashboardPage(
                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                         br(),
                         valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
-                          withSpinner(type = 5, color = "#d80b8c"),
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
                         column(12,
                                plotOutput("uniqueTreatmentSite", height = "auto") %>%
                                  withSpinner(type = 5, color = "#d80b8c"))
@@ -327,10 +327,10 @@ ui <- dashboardPage(
                                  solidHeader = FALSE, 
                                  radioButtons("selectedUniquePts3", label=NULL,
                                               choices = c("System","Site"),
-                                              selected = "System"))),
+                                              selected = "System"))), hr(),
                         column(12,
                                plotOutput("uniqueTreatmentTrend", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"),
+                                 withSpinner(type = 5, color = "#d80b8c"), hr(),
                                plotOutput("uniqueTreatmentMonth", height = "auto") %>%
                                  withSpinner(type = 5, color = "#d80b8c"))
                       )
@@ -612,19 +612,6 @@ ui <- dashboardPage(
             )
           ),
           
-          box(
-            title = "Change x-axis:",
-            width = 12,
-            height = "100px",
-            solidHeader = FALSE,
-            sliderInput(
-              inputId = "plotHeight",
-              label = NULL, 
-              value = 650, min = 450, max = 2000,
-              ticks = FALSE
-            )
-          ),
-          
           # numericInput("height", "height", 300),
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
@@ -697,7 +684,7 @@ ui <- dashboardPage(
           box(
             title = NULL,
             width = 50,
-            height = "700px",
+            height = "600px",
             solidHeader = FALSE,
             fluidRow(column(7,tableOutput("zipCode_ref_tb1")), column(5,tableOutput("zipCode_ref_tb2")))
           ),
