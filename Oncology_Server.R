@@ -351,7 +351,9 @@ server <- function(input, output, session) {
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
       geom_text(size = 5, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
+      #n <- length(unique(total_visits_break$AssociationListA))
+      #hline <- seq(0.5, 0.5*length(unique(total_visits_break$AssociationListA)), by= 0.5)
+      geom_hline(yintercept = seq(0.5, length(unique(total_visits_break$AssociationListA)), by= 1)[-1], colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListA")+
@@ -397,7 +399,7 @@ server <- function(input, output, session) {
     g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
       geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
-      geom_hline(yintercept = c(1.5, 2.5), colour='black')+
+      geom_hline(yintercept = seq(0.5, length(unique(total_visits_break$AssociationListB)), by= 1)[-1], colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListB")+
@@ -444,7 +446,7 @@ server <- function(input, output, session) {
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
       scale_color_MountSinai('dark', reverse = TRUE)+
       geom_text(size = 5, vjust = "center", hjust = "center", fontface = 'bold')+
-      geom_hline(yintercept = c(2.5), colour='black')+
+      geom_hline(yintercept = seq(0.5, length(unique(total_visits_break$AssociationListT)), by= 1)[-1], colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs( y = NULL, x = NULL, fill = "AssociationListT")+
