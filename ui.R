@@ -88,7 +88,7 @@ ui <- dashboardPage(
                          menuSubItem("Breakdown", tabName = "volumebreakdown"),
                          menuSubItem("Comparison", tabName = "volumecomparison")
                 ),
-                menuItem("Unique Patients", tabName = "uniquePts", icon = icon("user-plus"),
+                menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
                          menuSubItem("All", tabName = "uniqueAll"),
                          menuSubItem("Office", tabName = "uniqueOffice"),
                          menuSubItem("Treatment", tabName = "uniqueTreatment")
@@ -249,7 +249,7 @@ ui <- dashboardPage(
                            box(
                              title = "Analysis by:",
                              width = 12,
-                             height = "100px",
+                             height = "110px",
                              solidHeader = FALSE, 
                              radioButtons("selectedUniquePts", label=NULL,
                                           choices = c("System","Site"),
@@ -361,16 +361,14 @@ ui <- dashboardPage(
       ), # Close Main tab Items
       
 
+      # Formatting Dropdown Buttons
+      tags$head(tags$style(HTML("#dropdownbutton {color: #212070;}"))),
+      tags$head(tags$style(HTML("#dropdownbutton1 {color: #212070;}"))),
+      tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
+      tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
+      tags$head(tags$style(HTML("#dropdownUnique {color: #d80b8c;}"))),
+      tags$head(tags$style(HTML("#dropdownZipCode {color: #d80b8c;}"))),
       
-      tags$head(tags$style(HTML("#dropdownbutton {
-                      color: #212070;}
-               "))),
-      tags$head(tags$style(HTML("#dropdownbutton1 {
-                      color: #212070;}
-               "))),
-      tags$head(tags$style(HTML("#dropdownheight {
-                      color: #212070;}
-               "))),
 
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
@@ -507,7 +505,6 @@ ui <- dashboardPage(
       conditionalPanel(
         condition = "input.sbm == 'volumecomparison'", 
         br(), 
-        # tags$style("dropDown2 {background-color: #d80b8c; color: #ffffff;}"),
         dropdown(
           box(
             title = "Select Visit Type:",
@@ -596,13 +593,27 @@ ui <- dashboardPage(
         ) # Close Drop Down Button
       ), # Close Conditional Panel
       
+      
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'zipCode' | input.sbm == 'zipCode'",
+         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'zipCode'",
         br(),
         dropdown(
           box(
             title = "Change height:",
+            width = 12,
+            height = "100px",
+            solidHeader = FALSE,
+            sliderInput(
+              inputId = "plotHeight",
+              label = NULL, 
+              value = 650, min = 450, max = 2000,
+              ticks = FALSE
+            )
+          ),
+          
+          box(
+            title = "Change x-axis:",
             width = 12,
             height = "100px",
             solidHeader = FALSE,
@@ -648,12 +659,63 @@ ui <- dashboardPage(
                            "right", options = list(container = "body")
                  )
                  
-                 # tooltip = tooltipOptions(title = "Creates a PNG file with all visible graphs on this page. Use the minimize or close buttons to hide unwanted graphs")
-        #) # Close Drop Down Button
+      ), # Close Conditional Panel
+      
+      # Info Button for Unique Patients Tab ----------
+      conditionalPanel(
+        condition = "input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
+        br(),
+        dropdown(
+          box(
+            title = NULL,
+            width = 50,
+            height = "470px",
+            solidHeader = FALSE,
+            h3("TOTAL SYSTEM UNIQUE PATIENTS:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system)."),
+            h3("TOTAL UNIQUE PATIENTS BY SITE:"),h4("Total count of unique patients who had >= 1 visit(s) at respective site (unique MRN by site)."),
+            h3("SYSTEM UNIQUE PATINETS OVER TIME:"),h4("TOTAL SYSTEM UNIQUE PATIENTS by month."),
+            h3("SYSTEM UNIQUE PATIENTS BY MONTH:"),h4("Total count of unique patients who had had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month)"),
+            h3("UNIQUE PATIENTS BY SITE OVER TIME:"),h4("TOTAL UNIQUE PATIENTS BY SITE by month"),
+            h3("UNIQUE PATIENTS BY SITE BY MONTH:"),h4("Total count of unique patients who had had >= 1 visit(s) at respective site and month (unique MRN by site and month).")
+            ),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("info"), width = "1200px",
+          
+          tooltip = tooltipOptions(title = "Click for addition info on the unique patient analysis."),
+          inputId = "dropdownUnique"
+          
+        ) # Close Drop Down Button
+      ), # Close Conditional Panel
+      
+      
+      # Info Button for Zip Code Analysis Tab ----------
+      conditionalPanel(
+        condition = "input.sbm == 'zipCode'",
+        br(),
+        dropdown(
+          box(
+            title = NULL,
+            width = 50,
+            height = "700px",
+            solidHeader = FALSE,
+            fluidRow(column(7,tableOutput("zipCode_ref_tb1")), column(5,tableOutput("zipCode_ref_tb2")))
+          ),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("info"), width = "850px",
+          
+          tooltip = tooltipOptions(title = "Click for zip code mapping info."),
+          inputId = "dropdownZipCode"
+          
+        ) # Close Drop Down Button
       ) # Close Conditional Panel
+      
+      
       
     ) #Close Fluid
   ) # Close Dashboard Body
 )# Close Dashboard Page
 
 #shinyApp(ui, server)
+
