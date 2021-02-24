@@ -226,7 +226,7 @@ ui <- dashboardPage(
                 ) #Close column
         ), # Close volume Comparison
         
-       # Unique Patients Tab ------------------------------------------------------------------------------------------------------
+        # Unique Patients Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "uniqueAll",
                 div("Unique Patients - Office, Treatment, and Lab Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
@@ -240,104 +240,104 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueAllSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
-                         ), 
+                       ), 
                        boxPlus(
                          title = "Unique Patients by Month and Provider", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(), 
                          column(4,
-                           box(
-                             title = "Analysis by:",
-                             width = 12,
-                             height = "110px",
-                             solidHeader = FALSE, 
-                             radioButtons("selectedUniquePts", label=NULL,
-                                          choices = c("System","Site"),
-                                          selected = "System"))), hr(),
+                                box(
+                                  title = "Analysis by:",
+                                  width = 12,
+                                  height = "110px",
+                                  solidHeader = FALSE, 
+                                  radioButtons("selectedUniquePts", label=NULL,
+                                               choices = c("System","Site"),
+                                               selected = "System"))), hr(),
                          column(12,
                                 plotOutput("uniqueAllTrend", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllMonth", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
-                         )
                        )
+                )
                 
         ), #Close Unique Patients - All tab
-       
-       tabItem(tabName = "uniqueOffice",
-               div("Unique Patients - Office Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-               tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-               column(11,
-                      boxPlus(
-                        title = "Unique Patients by System and Site", width = 12, status = "primary", 
-                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                        br(),
-                        valueBoxOutput("uniqueOfficeSystem", width=4) %>%
-                          withSpinner(type = 5, color = "#d80b8c"), hr(),
-                        column(12,
-                               plotOutput("uniqueOfficeSite", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"))
-                      ), 
-                      boxPlus(
-                        title = "Unique Patients by Month and Provider", width = 12, status = "primary", 
-                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                        br(), 
-                        column(4,
-                               box(
-                                 title = "Analysis by:",
-                                 width = 12,
-                                 height = "100px",
-                                 solidHeader = FALSE, 
-                                 radioButtons("selectedUniquePts2", label=NULL,
-                                              choices = c("System","Site"),
-                                              selected = "System"))), hr(),
-                        column(12,
-                               plotOutput("uniqueOfficeTrend", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"), hr(),
-                               plotOutput("uniqueOfficeMonth", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"))
-                      )
-               )
-               
-       ), #Close Unique Patients - Office tab
-       
-       tabItem(tabName = "uniqueTreatment",
-               div("Unique Patients - Office Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-               tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
-               column(11,
-                      boxPlus(
-                        title = "Unique Patients by System and Site", width = 12, status = "primary", 
-                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                        br(),
-                        valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
-                          withSpinner(type = 5, color = "#d80b8c"), hr(),
-                        column(12,
-                               plotOutput("uniqueTreatmentSite", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"))
-                      ), 
-                      boxPlus(
-                        title = "Unique Patients by Month and Provider", width = 12, status = "primary", 
-                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                        br(), 
-                        column(4,
-                               box(
-                                 title = "Analysis by:",
-                                 width = 12,
-                                 height = "100px",
-                                 solidHeader = FALSE, 
-                                 radioButtons("selectedUniquePts3", label=NULL,
-                                              choices = c("System","Site"),
-                                              selected = "System"))), hr(),
-                        column(12,
-                               plotOutput("uniqueTreatmentTrend", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"), hr(),
-                               plotOutput("uniqueTreatmentMonth", height = "auto") %>%
-                                 withSpinner(type = 5, color = "#d80b8c"))
-                      )
-               )
-               
-       ), #Close Unique Patients - Treatment tab
-       
+        
+        tabItem(tabName = "uniqueOffice",
+                div("Unique Patients - Office Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Unique Patients by System and Site", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         valueBoxOutput("uniqueOfficeSystem", width=4) %>%
+                           withSpinner(type = 5, color = "#d80b8c"), hr(),
+                         column(12,
+                                plotOutput("uniqueOfficeSite", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))
+                       ), 
+                       boxPlus(
+                         title = "Unique Patients by Month and Provider", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(), 
+                         column(4,
+                                box(
+                                  title = "Analysis by:",
+                                  width = 12,
+                                  height = "100px",
+                                  solidHeader = FALSE, 
+                                  radioButtons("selectedUniquePts2", label=NULL,
+                                               choices = c("System","Site"),
+                                               selected = "System"))), hr(),
+                         column(12,
+                                plotOutput("uniqueOfficeTrend", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
+                                plotOutput("uniqueOfficeMonth", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))
+                       )
+                )
+                
+        ), #Close Unique Patients - Office tab
+        
+        tabItem(tabName = "uniqueTreatment",
+                div("Unique Patients - Office Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Unique Patients by System and Site", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
+                           withSpinner(type = 5, color = "#d80b8c"), hr(),
+                         column(12,
+                                plotOutput("uniqueTreatmentSite", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))
+                       ), 
+                       boxPlus(
+                         title = "Unique Patients by Month and Provider", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(), 
+                         column(4,
+                                box(
+                                  title = "Analysis by:",
+                                  width = 12,
+                                  height = "100px",
+                                  solidHeader = FALSE, 
+                                  radioButtons("selectedUniquePts3", label=NULL,
+                                               choices = c("System","Site"),
+                                               selected = "System"))), hr(),
+                         column(12,
+                                plotOutput("uniqueTreatmentTrend", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
+                                plotOutput("uniqueTreatmentMonth", height = "auto") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))
+                       )
+                )
+                
+        ), #Close Unique Patients - Treatment tab
+        
         
         
         # Population Zip Code Analysis Tab ------------------------------------------------------------------------------------------------------
@@ -350,17 +350,28 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          fluidRow(
-                         column(8, leafletOutput("zipCode_map", height = "800px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")),
-                         column(4, tableOutput("zipCode_tb") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")))
+                           column(4,
+                                  box(
+                                    title = "Zip Code Map by:",
+                                    width = 12,
+                                    height = "130px",
+                                    solidHeader = FALSE, 
+                                    radioButtons("selectedZipCodeMap", label=NULL,
+                                                 choices = c("Site","Visit Type","Appointment Type"),
+                                                 selected = "Site"))
+                           ), hr()),
+                         fluidRow(
+                           column(8, leafletOutput("zipCode_map", height = "800px") %>%
+                                    withSpinner(type = 5, color = "#d80b8c")),
+                           column(4, tableOutput("zipCode_tb") %>%
+                                    withSpinner(type = 5, color = "#d80b8c")))
                        )
                 )
         ) # Close Zip Code tab
         
       ), # Close Main tab Items
       
-
+      
       # Formatting Dropdown Buttons
       tags$head(tags$style(HTML("#dropdownbutton {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownbutton1 {color: #212070;}"))),
@@ -369,13 +380,13 @@ ui <- dashboardPage(
       tags$head(tags$style(HTML("#dropdownUnique {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#dropdownZipCode {color: #d80b8c;}"))),
       
-
+      
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'zipCode'",
-
+        
         dropdown(
           box(
             title = "Select Campus:",
@@ -642,10 +653,10 @@ ui <- dashboardPage(
         actionButton("download1",
                      label = icon("download")),
         
-                 bsTooltip("download1", "Download (PNG) current tab.",
-                           "right", options = list(container = "body")
-                 )
-                 
+        bsTooltip("download1", "Download (PNG) current tab.",
+                  "right", options = list(container = "body")
+        )
+        
       ), # Close Conditional Panel
       
       # Info Button for Unique Patients Tab ----------
@@ -664,7 +675,7 @@ ui <- dashboardPage(
             h3("SYSTEM UNIQUE PATIENTS BY MONTH:"),h4("Total count of unique patients who had had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month)"),
             h3("UNIQUE PATIENTS BY SITE OVER TIME:"),h4("TOTAL UNIQUE PATIENTS BY SITE by month"),
             h3("UNIQUE PATIENTS BY SITE BY MONTH:"),h4("Total count of unique patients who had had >= 1 visit(s) at respective site and month (unique MRN by site and month).")
-            ),
+          ),
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
           icon = icon("info"), width = "1200px",
