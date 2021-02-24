@@ -350,6 +350,17 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          fluidRow(
+                           column(4,
+                           box(
+                             title = "Zip Code Map by:",
+                             width = 12,
+                             height = "130px",
+                             solidHeader = FALSE, 
+                             radioButtons("selectedZipCodeMap", label=NULL,
+                                          choices = c("Site","Visit Type","Appointment Type"),
+                                          selected = "Site"))
+                         ), hr()),
+                         fluidRow(
                          column(8, leafletOutput("zipCode_map", height = "800px") %>%
                                   withSpinner(type = 5, color = "#d80b8c")),
                          column(4, tableOutput("zipCode_tb") %>%

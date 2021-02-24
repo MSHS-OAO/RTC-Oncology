@@ -1185,20 +1185,8 @@ server <- function(input, output, session) {
   ## Bubble Map by Zip Code
   output$zipCode_map <- renderLeaflet({
     
-    newdata <- dataArrivedPop() %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
-    # newdata <- population.data_filtered %>% group_by(latitude, longitude) %>% dplyr::summarise(total = round(n(),0))
-    
-    # Create a color palette with handmade bins.
-    mybins <- round(seq(min(newdata$total), max(newdata$total), length.out=5),0)
-    mypalette <- colorBin(palette=MountSinai_palettes$pinkBlue, domain=quakes$mag, na.color="transparent", bins=mybins)
-    
-    all <- sum(newdata$total)
-    
-    # Prepare the text for the tooltip:
-    mytext <- paste(
-      "Total Visits: ", newdata$total, "<br/>",
-      "% of Total: ", paste0(round(newdata$total/all,2)*100, "%")) %>%
-      lapply(htmltools::HTML)
+    data <- dataArrivedPop()
+    # data <- population.data_filtered
     
     # Set icons for each MSHS hospital
     icons <- awesomeIcons(
@@ -1207,17 +1195,83 @@ server <- function(input, output, session) {
       iconColor = "white",
       markerColor = "lightgray")
     
-    # Visit volume map 
-    leaflet(newdata) %>% 
-      addTiles()  %>% 
-      setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
-      addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%
-      addCircleMarkers(~longitude, ~latitude, 
-                       fillColor = ~mypalette(total), fillOpacity = 0.7, color="white", radius= ~total^(1/2), stroke=FALSE,
-                       label = mytext,
-                       labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")
-      ) %>%
-      addLegend(pal=mypalette, values=~total, opacity=0.9, title = "Visit Demand", position = "bottomright") %>%
+    
+    if(input$selectedZipCodeMap == "Site"){
+      
+      newdata <- data %>% group_by(SITE, latitude, longitude) %>% dplyr::summarise(total = n())
+      
+      # List of all variables
+      layer_names <- unique(newdata$SITE)
+      # Set color scheme based on comparing variable
+      groupColors = colorFactor(palette = MountSinai_colors, domain = newdata$SITE)
+      # Prepare the text for the tooltip:
+      mytext <- paste(
+        "Total Visits: ", newdata$total, "<br/>") %>%
+        lapply(htmltools::HTML)
+      
+      map <-  
+        leaflet(data = newdata) %>%
+        addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%      
+        setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
+        addCircleMarkers(lng = ~longitude, lat = ~latitude, color = ~groupColors(SITE), 
+                         group = ~SITE, radius= ~total^(1/2),
+                         label = mytext,
+                         labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")) %>%
+        addLegend(position = "bottomright", pal = groupColors, values = ~SITE) %>%
+        addLayersControl(overlayGroups = c(newdata$SITE, layer_names))
+      
+    } else if(input$selectedZipCodeMap == "Visit Type"){
+      
+      newdata <- data %>% group_by(AssociationListA, latitude, longitude) %>% dplyr::summarise(total = n())
+      
+      # List of all variables
+      layer_names <- unique(newdata$AssociationListA)
+      # Set color scheme based on comparing variable
+      groupColors = colorFactor(palette = MountSinai_colors, domain = newdata$AssociationListA)
+      # Prepare the text for the tooltip:
+      mytext <- paste(
+        "Total Visits: ", newdata$total, "<br/>") %>%
+        lapply(htmltools::HTML)
+      
+      map <-  
+        leaflet(data = newdata) %>%
+        addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%      
+        setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
+        addCircleMarkers(lng = ~longitude, lat = ~latitude, color = ~groupColors(AssociationListA),
+                         group = ~AssociationListA, radius= ~total^(1/2),
+                         label = mytext,
+                         labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")) %>%
+        addLegend(position = "bottomright", pal = groupColors, values = ~AssociationListA) %>%
+        addLayersControl(overlayGroups = c(newdata$AssociationListA, layer_names))
+      
+    } else{
+      
+      newdata <- data %>% group_by(AssociationListB, latitude, longitude) %>% dplyr::summarise(total = n())
+      
+      
+      # List of all variables
+      layer_names <- unique(newdata$AssociationListB)
+      # Set color scheme based on comparing variable
+      groupColors = colorFactor(palette = MountSinai_colors, domain = newdata$AssociationListB)
+      # Prepare the text for the tooltip:
+      mytext <- paste(
+        "Total Visits: ", newdata$total, "<br/>") %>%
+        lapply(htmltools::HTML)
+      
+      map <-  
+        leaflet(data = newdata) %>%
+        addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE)) %>%      
+        setView(lng = -73.98928, lat = 40.75042, zoom = 10) %>%
+        addCircleMarkers(lng = ~longitude, lat = ~latitude, color = ~groupColors(AssociationListB),
+                         group = ~AssociationListB, radius= ~total^(1/2),
+                         label = mytext,
+                         labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "18px", direction = "auto")) %>%
+        addLegend(position = "bottomright", pal = groupColors, values = ~AssociationListB) %>%
+        addLayersControl(overlayGroups = c(newdata$AssociationListB, layer_names))
+    }
+    
+    
+    map %>%
       addAwesomeMarkers(
         lng=-73.943324, lat=40.79171,
         label='Mount Sinai Hospital',

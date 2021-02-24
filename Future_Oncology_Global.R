@@ -118,6 +118,8 @@ suppressMessages({
   library(patchwork)
   library(ggtext)
   library(janitor)
+  library(viridis) # Load color brewer palettes
+  
 })
 
 # ### (0) Maximize R Memory Size 
