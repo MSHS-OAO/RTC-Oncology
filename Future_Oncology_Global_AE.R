@@ -253,9 +253,9 @@ theme_new_line <- function(base_size = 12,
     base_family = base_family,
     base_line_size = base_line_size
   ) %+replace%
-    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 24),
-          plot.subtitle = element_text(hjust=0.5, size = 16, face = "italic"),
-          plot.caption = element_text(hjust = 0, size = 12, face = "italic"),
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 28),
+          plot.subtitle = element_text(hjust=0.5,vjust=-1, size = 22, face = "italic"),
+          plot.caption = element_text(hjust = 0, size = 18, face = "italic"),
           legend.position = "top",
           legend.text = element_text(size="18"),
           legend.direction = "horizontal",
@@ -280,11 +280,10 @@ table_theme <- function(){
     axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
     legend.position = "none",
     plot.title = element_blank(),
-    panel.border = element_rect(colour = "black", fill = NA, size=1),
-    axis.line.x = element_line(colour = "black", size=1),
+    panel.border = element_rect(colour = "black", fill = NA, size=0.5),
+    axis.line.x = element_line(colour = "black", size=0.5),
     plot.margin=unit(c(-0.5,1,1,1), "cm"))
 }
-
 ### (2) Import Data ----------------------------------------------------------------------------------
 
 # Define file paths for use later in the script
