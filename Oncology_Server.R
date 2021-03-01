@@ -268,11 +268,28 @@ server <- function(input, output, session) {
     
   }, height = function(x) input$plotHeight)
   
+  
   output$trend_visitstable <- function(){
     
     data <- dataArrived()
-    # data <- arrived.data
+    #data <- arrived.data
+    #created an if statement to include another table for all of the visit types
+    #to show the total volume and the variance per month per year.
     
+    #get the total patients per year
+    if(input$annualVolSummary == "Total"){
+      visits_tb_yearly <- data %>%
+        group_by(Appt.Year) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      visits_tb_yearly$Appt.Month <- "TOTAL Annual  Comparison"
+      visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+      
+      #get the total patients per year per month
+      visits_tb <- data %>%
+        group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      
+    } else {
     #get the total patients per year
     visits_tb_yearly <- data %>% 
       filter(AssociationListA %in% input$annualVolSummary) %>%
@@ -286,6 +303,7 @@ server <- function(input, output, session) {
       filter(AssociationListA %in% input$annualVolSummary) %>%
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
       spread(Appt.Year, total)
+    }
     
     #include all the months needed
     visits_tb <- visits_tb[match(monthOptions, visits_tb$Appt.Month),]
@@ -294,25 +312,84 @@ server <- function(input, output, session) {
     #bind the total visits per month per year with the total yeraly visits 
     visits_tb_total <- rbind(visits_tb, visits_tb_yearly)
     
-    #calculate the difference between the two years
-    #to do: make itn more dynamic 
+    #created an if statement to change the table based on the different years
+    #if the number of years provided is one then there will be no need to calculate any variance
+    #and only the volume will be showing for that specific year
+    #if the number of years are more than 1 and less than or equal 3 then we calculate variance
+    #if the number of years are more than 3 the code will raise a user error
     
-    visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
-    
-    visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
-    
-    visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
-    
-    
-    year1 <- colnames(visits_tb_total)[2]
-    year2 <- colnames(visits_tb_total)[3]
+    if(length(visits_tb_total)-1 == 1){
+      visits_tb_total <- visits_tb_total
+      year1 <- colnames(visits_tb_total)[2]
+      column_names <- c("Month", paste0(year1))
+      header_above <- c("Total Visit Volume" = 2)
+      column_border <- c(1, 2)
+      
+    } else if(length(visits_tb_total)-1 == 2){
+      
+      visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+      
+      visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"))
+      
+      header_above <- c("Total Visit Volume" = 3, "Volume Variance" = 2)
+      
+      column_border <- c(1, 3, 5)
+      
+    } else if (length(visits_tb_total)-1 == 3){
+      
+      visits_tb_total$variance_1 <- visits_tb_total %>% select(length(visits_tb_total)-1) - visits_tb_total %>% select(length(visits_tb_total)-2)
+
+      visits_tb_total$variance_percentage_1 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-3)
+      
+      #######
+      
+      visits_tb_total$variance_2 <- visits_tb_total %>% select(length(visits_tb_total)-3) - visits_tb_total %>% select(length(visits_tb_total)-4)
+      
+      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-5)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      year3 <- colnames(visits_tb_total)[4]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), paste0(year3), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("Variance"," ", "(", paste0(year2), "-", paste0(year3), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year2), "-", paste0(year3), ")"))
+      
+      header_above <- c("Total Visit Volume" = 4, "Volume Variance" = 4) 
+      
+      column_border <- c(1, 4, 8)
+      
+    } else {print("Number of Years are Not Supported - Mximum Years to pick is 3")}
+
     
     visits_tb_total %>%
       kable(escape = F, align = "c",
-            col.names = c("Month", paste0(year1), paste0(year2), paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"), paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"))) %>%
+            col.names = column_names) %>%
       kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
-      add_header_above(c("Total Visit Volume" = 3, "Volume Variance" = 2),  background = "#7f7f7f", color = "white", font_size = 22, align = "center") %>%
-      column_spec(column = c(1, 3, 5), border_right = "thin solid lightgray") %>%
+      add_header_above(header_above,  background = "#7f7f7f", color = "white", font_size = 22, align = "center") %>%
+      column_spec(column = column_border, border_right = "thin solid lightgray", width_min = "125px") %>%
+      column_spec(column = 1, bold = T) %>%
       row_spec(row = 0, font_size = 22, bold=TRUE, background = "#7f7f7f", color = "white") %>%
       row_spec(row = 13, bold = TRUE, background = "#a5a7a5", color = "white")
     
@@ -1631,6 +1708,6 @@ server <- function(input, output, session) {
   
 } # Close Server
 
-#shinyApp(ui, server)
+shinyApp(ui, server)
 
 
