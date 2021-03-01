@@ -396,7 +396,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 2))
+    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
     
     
   }, height = function(x) input$plotHeight)
@@ -451,7 +451,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 2))
+    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
     
   }, height = function(x) input$plotHeight)
   
@@ -509,7 +509,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 2))
+    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
     
   }, height = function(x) input$plotHeight)
   
@@ -837,7 +837,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g7 + g8 + plot_layout(ncol = 1, heights = c(7, 2))
+    g7 + g8 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
 
   }, height = function(x) input$plotHeight)
@@ -883,7 +883,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 2))
+      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
 
     } else{
@@ -916,7 +916,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 2))
+      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
       
     }
   }, height = function(x) input$plotHeight)
@@ -962,7 +962,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 2))
+      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
@@ -1000,7 +1000,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 2))
+      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
 
     }
     
@@ -1060,7 +1060,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g13 + g14 + plot_layout(ncol = 1, heights = c(7, 2))
+    g13 + g14 + plot_layout(ncol = 1, heights = c(7, 0.67))
 
   }, height = function(x) input$plotHeight)
   
@@ -1105,7 +1105,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 2))
+      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67))
 
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -1136,7 +1136,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 2))
+      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
 
     }
   }, height = function(x) input$plotHeight)
@@ -1182,7 +1182,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 2))
+      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
@@ -1221,7 +1221,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 2))
+      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
 
     }
     
@@ -1280,7 +1280,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g19 + g20 + plot_layout(ncol = 1, heights = c(7, 2))
+    g19 + g20 + plot_layout(ncol = 1, heights = c(7, 0.67))
 
   }, height = function(x) input$plotHeight)
   
@@ -1326,7 +1326,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 2))
+      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -1358,7 +1358,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 2))
+      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
 
     }
   }, height = function(x) input$plotHeight)
@@ -1404,7 +1404,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 2))
+      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
@@ -1444,7 +1444,7 @@ server <- function(input, output, session) {
         table_theme()
       
       library(patchwork)
-      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 2))
+      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
       
     }
     
