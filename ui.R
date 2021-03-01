@@ -474,11 +474,22 @@ ui <- dashboardPage(
           box(
             title = "Select Date Range:",
             width = 12, 
-            height = "100px",
+            height = "150px",
             solidHeader = FALSE, 
             dateRangeInput("dateRange", label = NULL,
                            start = dateRange_min, end = dateRange_max,
                            min = dateRange_min, max = dateRange_max
+            ),
+            fluidRow(
+              column(12, offset = 2,
+                radioGroupButtons(
+                  inputId = "dateRangePreset",
+                  #label = "Choices", 
+                  choices = c("1M", "2M", "4M"),
+                  #status = "primary"
+                  selected = character(0)
+                )
+              )
             )
           ),
           box(
