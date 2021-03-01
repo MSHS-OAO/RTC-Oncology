@@ -29,7 +29,8 @@ server <- function(input, output, session) {
                       inputId = "selectedSpecialty",
                       choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Campus.Specialty"]))
     )},
-    ignoreInit = TRUE)
+    ignoreInit = TRUE,
+    ignoreNULL = FALSE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty),{
     updatePickerInput(session,
