@@ -4,6 +4,11 @@ server <- function(input, output, session) {
     screenshot(filename = "Oncology Dashboard")
   })
   
+  observeEvent(input$resetheight, {
+    updateSliderInput(session,"plotHeight",value = 650)
+    
+  })
+  
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",

@@ -613,15 +613,22 @@ ui <- dashboardPage(
           box(
             title = "Change height:",
             width = 12,
-            height = "100px",
+            height = "150px",
             solidHeader = FALSE,
             sliderInput(
               inputId = "plotHeight",
               label = NULL, 
               value = 650, min = 450, max = 2000,
               ticks = FALSE
+            ),
+            fluidRow(
+              column(2, offset = 4,
+                actionButton("resetheight", "Reset")
+              )
             )
           ),
+          
+
           
           # numericInput("height", "height", 300),
           
