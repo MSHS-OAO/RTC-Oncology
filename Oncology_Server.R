@@ -311,7 +311,7 @@ server <- function(input, output, session) {
       filter(AssociationListA %in% input$annualVolSummary) %>%
       group_by(Appt.Year) %>% summarise(total = n()) %>%
       spread(Appt.Year, total)
-    visits_tb_yearly$Appt.Month <- "TOTAL Annual  Comparison"
+    visits_tb_yearly$Appt.Month <- "Total"
     visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
     
     #get the total patients per year per month
