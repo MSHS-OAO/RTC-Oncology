@@ -9,6 +9,21 @@ server <- function(input, output, session) {
     
   })
   
+  observeEvent(input$dateRangePreset, {
+    if(input$dateRangePreset == "1M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-1), end = dateRange_max)
+    }
+    
+    if(input$dateRangePreset == "2M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-2), end = dateRange_max)
+    }
+    
+    if(input$dateRangePreset == "4M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-4), end = dateRange_max)
+    }
+    
+  })
+  
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
