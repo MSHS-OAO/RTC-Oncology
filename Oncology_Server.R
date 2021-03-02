@@ -18,8 +18,8 @@ server <- function(input, output, session) {
       updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-2), end = dateRange_max)
     }
     
-    if(input$dateRangePreset == "4M"){
-      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-4), end = dateRange_max)
+    if(input$dateRangePreset == "3M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-3), end = dateRange_max)
     }
     
   })
