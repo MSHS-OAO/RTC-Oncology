@@ -164,12 +164,12 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "Annual Visit Volume Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         column(3,
+                         column(4,
                                 checkboxGroupButtons(
                                   inputId = "annualVolSummary",
                                   label = h3("Select Visit Type:"), 
-                                  choices = c("Office", "Treatment", "Labs"),
-                                  selected = c("Office", "Treatment", "Labs"),
+                                  choices = c("Total", "Office", "Treatment", "Labs"),
+                                  selected = c("Total","Office", "Treatment", "Labs"),
                                   status = "warning"
                                 ),
                                 tableOutput("trend_visitstable")
