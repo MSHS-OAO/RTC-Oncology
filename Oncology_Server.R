@@ -4,12 +4,33 @@ server <- function(input, output, session) {
     screenshot(filename = "Oncology Dashboard")
   })
   
+  observeEvent(input$resetheight, {
+    updateSliderInput(session,"plotHeight",value = 650)
+    
+  })
+  
+  observeEvent(input$dateRangePreset, {
+    if(input$dateRangePreset == "1M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-1), end = dateRange_max)
+    }
+    
+    if(input$dateRangePreset == "2M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-2), end = dateRange_max)
+    }
+    
+    if(input$dateRangePreset == "3M"){
+      updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-3), end = dateRange_max)
+    }
+    
+  })
+  
   observeEvent(input$selectedCampus,{
     updatePickerInput(session,
                       inputId = "selectedSpecialty",
                       choices = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Campus.Specialty"]))
     )},
-    ignoreInit = TRUE)
+    ignoreInit = TRUE,
+    ignoreNULL = FALSE)
   
   observeEvent(c(input$selectedCampus,input$selectedSpecialty),{
     updatePickerInput(session,
@@ -186,6 +207,7 @@ server <- function(input, output, session) {
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()
     
+    
   }, height = function(x) input$plotHeight)
   
   
@@ -263,24 +285,42 @@ server <- function(input, output, session) {
     
   }, height = function(x) input$plotHeight)
   
+  
   output$trend_visitstable <- function(){
     
     data <- dataArrived()
     # data <- arrived.data
+    #created an if statement to include another table for all of the visit types
+    #to show the total volume and the variance per month per year.
     
     #get the total patients per year
-    visits_tb_yearly <- data %>% 
-      filter(AssociationListA %in% input$annualVolSummary) %>%
-      group_by(Appt.Year) %>% summarise(total = n()) %>%
-      spread(Appt.Year, total)
-    visits_tb_yearly$Appt.Month <- "TOTAL Annual  Comparison"
-    visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
-    
-    #get the total patients per year per month
-    visits_tb <- data %>% 
-      filter(AssociationListA %in% input$annualVolSummary) %>%
-      group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
-      spread(Appt.Year, total)
+    if(input$annualVolSummary == "Total"){
+      visits_tb_yearly <- data %>%
+        group_by(Appt.Year) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      visits_tb_yearly$Appt.Month <- "Total Annual  Comparison"
+      visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+      
+      #get the total patients per year per month
+      visits_tb <- data %>%
+        group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      
+    } else {
+      #get the total patients per year
+      visits_tb_yearly <- data %>% 
+        filter(AssociationListA %in% input$annualVolSummary) %>%
+        group_by(Appt.Year) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      visits_tb_yearly$Appt.Month <- paste0("Total ",input$annualVolSummary,"\nAnnual Comparison")
+      visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+      
+      #get the total patients per year per month
+      visits_tb <- data %>% 
+        filter(AssociationListA %in% input$annualVolSummary) %>%
+        group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+    }
     
     #include all the months needed
     visits_tb <- visits_tb[match(monthOptions, visits_tb$Appt.Month),]
@@ -289,21 +329,94 @@ server <- function(input, output, session) {
     #bind the total visits per month per year with the total yeraly visits 
     visits_tb_total <- rbind(visits_tb, visits_tb_yearly)
     
-    #calculate the difference between the two years
-    #to do: make itn more dynamic 
+    #created an if statement to change the table based on the different years
+    #if the number of years provided is one then there will be no need to calculate any variance
+    #and only the volume will be showing for that specific year
+    #if the number of years are more than 1 and less than or equal 3 then we calculate variance
+    #if the number of years are more than 3 the code will raise a user error
     
-    visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+    if(length(visits_tb_total)-1 == 1){
+      visits_tb_total <- visits_tb_total
+      year1 <- colnames(visits_tb_total)[2]
+      column_names <- c("Month", paste0(year1))
+      header_above <- c("Total Visit Volume" = 2)
+      names(header_above) <- paste(c(input$annualVolSummary), c("Visit Volume"))
+      
+      
+      column_border <- c(1, 2)
+      
+    } else if(length(visits_tb_total)-1 == 2){
+      
+      visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+      
+      visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"))
+
+      header_above <- c("Total Visit Volume" = 3, "Volume Variance" = 2)
+      names(header_above) <- paste(c(input$annualVolSummary,input$annualVolSummary), c("Visit Volume","Volume Variance"))
+
+      
+      column_border <- c(1, 3, 5)
+      
+    } else if (length(visits_tb_total)-1 == 3){
+      
+      visits_tb_total$variance_1 <- visits_tb_total %>% select(length(visits_tb_total)-1) - visits_tb_total %>% select(length(visits_tb_total)-2)
+      
+      visits_tb_total$variance_percentage_1 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-3)
+      
+      #######
+      
+      visits_tb_total$variance_2 <- visits_tb_total %>% select(length(visits_tb_total)-3) - visits_tb_total %>% select(length(visits_tb_total)-4)
+      
+      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-5)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      year3 <- colnames(visits_tb_total)[4]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), paste0(year3), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("Variance"," ", "(", paste0(year2), "-", paste0(year3), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year2), "-", paste0(year3), ")"))
+      
+      header_above <- c("Total Visit Volume" = 4, "Volume Variance" = 4) 
+      names(header_above) <- paste(c(input$annualVolSummary,input$annualVolSummary), c("Visit Volume","Volume Variance"))
+      
+      
+      column_border <- c(1, 4, 8)
+      
+    } else {print("Please select <= 3 years.")}
     
-    visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
     
     visits_tb_total %>%
       kable(escape = F, align = "c",
-            col.names = c("Month", "2020", "2021", "Variance \n (2020-2021)", "% Variance \n (2020-2021)")) %>%
-      kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
-      add_header_above(c("Total Visit Volume" = 3, "Volume Variance" = 2),  background = "#7f7f7f", color = "white", font_size = 22, align = "center") %>%
-      column_spec(column = c(1, 3, 5), border_right = "thin solid lightgray") %>%
-      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#7f7f7f", color = "white") %>%
+            col.names = column_names) %>%
+      kable_styling(bootstrap_options = "hover", full_width = TRUE, position = "center", row_label_position = "c", font_size = 18) %>%
+      add_header_above(header_above,  background = "#7f7f7f", color = "white", font_size = 20, align = "center") %>%
+      column_spec(column = column_border, border_right = "thin solid lightgray", width_min = "125px") %>%
+      column_spec(column = 1, bold = T) %>%
+      row_spec(row = 0, font_size = 18, bold=TRUE, background = "#7f7f7f", color = "white") %>%
       row_spec(row = 13, bold = TRUE, background = "#a5a7a5", color = "white")
+    
     
     # months <- append(unique(visits_tb$Appt.Month),"Total")
     # 
@@ -370,7 +483,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 2))
+    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
     
     
   }, height = function(x) input$plotHeight)
@@ -425,7 +538,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 2))
+    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
     
   }, height = function(x) input$plotHeight)
   
@@ -433,8 +546,10 @@ server <- function(input, output, session) {
   output$break_treatmentvisitsgraph <- renderPlot({
     
     data <- dataArrived()
-    # data <- arrived.data %>% filter(SITE == "DBC")
+    
+    #data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
     # nrow(data)
+    
     
     total_visits_break <- data %>% filter(AssociationListA == "Treatment") %>%
       group_by(Appt.MonthYear, AssociationListT) %>% summarise(total = n())
@@ -451,6 +566,7 @@ server <- function(input, output, session) {
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      
       labs(title = paste0(site," ","Treatment Visit Volume Composition"), 
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
@@ -480,7 +596,7 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 2))
+    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
     
   }, height = function(x) input$plotHeight)
   
@@ -639,7 +755,8 @@ server <- function(input, output, session) {
   output$volumeCompTrend_grh <- renderPlot({
     
     data <- dataArrived_filtered()
-    data <- arrived.data
+    # data <- arrived.data
+    
     
     if(length(unique(data$AssociationListA)) == 1){
       visitType <- unique(data$AssociationListA)
@@ -784,7 +901,7 @@ server <- function(input, output, session) {
       group_by(SITE) %>%
       summarise(total = n())
     
-    ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
+    g7 <- ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
@@ -792,8 +909,24 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
+      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", vjust = 1.2, position = position_dodge(0.9))
+    
+    g8 <- ggplot(unique, aes(x=SITE, y= "Site", label=total, color = SITE)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+      geom_hline(yintercept = c(2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "SITE")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g7 + g8 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
@@ -813,7 +946,7 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -822,15 +955,30 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g10 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67))
+      
       
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
+      g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark', reverse = TRUE)+
@@ -838,9 +986,24 @@ server <- function(input, output, session) {
         labs(title = paste0("Unique Patients by Site over Time"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL)+
-        theme_new_line()
+        theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
+      
       # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
       #            nudge_x = 0.1, size=5)
+      
+      g10 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
       
     }
   }, height = function(x) input$plotHeight)
@@ -862,7 +1025,7 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -871,26 +1034,61 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g12 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
+      #to get the upper limit for the y_continuous
+      unique_ <- unique %>% spread(SITE, total)
+      unique_$Appt.MonthYear <- NULL
+      max_col <- function(data) sapply(data, max, na.rm = TRUE)
+      max_tot_site <- max_col(unique_)
+      
+      g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
         geom_bar(position="stack",stat="identity")+
         scale_fill_MountSinai('dark', reverse = TRUE)+
-        scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
+        scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
         labs(title = paste0("Unique Patients by Site by Month"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_text(aes(label=total), color="white", 
                   size=5, fontface="bold", position = position_stack(vjust = 0.5))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      
+      g12 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g11 + g12 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
+      
     }
     
   }, height = function(x) input$plotHeight)
@@ -902,6 +1100,7 @@ server <- function(input, output, session) {
     
     data <- dataUniqueOffice()
     # data <- uniquePts.office.data
+    
     
     valueBoxSpark(
       value =  prettyNum(nrow(data %>% filter(uniqueSystem == FALSE)), big.mark = ','),
@@ -925,7 +1124,7 @@ server <- function(input, output, session) {
       group_by(SITE) %>%
       summarise(total = n())
     
-    ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
+    g13 <- ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
@@ -933,8 +1132,23 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
+      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", vjust = 1.2, position = position_dodge(0.9))
+    
+    g14 <- ggplot(unique, aes(x=SITE, y= "Site", label=total, color = SITE)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+      geom_hline(yintercept = c(2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "SITE")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g13 + g14 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
@@ -954,7 +1168,7 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -963,15 +1177,29 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g16 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
+      g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark', reverse = TRUE)+
@@ -979,9 +1207,23 @@ server <- function(input, output, session) {
         labs(title = paste0("Unique Office Visit Patients by Site over Time"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL)+
-        theme_new_line()
+        theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
       # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
       #            nudge_x = 0.1, size=5)
+      
+      g16 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
       
     }
   }, height = function(x) input$plotHeight)
@@ -1003,7 +1245,7 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -1012,33 +1254,68 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g18 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
+      #to get the upper limit for the y_continuous
+      unique_ <- unique %>% spread(SITE, total)
+      unique_$Appt.MonthYear <- NULL
+      max_col <- function(data) sapply(data, max, na.rm = TRUE)
+      max_tot_site <- max_col(unique_)
+      
+      g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
         geom_bar(position="stack",stat="identity")+
         scale_fill_MountSinai('dark', reverse = TRUE)+
-        scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
+        scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
         
         labs(title = paste0("Unique Office Visit Patients by Site by Month"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_text(aes(label=total), color="white", 
                   size=5, fontface="bold", position = position_stack(vjust = 0.5))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      
+      g18 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
+      
     }
     
   }, height = function(x) input$plotHeight)
   
-  ##---- Treatment Visits 
   
+  ##---- Treatment Visits   
   ## Unique MRN by System
   output$uniqueTreatmentSystem <- renderValueBox({
     
@@ -1067,7 +1344,7 @@ server <- function(input, output, session) {
       group_by(SITE) %>%
       summarise(total = n())
     
-    ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
+    g19 <- ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
@@ -1075,8 +1352,23 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
+      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", vjust = 1.2, position = position_dodge(0.9))
+    
+    g20 <- ggplot(unique, aes(x=SITE, y= "Site", label=total, color = SITE)) +
+      scale_color_MountSinai('dark', reverse = TRUE)+
+      geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+      geom_hline(yintercept = c(2.5), colour='black')+
+      geom_vline(xintercept = 0, colour = 'black')+
+      scale_x_discrete(position = "top") + 
+      labs( y = NULL, x = NULL, fill = "SITE")+
+      theme_minimal() +
+      table_theme()
+    
+    library(patchwork)
+    g19 + g20 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
@@ -1096,7 +1388,8 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+        
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -1105,15 +1398,29 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g22 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
+      g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark', reverse = TRUE)+
@@ -1121,9 +1428,24 @@ server <- function(input, output, session) {
         labs(title = paste0("Unique Treatment Visit Patients by Site over Time"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL)+
-        theme_new_line()
+        theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
       # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
       #            nudge_x = 0.1, size=5)
+      
+      
+      g22 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
       
     }
   }, height = function(x) input$plotHeight)
@@ -1145,7 +1467,7 @@ server <- function(input, output, session) {
         group_by(Appt.MonthYear) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+      g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -1154,26 +1476,63 @@ server <- function(input, output, session) {
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
         geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                    nudge_x = 0.1, size=5)
+      
+      g24 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = c(2.5), colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs(y = NULL, x = NULL)+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
     } else{
       unique <- data %>% filter(uniqueSiteMonth == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
         summarise(total = n())
       
-      ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
+      #to get the upper limit for the y_continuous
+      unique_ <- unique %>% spread(SITE, total)
+      unique_$Appt.MonthYear <- NULL
+      max_col <- function(data) sapply(data, max, na.rm = TRUE)
+      max_tot_site <- max_col(unique_)
+      
+      g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
         geom_bar(position="stack",stat="identity")+
         scale_fill_MountSinai('dark', reverse = TRUE)+
-        scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
+        scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
+        
         labs(title = paste0("Unique Treatment Visit Patients by Site by Month"),
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
+        theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
+        
         geom_text(aes(label=total), color="white", 
                   size=5, fontface="bold", position = position_stack(vjust = 0.5))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                      size=5, fontface="bold.italic")
+      
+      g24 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+        scale_color_MountSinai('dark', reverse = TRUE)+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
+        geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()
+      
+      library(patchwork)
+      g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
+      
     }
     
   }, height = function(x) input$plotHeight)
@@ -1194,7 +1553,6 @@ server <- function(input, output, session) {
       lib = 'fa',
       iconColor = "white",
       markerColor = "lightgray")
-    
     
     if(input$selectedZipCodeMap == "Site"){
       
@@ -1340,6 +1698,7 @@ server <- function(input, output, session) {
       row_spec(1:nrow(final_tb), background = "	#e6e6e6", color = "black") %>%
       row_spec(c(row_start+1, row_start+2, row_start+3), background = "#f2f2f2") %>%
       row_spec(nrow(final_tb), background = "#fcc9e9", color = "black", bold = T) 
+    
   }
   
   output$zipCode_ref_tb1 <- function(){
@@ -1374,9 +1733,4 @@ server <- function(input, output, session) {
   
 } # Close Server
 
-# shinyApp(ui, server)
-
-
-# n <- 3
-# hline <- seq(0.5, 0.5*n, by= 0.5)
-# class(as.vector(hline))
+shinyApp(ui, server)

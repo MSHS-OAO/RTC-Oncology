@@ -328,12 +328,11 @@ process_data <- function(access_data,slot_data){
   data.raw <- access_data # Assign scheduling Data
   data.raw$campus_new <- site_ref$`Site`[match(data.raw$DEPARTMENT_NAME,site_ref$`Department Name`)] # Crosswalk Campus to Site by Department Name
   #data.raw <- data.raw %>% filter(!campus_new == "NA") %>% filter(!campus_new %in% c("Other","OTHER","EHS")) ## Exclude Mapped Sites: Other, OTHER, EHS
-  data.raw <- filter(data.raw, campus_new == "Oncology")
+  # data.raw <- filter(data.raw, campus_new == "Oncology")
   # Dummy columns until they are added to Clarity table: SEX, FPA
   data.raw$SEX <- "Male"
   data.raw$VITALS_TAKEN_TM <- ""
   data.raw$Provider_Leave_DTTM <- ""
-  
   
 ###### Processing the Reference File
   #read the mapping file that was provided by Marcy
@@ -375,8 +374,8 @@ process_data <- function(access_data,slot_data){
   amb_df_groupings <- merge(data.raw, department_mapping, by=c("DEPARTMENT_NAME"))
   amb_df_groupings_ <- merge(amb_df_groupings, PRC_mapping, by = c("PRC_NAME"))
   
-  
-  data.raw <- amb_df_groupings_
+  #Filtering out departments mapped as Oncology Sites only
+  data.raw <- amb_df_groupings_ %>% filter(!is.na(SITE))
   
   # Data fields incldued for analysis 
   original.cols <- c("DEPT_SPECIALTY_NAME","DEPARTMENT_NAME","PROV_NAME_WID","REFERRING_PROV_NAME_WID",

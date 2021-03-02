@@ -164,15 +164,26 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "Annual Visit Volume Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         column(3,
-                                checkboxGroupButtons(
-                                  inputId = "annualVolSummary",
-                                  label = h3("Select Visit Type:"), 
-                                  choices = c("Office", "Treatment", "Labs"),
-                                  selected = c("Office", "Treatment", "Labs"),
-                                  status = "warning"
-                                ),
-                                tableOutput("trend_visitstable")
+                         br(),
+                         fluidRow(
+                         column(4,
+                                box(
+                                  title = "Select Visit Type::",
+                                  width = 12,
+                                  height = "110px",
+                                  solidHeader = FALSE, 
+                                  radioGroupButtons(
+                                    inputId = "annualVolSummary",
+                                    label = NULL,
+                                    choices =c("Total", "Office", "Treatment", "Labs"),
+                                    selected = c("Total"),
+                                    justified = TRUE,
+                                    checkIcon = list(yes = icon("ok", lib = "glyphicon"))
+                                  ))
+                         )), br(),
+                         fluidRow(
+                         column(8, offset = 1,
+                                tableOutput("trend_visitstable"))
                          ))
                 )
         ),
@@ -474,11 +485,22 @@ ui <- dashboardPage(
           box(
             title = "Select Date Range:",
             width = 12, 
-            height = "100px",
+            height = "150px",
             solidHeader = FALSE, 
             dateRangeInput("dateRange", label = NULL,
                            start = dateRange_min, end = dateRange_max,
                            min = dateRange_min, max = dateRange_max
+            ),
+            fluidRow(
+              column(12, offset = 2,
+                radioGroupButtons(
+                  inputId = "dateRangePreset",
+                  #label = "Choices", 
+                  choices = c("1M", "2M", "3M"),
+                  #status = "primary"
+                  selected = character(0)
+                )
+              )
             )
           ),
           box(
@@ -613,15 +635,22 @@ ui <- dashboardPage(
           box(
             title = "Change height:",
             width = 12,
-            height = "100px",
+            height = "150px",
             solidHeader = FALSE,
             sliderInput(
               inputId = "plotHeight",
               label = NULL, 
               value = 650, min = 450, max = 2000,
               ticks = FALSE
+            ),
+            fluidRow(
+              column(2, offset = 4,
+                actionButton("resetheight", "Reset")
+              )
             )
           ),
+          
+
           
           # numericInput("height", "height", 300),
           
