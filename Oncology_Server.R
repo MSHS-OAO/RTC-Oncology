@@ -145,28 +145,6 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
-  # Arrived unique patients - all visits ================================================================================================
-  dataUniqueAll <- reactive({
-    groupByFilters(uniquePts.all.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
-  # Arrived unique patients - office visits =================================================================================================
-  dataUniqueOffice <- reactive({
-    groupByFilters(uniquePts.office.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
-  
-  # Arrived unique patients - treatment visits ===================================================================================================
-  dataUniqueTreatment <- reactive({
-    groupByFilters(uniquePts.treatment.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
   
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
@@ -876,7 +854,7 @@ server <- function(input, output, session) {
   ## Unique MRN by System
   output$uniqueAllSystem <- renderValueBox({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     valueBoxSpark(
@@ -894,7 +872,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Site
   output$uniqueAllSite <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -932,7 +910,7 @@ server <- function(input, output, session) {
   ## Unique MRN  over Time (Months)
   output$uniqueAllTrend <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1011,7 +989,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueAllMonth <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1098,7 +1076,7 @@ server <- function(input, output, session) {
   ## Unique MRN by System
   output$uniqueOfficeSystem <- renderValueBox({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     
@@ -1117,7 +1095,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Site
   output$uniqueOfficeSite <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -1154,7 +1132,7 @@ server <- function(input, output, session) {
   ## Unique MRN  over Time (Months)
   output$uniqueOfficeTrend <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1231,7 +1209,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueOfficeMonth <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1319,7 +1297,7 @@ server <- function(input, output, session) {
   ## Unique MRN by System
   output$uniqueTreatmentSystem <- renderValueBox({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     valueBoxSpark(
@@ -1374,7 +1352,7 @@ server <- function(input, output, session) {
   ## Unique MRN  over Time (Months)
   output$uniqueTreatmentTrend <- renderPlot({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1453,7 +1431,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueTreatmentMonth <- renderPlot({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1733,4 +1711,4 @@ server <- function(input, output, session) {
   
 } # Close Server
 
-# shinyApp(ui, server)
+shinyApp(ui, server)
