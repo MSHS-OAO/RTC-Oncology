@@ -209,11 +209,6 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
-                       ),
-                       boxPlus(
-                         title = "Visit Volume Breakdown", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         tableOutput("break_visitstable")
                        )
                        
                 )
