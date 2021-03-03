@@ -766,50 +766,6 @@ population.data <- merge(population.data, zipcode, by.x="new_zip", by.y="zip", a
 population.data_filtered <- population.data %>% filter(!is.na(`Zip Code Layer: A`))
 ### Missing zip codes in Zip Code Grouper filer?
 
-
-### Unique Visits Analysis ----------------------------------------------------------------------------------------------
-uniquePts.data <- arrived.data
-
-uniquePts.all.data <- uniquePts.data %>%
-  mutate(uniqueSystem = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)))]),
-         uniqueSystemMonth = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
-                                                          grep("Appt.Month", colnames(uniquePts.data)))]),
-         uniqueSite = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
-                                                   grep("SITE", colnames(uniquePts.data)))]),
-         uniqueSiteMonth = duplicated(uniquePts.data[,c(grep("MRN", colnames(uniquePts.data)),
-                                                        grep("SITE", colnames(uniquePts.data)),
-                                                        grep("Month", colnames(uniquePts.data)))]))
-
-uniquePts.office.data <- uniquePts.data %>% filter(AssociationListA == "Office") 
-uniquePts.office.data <- uniquePts.office.data %>%
-  mutate(uniqueSystem = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)))]),
-         uniqueSystemMonth = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                                 grep("Appt.Month", colnames(uniquePts.office.data)))]),
-         uniqueSite = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                          grep("SITE", colnames(uniquePts.office.data)))]),
-         uniqueSiteMonth = duplicated(uniquePts.office.data[,c(grep("MRN", colnames(uniquePts.office.data)),
-                                                               grep("SITE", colnames(uniquePts.office.data)),
-                                                               grep("Month", colnames(uniquePts.office.data)))]))
-
-uniquePts.treatment.data <- uniquePts.data %>% filter(AssociationListA == "Treatment") 
-uniquePts.treatment.data <- uniquePts.treatment.data %>%
-  mutate(uniqueSystem = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)))]),
-         uniqueSystemMonth = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                                    grep("Appt.Month", colnames(uniquePts.treatment.data)))]),
-         uniqueSite = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                             grep("SITE", colnames(uniquePts.treatment.data)))]),
-         uniqueSiteMonth = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                                  grep("SITE", colnames(uniquePts.treatment.data)),
-                                                                  grep("Month", colnames(uniquePts.treatment.data)))]),
-         uniqueSiteMonthProv = duplicated(uniquePts.treatment.data[,c(grep("MRN", colnames(uniquePts.treatment.data)),
-                                                                      grep("SITE", colnames(uniquePts.treatment.data)),
-                                                                      grep("Month", colnames(uniquePts.treatment.data)),
-                                                                      grep("Ref.Provider", colnames(uniquePts.treatment.data)))]))
-
-
-
-
-
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
 
 # Mater Filters 
@@ -848,6 +804,27 @@ groupByFilters <- function(dt, campus, specialty, department, provider, refProvi
 
 groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
   result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
+  return(result)
+}
+
+## Calculated Unique Visits Data 
+uniquePts_df <- function(dt, visitType){
+  
+  data <- dt %>% filter(AssociationListA %in% visitType) 
+  result <- data %>% 
+    filter(AssociationListA %in% visitType) %>%
+    mutate(uniqueSystem = duplicated(data[,c(grep("MRN", colnames(data)))]),
+           uniqueSystemMonth = duplicated(data[,c(grep("MRN", colnames(data)),
+                                                                      grep("Appt.Month", colnames(data)))]),
+           uniqueSite = duplicated(data[,c(grep("MRN", colnames(data)),
+                                                               grep("SITE", colnames(data)))]),
+           uniqueSiteMonth = duplicated(data[,c(grep("MRN", colnames(data)),
+                                                                    grep("SITE", colnames(data)),
+                                                                    grep("Month", colnames(data)))]),
+           uniqueSiteMonthProv = duplicated(data[,c(grep("MRN", colnames(data)),
+                                                                        grep("SITE", colnames(data)),
+                                                                        grep("Month", colnames(data)),
+                                                                        grep("Ref.Provider", colnames(data)))]))
   return(result)
 }
 
