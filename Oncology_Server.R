@@ -258,6 +258,89 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
+  observeEvent(input$selectedrefProvider,{
+    visit_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                        historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                        historical.data$Department %in% input$selectedDepartment &
+                                                        historical.data$Provider %in% input$selectedProvider &
+                                                        historical.data$Ref.Provider %in% input$selectedrefProvider, "AssociationListA"]))
+    updatePickerInput(session,
+                      inputId = "selectedVisitType",
+                      choices = visit_type_choices,
+                      selected = visit_type_choices
+    )
+    appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                       historical.data$Department %in% input$selectedDepartment &
+                                                       historical.data$Provider %in% input$selectedProvider &
+                                                       historical.data$Ref.Provider %in% input$selectedrefProvider &
+                                                       historical.data$AssociationListA %in% visit_type_choices, "AssociationListB"]))
+    updatePickerInput(session,
+                      inputId = "selectedApptType",
+                      choices = appt_type_choices,
+                      selected = appt_type_choices
+    )
+    treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                       historical.data$Department %in% input$selectedDepartment &
+                                                       historical.data$Provider %in% input$selectedProvider &
+                                                       historical.data$Ref.Provider %in% input$selectedrefProvider &
+                                                       historical.data$AssociationListA %in% visit_type_choices &
+                                                       historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
+    updatePickerInput(session,
+                      inputId = "selectedTreatmentType",
+                      choices = treatment_choices,
+                      selected = treatment_choices
+    )
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  observeEvent(input$selectedVisitType,{
+    appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                       historical.data$Department %in% input$selectedDepartment &
+                                                       historical.data$Provider %in% input$selectedProvider &
+                                                       historical.data$Ref.Provider %in% input$selectedrefProvider &
+                                                       historical.data$AssociationListA %in% input$selectedVisitType, "AssociationListB"]))
+    updatePickerInput(session,
+                      inputId = "selectedApptType",
+                      choices = appt_type_choices,
+                      selected = appt_type_choices
+    )
+    treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                       historical.data$Department %in% input$selectedDepartment &
+                                                       historical.data$Provider %in% input$selectedProvider &
+                                                       historical.data$Ref.Provider %in% input$selectedrefProvider &
+                                                       historical.data$AssociationListA %in% input$selectedVisitType &
+                                                       historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
+    updatePickerInput(session,
+                      inputId = "selectedTreatmentType",
+                      choices = treatment_choices,
+                      selected = treatment_choices
+    )
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  observeEvent(input$selectedApptType,{
+    treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% input$selectedSpecialty &
+                                                       historical.data$Department %in% input$selectedDepartment &
+                                                       historical.data$Provider %in% input$selectedProvider &
+                                                       historical.data$Ref.Provider %in% input$selectedrefProvider &
+                                                       historical.data$AssociationListA %in% input$selectedVisitType &
+                                                       historical.data$AssociationListB %in% input$selectedApptType, "AssociationListT"]))
+    updatePickerInput(session,
+                      inputId = "selectedTreatmentType",
+                      choices = treatment_choices,
+                      selected = treatment_choices
+    )
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
   # 
   # observeEvent(c(input$selectedCampus,input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider),{
   #   print("e")
