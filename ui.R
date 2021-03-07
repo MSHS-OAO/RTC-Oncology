@@ -485,7 +485,7 @@ ui <- dashboardPage(
                      radioGroupButtons(
                        inputId = "dateRangePreset",
                        #label = "Choices", 
-                       choices = c("1M", "2M", "3M"),
+                       choices = c("3M", "6M", "1Y"),
                        #status = "primary"
                        selected = character(0)
                      )
