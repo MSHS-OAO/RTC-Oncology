@@ -65,7 +65,29 @@ server <- function(input, output, session) {
                           choices = visit_type_choices,
                            selected = visit_type_choices
         )
-    print(specialty_choices)
+      appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                         historical.data$Campus.Specialty %in% specialty_choices &
+                                                         historical.data$Department %in% department_choices &
+                                                         historical.data$Provider %in% provider_choices &
+                                                         historical.data$Ref.Provider %in% ref_provider_choices &
+                                                         historical.data$AssociationListA %in% visit_type_choices, "AssociationListB"]))
+        updatePickerInput(session,
+                          inputId = "selectedApptType",
+                          choices = appt_type_choices,
+                           selected = appt_type_choices
+        )
+        treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                          historical.data$Campus.Specialty %in% specialty_choices &
+                                                          historical.data$Department %in% department_choices &
+                                                          historical.data$Provider %in% provider_choices &
+                                                          historical.data$Ref.Provider %in% ref_provider_choices &
+                                                          historical.data$AssociationListA %in% visit_type_choices &
+                                                          historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
+        updatePickerInput(session,
+                            inputId = "selectedTreatmentType",
+                            choices = treatment_choices,
+                             selected = treatment_choices
+          )
     print("z")
   },
   ignoreNULL = FALSE,
@@ -96,6 +118,39 @@ server <- function(input, output, session) {
                       inputId = "selectedrefProvider",
                       choices = ref_provider_choices,
                       selected = ref_provider_choices
+    )
+    visit_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                        historical.data$Campus.Specialty %in% specialty_choices &
+                                                        historical.data$Department %in% department_choices &
+                                                        historical.data$Provider %in% provider_choices &
+                                                        historical.data$Ref.Provider %in% ref_provider_choices, "AssociationListA"]))
+    updatePickerInput(session,
+                      inputId = "selectedVisitType",
+                      choices = visit_type_choices,
+                      selected = visit_type_choices
+    )
+    appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% specialty_choices &
+                                                       historical.data$Department %in% department_choices &
+                                                       historical.data$Provider %in% provider_choices &
+                                                       historical.data$Ref.Provider %in% ref_provider_choices &
+                                                       historical.data$AssociationListA %in% visit_type_choices, "AssociationListB"]))
+    updatePickerInput(session,
+                      inputId = "selectedApptType",
+                      choices = appt_type_choices,
+                      selected = appt_type_choices
+    )
+    treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                       historical.data$Campus.Specialty %in% specialty_choices &
+                                                       historical.data$Department %in% department_choices &
+                                                       historical.data$Provider %in% provider_choices &
+                                                       historical.data$Ref.Provider %in% ref_provider_choices &
+                                                       historical.data$AssociationListA %in% visit_type_choices &
+                                                       historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
+    updatePickerInput(session,
+                      inputId = "selectedTreatmentType",
+                      choices = treatment_choices,
+                      selected = treatment_choices
     )
   },
   ignoreNULL = FALSE,
