@@ -488,13 +488,13 @@ ui <- dashboardPage(
             ),
             fluidRow(
               column(12, offset = 2,
-                radioGroupButtons(
-                  inputId = "dateRangePreset",
-                  #label = "Choices", 
-                  choices = c("1M", "2M", "3M"),
-                  #status = "primary"
-                  selected = character(0)
-                )
+                     radioGroupButtons(
+                       inputId = "dateRangePreset",
+                       #label = "Choices", 
+                       choices = c("3M", "6M", "1Y"),
+                       #status = "primary"
+                       selected = character(0)
+                     )
               )
             )
           ),
@@ -640,12 +640,12 @@ ui <- dashboardPage(
             ),
             fluidRow(
               column(2, offset = 4,
-                actionButton("resetheight", "Reset")
+                     actionButton("resetheight", "Reset")
               )
             )
           ),
           
-
+          
           
           # numericInput("height", "height", 300),
           
