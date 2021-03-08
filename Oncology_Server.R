@@ -17,7 +17,6 @@ server <- function(input, output, session) {
     if(input$dateRangePreset == "6M"){
       updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-6), end = dateRange_max)
     }
-    
     if(input$dateRangePreset == "1Y"){
       updateDateRangeInput(session,"dateRange",start = dateRange_max %m+% months(-12), end = dateRange_max)
     }
@@ -390,28 +389,6 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
-  # Arrived unique patients - all visits ================================================================================================
-  dataUniqueAll <- reactive({
-    groupByFilters(uniquePts.all.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
-  # Arrived unique patients - office visits =================================================================================================
-  dataUniqueOffice <- reactive({
-    groupByFilters(uniquePts.office.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
-  
-  # Arrived unique patients - treatment visits ===================================================================================================
-  dataUniqueTreatment <- reactive({
-    groupByFilters(uniquePts.treatment.data,
-                   input$selectedCampus, input$selectedSpecialty, input$selectedDepartment, input$selectedProvider, input$selectedrefProvider,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
-  
   
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
@@ -451,6 +428,7 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()
+    
     
   }, height = function(x) input$plotHeight)
   
@@ -529,24 +507,42 @@ server <- function(input, output, session) {
     
   }, height = function(x) input$plotHeight)
   
+  
   output$trend_visitstable <- function(){
     
     data <- dataArrived()
     # data <- arrived.data
+    #created an if statement to include another table for all of the visit types
+    #to show the total volume and the variance per month per year.
     
     #get the total patients per year
-    visits_tb_yearly <- data %>% 
-      filter(AssociationListA %in% input$annualVolSummary) %>%
-      group_by(Appt.Year) %>% summarise(total = n()) %>%
-      spread(Appt.Year, total)
-    visits_tb_yearly$Appt.Month <- "TOTAL Annual  Comparison"
-    visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
-    
-    #get the total patients per year per month
-    visits_tb <- data %>% 
-      filter(AssociationListA %in% input$annualVolSummary) %>%
-      group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
-      spread(Appt.Year, total)
+    if(input$annualVolSummary == "Total"){
+      visits_tb_yearly <- data %>%
+        group_by(Appt.Year) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      visits_tb_yearly$Appt.Month <- "Total Annual  Comparison"
+      visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+      
+      #get the total patients per year per month
+      visits_tb <- data %>%
+        group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      
+    } else {
+      #get the total patients per year
+      visits_tb_yearly <- data %>% 
+        filter(AssociationListA %in% input$annualVolSummary) %>%
+        group_by(Appt.Year) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+      visits_tb_yearly$Appt.Month <- paste0("Total ",input$annualVolSummary,"\nAnnual Comparison")
+      visits_tb_yearly <- visits_tb_yearly %>% relocate(Appt.Month)
+      
+      #get the total patients per year per month
+      visits_tb <- data %>% 
+        filter(AssociationListA %in% input$annualVolSummary) %>%
+        group_by(Appt.Year, Appt.Month) %>% summarise(total = n()) %>%
+        spread(Appt.Year, total)
+    }
     
     #include all the months needed
     visits_tb <- visits_tb[match(monthOptions, visits_tb$Appt.Month),]
@@ -555,27 +551,94 @@ server <- function(input, output, session) {
     #bind the total visits per month per year with the total yeraly visits 
     visits_tb_total <- rbind(visits_tb, visits_tb_yearly)
     
-    #calculate the difference between the two years
-    #to do: make itn more dynamic 
+    #created an if statement to change the table based on the different years
+    #if the number of years provided is one then there will be no need to calculate any variance
+    #and only the volume will be showing for that specific year
+    #if the number of years are more than 1 and less than or equal 3 then we calculate variance
+    #if the number of years are more than 3 the code will raise a user error
     
-    visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+    if(length(visits_tb_total)-1 == 1){
+      visits_tb_total <- visits_tb_total
+      year1 <- colnames(visits_tb_total)[2]
+      column_names <- c("Month", paste0(year1))
+      header_above <- c("Total Visit Volume" = 2)
+      names(header_above) <- paste(c(input$annualVolSummary), c("Visit Volume"))
+      
+      
+      column_border <- c(1, 2)
+      
+    } else if(length(visits_tb_total)-1 == 2){
+      
+      visits_tb_total$variance <- visits_tb_total %>% select(length(visits_tb_total)) - visits_tb_total %>% select(length(visits_tb_total)-1)
+      
+      visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"))
+
+      header_above <- c("Total Visit Volume" = 3, "Volume Variance" = 2)
+      names(header_above) <- paste(c(input$annualVolSummary,input$annualVolSummary), c("Visit Volume","Volume Variance"))
+
+      
+      column_border <- c(1, 3, 5)
+      
+    } else if (length(visits_tb_total)-1 == 3){
+      
+      visits_tb_total$variance_1 <- visits_tb_total %>% select(length(visits_tb_total)-1) - visits_tb_total %>% select(length(visits_tb_total)-2)
+      
+      visits_tb_total$variance_percentage_1 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-3)
+      
+      #######
+      
+      visits_tb_total$variance_2 <- visits_tb_total %>% select(length(visits_tb_total)-3) - visits_tb_total %>% select(length(visits_tb_total)-4)
+      
+      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-5)
+      
+      #######
+      
+      visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
+      
+      year1 <- colnames(visits_tb_total)[2]
+      year2 <- colnames(visits_tb_total)[3]
+      year3 <- colnames(visits_tb_total)[4]
+      
+      #######
+      
+      column_names <- c("Month", paste0(year1), paste0(year2), paste0(year3), 
+                        paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"),
+                        paste0("Variance"," ", "(", paste0(year2), "-", paste0(year3), ")"), 
+                        paste0("% Variance", " ", "(", paste0(year2), "-", paste0(year3), ")"))
+      
+      header_above <- c("Total Visit Volume" = 4, "Volume Variance" = 4) 
+      names(header_above) <- paste(c(input$annualVolSummary,input$annualVolSummary), c("Visit Volume","Volume Variance"))
+      
+      
+      column_border <- c(1, 4, 8)
+      
+    } else {print("Please select <= 3 years.")}
     
-    visits_tb_total$variance_percentage <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-2)
-    
-    visits_tb_total$variance_percentage <- formattable::percent(as.numeric(unlist(visits_tb_total$variance_percentage)))
-    
-    
-    year1 <- colnames(visits_tb_total)[2]
-    year2 <- colnames(visits_tb_total)[3]
     
     visits_tb_total %>%
       kable(escape = F, align = "c",
-            col.names = c("Month", paste0(year1), paste0(year2), paste0("Variance"," ", "(", paste0(year1), "-", paste0(year2), ")"), paste0("% Variance", " ", "(", paste0(year1), "-", paste0(year2), ")"))) %>%
-      kable_styling(bootstrap_options = "hover", full_width = FALSE, position = "center", row_label_position = "c", font_size = 24) %>%
-      add_header_above(c("Total Visit Volume" = 3, "Volume Variance" = 2),  background = "#7f7f7f", color = "white", font_size = 22, align = "center") %>%
-      column_spec(column = c(1, 3, 5), border_right = "thin solid lightgray") %>%
-      row_spec(row = 0, font_size = 22, bold=TRUE, background = "#7f7f7f", color = "white") %>%
+            col.names = column_names) %>%
+      kable_styling(bootstrap_options = "hover", full_width = TRUE, position = "center", row_label_position = "c", font_size = 18) %>%
+      add_header_above(header_above,  background = "#7f7f7f", color = "white", font_size = 20, align = "center") %>%
+      column_spec(column = column_border, border_right = "thin solid lightgray", width_min = "125px") %>%
+      column_spec(column = 1, bold = T) %>%
+      row_spec(row = 0, font_size = 18, bold=TRUE, background = "#7f7f7f", color = "white") %>%
       row_spec(row = 13, bold = TRUE, background = "#a5a7a5", color = "white")
+    
     
     # months <- append(unique(visits_tb$Appt.Month),"Total")
     # 
@@ -678,7 +741,7 @@ server <- function(input, output, session) {
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
     
-
+    
     n <- length(unique(total_visits_break$AssociationListB)) - 1
     if(n==0){
       hline_y <- 0
@@ -705,7 +768,7 @@ server <- function(input, output, session) {
   output$break_treatmentvisitsgraph <- renderPlot({
     
     data <- dataArrived()
-
+    
     #data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
     # nrow(data)
     
@@ -725,7 +788,7 @@ server <- function(input, output, session) {
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark', reverse = TRUE)+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-
+      
       labs(title = paste0(site," ","Treatment Visit Volume Composition"), 
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
@@ -801,9 +864,9 @@ server <- function(input, output, session) {
           scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))
         
       }
-            
+      
     } else if(input$comp_choices == "Site"){
-
+      
       if(input$analysis_type == "Monthly"){
         # Comparison by site
         visit_comp_site <- data %>%
@@ -915,7 +978,7 @@ server <- function(input, output, session) {
     
     data <- dataArrived_filtered()
     # data <- arrived.data
-
+    
     
     if(length(unique(data$AssociationListA)) == 1){
       visitType <- unique(data$AssociationListA)
@@ -1035,7 +1098,7 @@ server <- function(input, output, session) {
   ## Unique MRN by System
   output$uniqueAllSystem <- renderValueBox({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     valueBoxSpark(
@@ -1053,7 +1116,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Site
   output$uniqueAllSite <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -1085,13 +1148,13 @@ server <- function(input, output, session) {
     library(patchwork)
     g7 + g8 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
-
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
   output$uniqueAllTrend <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1131,7 +1194,7 @@ server <- function(input, output, session) {
       library(patchwork)
       g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67))
       
-
+      
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
@@ -1170,7 +1233,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueAllMonth <- renderPlot({
     
-    data <- dataUniqueAll()
+    data <- uniquePts_df(dataArrived(), c("Office","Labs","Treatment"))
     # data <- uniquePts.all.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1247,7 +1310,7 @@ server <- function(input, output, session) {
       
       library(patchwork)
       g11 + g12 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
-
+      
     }
     
   }, height = function(x) input$plotHeight)
@@ -1257,10 +1320,10 @@ server <- function(input, output, session) {
   ## Unique MRN by System
   output$uniqueOfficeSystem <- renderValueBox({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
-
+    
     valueBoxSpark(
       value =  prettyNum(nrow(data %>% filter(uniqueSystem == FALSE)), big.mark = ','),
       title = toupper("Total System Unique Office Visit Patients"),
@@ -1276,7 +1339,7 @@ server <- function(input, output, session) {
   ## Unique MRN by Site
   output$uniqueOfficeSite <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     unique <- data %>% filter(uniqueSite == FALSE) %>% 
@@ -1307,13 +1370,13 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g13 + g14 + plot_layout(ncol = 1, heights = c(7, 0.67))
-
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
   output$uniqueOfficeTrend <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1352,7 +1415,7 @@ server <- function(input, output, session) {
       
       library(patchwork)
       g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67))
-
+      
     } else{
       unique <- data %>% filter(uniqueSite == FALSE) %>% 
         group_by(Appt.MonthYear, SITE) %>%
@@ -1383,14 +1446,14 @@ server <- function(input, output, session) {
       
       library(patchwork)
       g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
-
+      
     }
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN by Month
   output$uniqueOfficeMonth <- renderPlot({
     
-    data <- dataUniqueOffice()
+    data <- uniquePts_df(dataArrived(), c("Office"))
     # data <- uniquePts.office.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1468,17 +1531,17 @@ server <- function(input, output, session) {
       
       library(patchwork)
       g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
-
+      
     }
     
   }, height = function(x) input$plotHeight)
   
-
+  
   ##---- Treatment Visits   
   ## Unique MRN by System
   output$uniqueTreatmentSystem <- renderValueBox({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     valueBoxSpark(
@@ -1527,13 +1590,13 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g19 + g20 + plot_layout(ncol = 1, heights = c(7, 0.67))
-
+    
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN  over Time (Months)
   output$uniqueTreatmentTrend <- renderPlot({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1548,7 +1611,7 @@ server <- function(input, output, session) {
         summarise(total = n())
       
       g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
-
+        
         geom_line(size=1.1)+
         geom_point(size=3)+
         scale_color_MountSinai('dark')+
@@ -1605,14 +1668,14 @@ server <- function(input, output, session) {
       
       library(patchwork)
       g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
-
+      
     }
   }, height = function(x) input$plotHeight)
   
   ## Unique MRN by Month
   output$uniqueTreatmentMonth <- renderPlot({
     
-    data <- dataUniqueTreatment()
+    data <- uniquePts_df(dataArrived(), c("Treatment"))
     # data <- uniquePts.treatment.data
     
     if(length(unique(data$SITE)) == 9){
@@ -1673,7 +1736,7 @@ server <- function(input, output, session) {
              y = NULL, x = NULL, fill = NULL)+
         theme_new_line()+
         theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-
+        
         geom_text(aes(label=total), color="white", 
                   size=5, fontface="bold", position = position_stack(vjust = 0.5))+
         stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
@@ -1857,7 +1920,7 @@ server <- function(input, output, session) {
       row_spec(1:nrow(final_tb), background = "	#e6e6e6", color = "black") %>%
       row_spec(c(row_start+1, row_start+2, row_start+3), background = "#f2f2f2") %>%
       row_spec(nrow(final_tb), background = "#fcc9e9", color = "black", bold = T) 
-
+    
   }
   
   output$zipCode_ref_tb1 <- function(){
@@ -1892,6 +1955,4 @@ server <- function(input, output, session) {
   
 } # Close Server
 
-#shinyApp(ui, server)
-
-
+shinyApp(ui, server)

@@ -164,15 +164,26 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "Annual Visit Volume Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         column(3,
-                                checkboxGroupButtons(
-                                  inputId = "annualVolSummary",
-                                  label = h3("Select Visit Type:"), 
-                                  choices = c("Office", "Treatment", "Labs"),
-                                  selected = c("Office", "Treatment", "Labs"),
-                                  status = "warning"
-                                ),
-                                tableOutput("trend_visitstable")
+                         br(),
+                         fluidRow(
+                         column(4,
+                                box(
+                                  title = "Select Visit Type::",
+                                  width = 12,
+                                  height = "110px",
+                                  solidHeader = FALSE, 
+                                  radioGroupButtons(
+                                    inputId = "annualVolSummary",
+                                    label = NULL,
+                                    choices =c("Total", "Office", "Treatment", "Labs"),
+                                    selected = c("Total"),
+                                    justified = TRUE,
+                                    checkIcon = list(yes = icon("ok", lib = "glyphicon"))
+                                  ))
+                         )), br(),
+                         fluidRow(
+                         column(8, offset = 1,
+                                tableOutput("trend_visitstable"))
                          ))
                 )
         ),
@@ -198,11 +209,6 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
-                       ),
-                       boxPlus(
-                         title = "Visit Volume Breakdown", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         tableOutput("break_visitstable")
                        )
                        
                 )
