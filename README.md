@@ -10,6 +10,6 @@ This application uses R version 3.6.1.  Please use the link to downlaod the corr
 To run this application download the Volume Anlayis branch in this repo and then run the following files in the order they are written:
   1. Future_Oncology_Global.R
   2. ui.R
-  3. Oncology_Server.R  
+  3. Oncology_Server.R 
 After all three files have finished running, use the RStudio console to run the command: shinyApp(ui,server)
 
