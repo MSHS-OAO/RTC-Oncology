@@ -1,5 +1,5 @@
 # Oncology Dashboard
-The purpose of this project is to build a system wide oncology dashboard that can be used to explore new and established KPIs.  Some of the dahsbaord are currently being run manually so we are working with MArcy Cohen and Thomas Waslh to automate existing dashboards that the Oncology department currently uses. 
+The purpose of this project is to build a system wide oncology dashboard that can be used to explore new and established KPIs.  Some of the dahsbaord are currently being run manually so we are working with the oncology department to automate existing dashboards that the Oncology department currently uses. 
 
 # OAO Team Members
 Hala Sweidan, So Youn Kweon, Armando Villegas, Asala Erekat
