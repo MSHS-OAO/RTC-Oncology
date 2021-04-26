@@ -5,7 +5,7 @@ The purpose of this project is to build a system wide oncology dashboard that ca
 Hala Sweidan, So Youn Kweon, Armando Villegas, Asala Erekat
 
 # R Version
-This application uses R version 3.6.1.  Please use the link to downlaod the correct R version: https://mirror.las.iastate.edu/CRAN/bin/windows/base/old/3.6.1/
+This application uses R version 3.6.1.  Please use the link to download the correct R version: https://mirror.las.iastate.edu/CRAN/bin/windows/base/old/3.6.1/
 # Installation
 To run this application download the Volume Anlayis branch in this repo and then run the following files in the order they are written:
   1. Future_Oncology_Global.R
