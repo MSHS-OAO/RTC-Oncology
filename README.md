@@ -12,5 +12,5 @@ To run this application download the repo and switch to the Volume Anlayis branc
   2. ui.R
   3. Oncology_Server.R<br/>
 After all three files have finished running, use the RStudio console to run the command: shinyApp(ui,server)  
-This will opne up an RStudio borwser with the application
+This will open up an RStudio browser with the application
 
