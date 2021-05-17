@@ -321,12 +321,15 @@ setwd(wdpath)
 # process_data function includes reading in the mapping file creating an renaming slot and access columns
 # the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
 
-
-
-### (6) Data Subset -----------------------------------------------------------------------------------------------------
+### Rstudio Connect Data -----------------------------------------------------------------------------------------------------
 historical.data <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
 max_date <- max(historical.data$Appt.DateYear)
 holid <- as.data.frame(read_feather(here::here("Data/holid.feather")))
+population.data_filtered <- as.data.frame(read_feather(here::here("Data/population_data_filtered.feather")))
+
+
+### (6) Data Subset -----------------------------------------------------------------------------------------------------
+
 
 ## Other datasets
 all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
@@ -342,9 +345,6 @@ arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data:
 arrivedDisease.data <- arrived.data %>% filter(Disease_Group != "No Disease Group")
 
 
-### Zip Code Analysis --------------------------------------------------------------------------------------------------
-population.data_filtered <- as.data.frame(read_feather(here::here("Data/population_data_filtered.feather")))
-### Missing zip codes in Zip Code Grouper filer?
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
 
