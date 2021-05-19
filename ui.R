@@ -84,7 +84,6 @@ ui <- dashboardPage(
                  background: rgba(255, 255, 255, 0);
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
-                menuItem("Home", tabName = "homepage", icon= icon("home")),
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
@@ -102,6 +101,14 @@ ui <- dashboardPage(
                                   menuSubItem("Exam", tabName = "provUniqueExam")),
                          menuItem("By Zip Code", tabName = "zipCode")
                 ),
+                menuItem("Scheduling", tabName = "scheduling", icon = icon("hospital-user"),
+                         menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
+                         menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
+                         menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
+                ),
+                # menuItem("Access", tabName = "access", icon = icon("hospital-user"),
+                #          menuItem("Booked/Filled Rates", tabName = "accessBooked")
+                # ),
                 br(),
                 tags$div("Surgical Cases",
                          style= "
@@ -149,47 +156,11 @@ ui <- dashboardPage(
       tags$head(tags$style(".top-align { vertical-align: top;}  ")),
       
       tabItems(
-        # HomePage ------------------------------------------------------------------------------------------------------------------
-        tabItem(tabName = "homepage",
-                column(12,
-                       div("About Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                       
-                       tags$div( id = "home_text",
-                                 HTML("<p>Version: 1.0 <br> Last Updated: 5/12/2021</p>")
-                       ),
-                       tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), 
-                       column(12,
-                              tags$div(id = "home_description",
-                                       h3("Description"),
-                                       p("This is a centralized analytics tool that inlcudes all necessary KPIs and metrics that will
-                                 allow the users to identify operatinal oppoutunities, make data-driven decisions, and
-                                 track improvements")
-                              )
-                       ),
-                       column(12,
-                              tags$div(id = "home_data",
-                                       h3("Data Sources"),
-                                       p("The data used in this dashboard is pulled from the Clarity database using the slot and access datatables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
-                                      The master file including the department, PRC, and disease group mappings as well as the LOS excludions used in this analytics tool can be downloaded from the first hyperlink, While the zip code groupings file can be downloaded at the second."),
-                                       a(href = "Mappings/Oncology Master Mapping File - Updated 4.22.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx'),
-                                       br(),
-                                       a(href = "Mappings/Oncology System Data - Zip Code Groupings 4.13.2021.csv",target='blank', 'Zip Code Groupings', download = 'Zip Code Groupings.csv')
-                              ))
-                       # column(12,
-                       #        tags$div(id = "home_usage",
-                       #                 h3("Usage"), 
-                       #                 #img(src = "homepage.png", width = "500px"),
-                       #                 br(),
-                       #                 p("Section 1 contains the sidebar menu where all the different tabs are listed"),
-                       #                 p("Section 2 includes the name of the tab currently being looked at as well as the date ranges that the tab is showing"),
-                       #                 p("Section 3 included the filter menu, it is hiearchical meaning the filter choices are based off the previously selected choices. The filters effect all the the outputs in the tab.  Below the filter dropdown menu is the download button which allows the user to save all the graphs and tables on the currently viewed tab as a PNG.")
-                       #                 
-                       #        ))
-                )),
         # Volume Trend Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumetrend",
                 div("Volume Trend - Site", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_volumetrend"),
+                tags$head(tags$style("#practiceName_volumetrend{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary",
@@ -244,7 +215,8 @@ ui <- dashboardPage(
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumebreakdown",
                 div("Volume Breakdown - Site", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_volumebreakdown"),
+                tags$head(tags$style("#practiceName_volumebreakdown{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary", 
@@ -271,7 +243,8 @@ ui <- dashboardPage(
         # Volume Comparison Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumecomparison",
                 div("Volume Comparison - Site", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_volumecomparison"),
+                tags$head(tags$style("#practiceName_volumecomparison{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Analysis Customization", width = 12, status = "primary", 
@@ -362,7 +335,8 @@ ui <- dashboardPage(
         # Provider Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "provvolbreakdown",
                 div("Volume Breakdown - Provider", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_provvolbreakdown"),
+                tags$head(tags$style("#practiceName_provvolbreakdown{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Analysis Customization", width = 12, status = "primary", 
@@ -422,7 +396,8 @@ ui <- dashboardPage(
         # Unique Patients Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "uniqueAll",
                 div("Unique Patients - Exam, Treatment, and Lab Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_uniqueAll"),
+                tags$head(tags$style("#practiceName_uniqueAll{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Unique Patients by System", width = 12, status = "primary", 
@@ -453,7 +428,8 @@ ui <- dashboardPage(
         
         tabItem(tabName = "uniqueOffice",
                 div("Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_uniqueOffice"),
+                tags$head(tags$style("#practiceName_uniqueOffice{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Unique Patients by System", width = 12, status = "primary", 
@@ -484,7 +460,8 @@ ui <- dashboardPage(
         
         tabItem(tabName = "uniqueTreatment",
                 div("Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_uniqueTreatment"),
+                tags$head(tags$style("#practiceName_uniqueTreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Unique Patients by System", width = 12, status = "primary", 
@@ -516,7 +493,8 @@ ui <- dashboardPage(
         # Unique Patients by Provider - Exam Visits
         tabItem(tabName = "provUniqueExam",
                 div("Unique Patients by Provider - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_provUniqueExam"),
+                tags$head(tags$style("#practiceName_provUniqueExam{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Analysis Customization", width = 12, status = "primary", 
@@ -576,7 +554,8 @@ ui <- dashboardPage(
         # Unique Patients by Zip Code Tab 
         tabItem(tabName = "zipCode",
                 div("Patient Zip Code Analysis", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                tags$style("#practiceName1{color:black; font-family:Calibri; font-style: italic; font-size: 20px; margin-top: -0.5em; margin-bottom: 0.5em; margin-left: 20px}"), hr(),
+                textOutput("practiceName_zipCode"),
+                tags$head(tags$style("#practiceName_zipCode{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
                          title = "Total Unique Patients by Zip Code", width = 12, status = "primary",
@@ -611,7 +590,122 @@ ui <- dashboardPage(
                                     withSpinner(type = 5, color = "#d80b8c")))
                        )
                 )
-        ) # Close Zip Code tab
+        ), # Close Zip Code tab
+        
+        
+        # Scheduling Tab ---------------------------------------------------------------------------------------------------------
+        ## Scheduled/Arrived Tab 
+        tabItem(tabName = "schedulingArrived",
+                div("Scheduling - Scheduled/Arrived", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_schedulingArrived"),
+                tags$head(tags$style("#practiceName_schedulingArrived{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Scheduling Summary", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         valueBoxOutput("totalScheduled", width = 3) %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         valueBoxOutput("avgScheduled", width = 3) %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         valueBoxOutput("avgArrived", width = 3) %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         valueBoxOutput("avgNoShows", width = 3) %>%
+                           withSpinner(type = 5, color = "#d80b8c")),
+                       boxPlus(
+                         title = "Patient Arrivals", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotOutput("avgPtArrival")  %>%
+                           withSpinner(type = 5, color = "#d80b8c"), hr(),
+                         plotOutput("ptArrivalPattern", height = "700px") %>%
+                           withSpinner(type = 5, color = "#d80b8c")))
+                
+        ), # Close Scheduled/Arrived Tab
+        
+        ## No Shows/Overbooks Tab 
+        tabItem(tabName = "schedulingNoShows",
+                div("Scheduling - No Shows/Overbooks", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_schedulingNoShow"),
+                tags$head(tags$style("#practiceName_schedulingNoShow{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11,
+                column(6,
+                       boxPlus(
+                         title = "No Shows", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         fluidRow(
+                           valueBoxOutput("avgNoShows2", width = 6) %>%
+                             withSpinner(type = 5, color = "#d80b8c"),
+                           valueBoxOutput("avgNoShowsPerc", width = 6) %>%
+                             withSpinner(type = 5, color = "#d80b8c")), hr(),
+                         fluidRow(
+                           materialSwitch(
+                           inputId = "percent1",
+                           label = "Percent (%)", 
+                           right = TRUE,
+                           status = "primary")),
+                         plotOutput("avgNoShowsDist", height = "600px") %>%
+                           withSpinner(type = 5, color = "#d80b8c"))),
+                column(6,
+                       boxPlus(
+                         title = "Overbooks", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, 
+                         fluidRow(
+                           valueBoxOutput("avgOverbooks", width = 6) %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                           valueBoxOutput("avgOverbooksProv", width = 6) %>%
+                           withSpinner(type = 5, color = "#d80b8c")), hr(),
+                         br(), br(), 
+                         plotOutput("avgOverbooksDist", height = "600px") %>%
+                           withSpinner(type = 5, color = "#d80b8c")))
+                )
+                
+        ), # Close No Shows/Overbooks Tab
+        
+        ## No Bumps/Cancellations Tab 
+        tabItem(tabName = "schedulingBumps",
+                div("Scheduling - Bumps/Cancellations", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_schedulingBump"),
+                tags$head(tags$style("#practiceName_schedulingBump{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Summary", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         fluidRow(
+                           valueBoxOutput("avgDailyBumps", width = 4) %>%
+                             withSpinner(type = 5, color = "#d80b8c"),
+                           valueBoxOutput("avgDailyCanc", width = 4) %>%
+                             withSpinner(type = 5, color = "#d80b8c"),
+                           valueBoxOutput("avgDailyResc", width = 4) %>%
+                             withSpinner(type = 5, color = "#d80b8c")), hr(),
+                         column(5, 
+                                plotOutput("avgBumpsCancRescRate") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")),
+                         column(7,
+                                plotOutput("leadDaysBumpsCancResc") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))),
+                       boxPlus(
+                         title = "Top Reasons to Bumps and Cancellations", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         fluidRow(
+                           materialSwitch(
+                             inputId = "percent2",
+                             label = "Percent (%)", 
+                             right = TRUE,
+                             status = "primary")), br(),
+                         column(6, 
+                                plotOutput("reasonsBumps", height = "500px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")),
+                         column(6, 
+                                plotOutput("reasonsCanc", height = "500px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))
+                         
+                       )
+                )
+                
+        ) # Close No Shows/Overbooks Tab
+        
+
+        
+        # Slot Usage Tab ---------------------------------------------------------------------------------------------------------
         
       ), # Close Main tab Items
       
@@ -629,7 +723,8 @@ ui <- dashboardPage(
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-        input.sbm == `provvolbreakdown` |
+        input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
+        input.sbm == `accessBooked` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'zipCode'",
         
@@ -723,7 +818,8 @@ ui <- dashboardPage(
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' |
-         input.sbm == `provvolbreakdown` |
+         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` | 
+         input.sbm == `accessBooked` |  
          input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
          input.sbm == 'zipCode'",
         br(),

@@ -239,12 +239,15 @@ scale_fill_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FA
 graph_theme <- function(legend_pos) {
   theme(
     plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-    plot.subtitle = element_text(hjust=0.5, size = 14),
+    plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
+    plot.caption = element_text(size = 12, face = "italic"),
     legend.position = legend_pos,
+    legend.title = element_text(size = "14"),
+    legend.text = element_text(size = "14"),
     strip.text = element_text(size=14),
-    axis.title = element_text(size = 14),
-    axis.text.x = element_text(size = 14, angle=40, hjust=1),
-    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 16),
+    axis.text.x = element_text(size = 16, angle=50, hjust=1),
+    axis.text.y = element_text(size = 14),
     axis.line.x = element_blank())#,
   #plot.margin = margin(0,80,0,80))
 }
@@ -321,30 +324,29 @@ setwd(wdpath)
 # process_data function includes reading in the mapping file creating an renaming slot and access columns
 # the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
 
-### Rstudio Connect Data -----------------------------------------------------------------------------------------------------
-historical.data <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
-max_date <- max(historical.data$Appt.DateYear)
-holid <- as.data.frame(read_feather(here::here("Data/holid.feather")))
-population.data_filtered <- as.data.frame(read_feather(here::here("Data/population_data_filtered.feather")))
 
 
 ### (6) Data Subset -----------------------------------------------------------------------------------------------------
+historical.data <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
 
 
 ## Other datasets
-all.data <- historical.data %>% filter(Appt.DTTM >= max_date - 365) ## All data: Arrived, No Show, Canceled, Bumped, Rescheduled
-arrived.data <- all.data %>% filter(Appt.Status %in% c("Arrived")) ## Arrived data: Arrived
-canceled.bumped.rescheduled.data <- all.data %>% filter(Appt.Status %in% c("Canceled","Bumped","Rescheduled")) ## Canceled data: canceled appointments only
-canceled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Canceled")) ## Canceled data: canceled appointments only
-bumped.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Bumped")) ## Bumped data: bumped appointments only
-rescheduled.data <- canceled.bumped.rescheduled.data %>% filter(Appt.Status %in% c("Rescheduled")) ## Bumped data: bumped appointments only
-sameDay <- canceled.bumped.rescheduled.data %>% filter(Lead.Days == 0) # Same day canceled, rescheduled, bumped appts
-noShow.data <- all.data %>% filter(Appt.Status %in% c("No Show")) ## Arrived + No Show data: Arrived and No Show
-noShow.data <- rbind(noShow.data,sameDay) # No Shows + Same day canceled, bumped, rescheduled
-arrivedNoShow.data <- rbind(arrived.data,noShow.data) ## Arrived + No Show data: Arrived and No Show
-arrivedDisease.data <- arrived.data %>% filter(Disease_Group != "No Disease Group")
+holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+all.data <- as.data.frame(read_feather(here::here("Data/all_data.feather")))
+arrived.data <- as.data.frame(read_feather(here::here("Data/arrived_data.feather")))
+canceled.bumped.rescheduled.data <- as.data.frame(read_feather(here::here("Data/canceled_bumped_rescheduled_data.feather")))
+canceled.data <- as.data.frame(read_feather(here::here("Data/canceled_data.feather")))
+bumped.data <- as.data.frame(read_feather(here::here("Data/bumped_data.feather")))
+rescheduled.data <- as.data.frame(read_feather(here::here("Data/rescheduled_data.feather")))
+sameDay <- as.data.frame(read_feather(here::here("Data/sameDay.feather")))
+noShow.data <- as.data.frame(read_feather(here::here("Data/noShow_data.feather")))
+arrivedNoShow.data <- as.data.frame(read_feather(here::here("Data/arrivedNoShow_data.feather")))
+arrivedDisease.data <- as.data.frame(read_feather(here::here("Data/arrivedDisease_data.feather")))
 
 
+### Zip Code Analysis --------------------------------------------------------------------------------------------------
+population.data_filtered <- as.data.frame(read_feather(here::here("Data/population_data_filtered.feather")))
+### Missing zip codes in Zip Code Grouper filer?
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
 
@@ -372,6 +374,12 @@ timeOptions30m_filter <- c("07:00","07:30","08:00","08:30","09:00","09:30",
 monthOptions <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
 
 
+# Reference dataframes, vectors, etc.
+Time <- rep(timeOptionsHr, 7)
+Day <- rep(daysOfWeek.options, each = 24)
+byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
+
+
 # (7) Data Reactive functions ---------------------------------------------------------------------------------
 
 ## Filtered Scheduling Data
@@ -392,8 +400,8 @@ groupByFilters_3 <- function(dt, diseaseGroup, provider){
   return(result)
 }
 
-## Calculated Unique Visits Data
-uniquePts_df <- function(dt, visitType){
+## Unique Patients Functions  -----------------------------------------------------------------
+uniquePts_df_system <- function(dt, visitType){
   
   if(visitType == "Treatment Visit"){
     data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
@@ -401,27 +409,89 @@ uniquePts_df <- function(dt, visitType){
     data <- dt %>% filter(AssociationListA %in% visitType) 
   }
   
-  result <- data %>% 
-    mutate(uniqueSystem = duplicated(data[,c(grep("MRN", colnames(data)))]),
-           uniqueSystemMonth = duplicated(data[,c(grep("MRN", colnames(data)),
-                                                  grep("Appt.Month", colnames(data)))]),
-           uniqueSite = duplicated(data[,c(grep("MRN", colnames(data)),
-                                           grep("SITE", colnames(data)))]),
-           uniqueSiteMonth = duplicated(data[,c(grep("MRN", colnames(data)),
-                                                grep("SITE", colnames(data)),
-                                                grep("Month", colnames(data)))]),
-           uniqueSiteProv = duplicated(data[,c(grep("MRN", colnames(data)),
-                                               grep("SITE", colnames(data)),
-                                               grep("Provider", colnames(data)))]),
-           uniqueSiteMonthProv = duplicated(data[,c(grep("MRN", colnames(data)),
-                                                    grep("SITE", colnames(data)),
-                                                    grep("Month", colnames(data)),
-                                                    grep("Provider", colnames(data)))]))
+  result <- data %>%
+    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
+    filter(uniqueSystem == 1)
+  
   return(result)
 }
 
-a <- c("Exam","Lab","Treatment")
-a == "Treatment"
+uniquePts_df_systemMonth <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM) %>% group_by(MRN, Appt.MonthYear) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
+    filter(uniqueSystemMonth == 1)
+  
+  return(result)
+}
+
+uniquePts_df_site <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, SITE) %>% mutate(uniqueSite = row_number()) %>% ungroup() %>%
+    filter(uniqueSite == 1) 
+  
+  return(result)
+}
+
+uniquePts_df_siteMonth <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, Appt.MonthYear, SITE) %>% mutate(uniqueSiteMonth = row_number()) %>% ungroup() %>%
+    filter(uniqueSiteMonth == 1) 
+  
+  return(result)
+}
+
+uniquePts_df_siteProv <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, EPIC_Provider_ID, Appt.DTTM, SITE) %>% group_by(MRN, EPIC_Provider_ID, SITE) %>% mutate(uniqueSiteProv = row_number()) %>% ungroup() %>%
+    filter(uniqueSiteProv == 1)
+  
+  return(result)
+}
+
+uniquePts_df_siteProvMonth <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% group_by(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% 
+    mutate(uniqueSiteProvMonth = row_number()) %>% ungroup() %>% filter(uniqueSiteProvMonth== 1) 
+  
+  return(result)
+}
+
+
 ### Function for Value Boxes ------------------------------------------------------------------
 valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
                           icon = NULL, color = "aqua", width = 4, href = NULL){
