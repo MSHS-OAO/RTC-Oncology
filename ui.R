@@ -84,6 +84,7 @@ ui <- dashboardPage(
                  background: rgba(255, 255, 255, 0);
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
+                menuItem("Home", tabName = "homepage", icon= icon("home")),
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
@@ -156,6 +157,43 @@ ui <- dashboardPage(
       tags$head(tags$style(".top-align { vertical-align: top;}  ")),
       
       tabItems(
+        # HomePage ------------------------------------------------------------------------------------------------------------------
+        tabItem(tabName = "homepage",
+                column(12,
+                       div("About Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                       
+                       tags$div( id = "home_text",
+                                 HTML("<p>Version: 1.0 <br> Last Updated: 5/12/2021</p>")
+                       ),
+                       tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), 
+                       column(12,
+                              tags$div(id = "home_description",
+                                       h3("Description"),
+                                       p("This is a centralized analytics tool that inlcudes all necessary KPIs and metrics that will
+                                 allow the users to identify operatinal oppoutunities, make data-driven decisions, and
+                                 track improvements")
+                              )
+                       ),
+                       column(12,
+                              tags$div(id = "home_data",
+                                       h3("Data Sources"),
+                                       p("The data used in this dashboard is pulled from the Clarity database using the slot and access datatables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
+                                      The master file including the department, PRC, and disease group mappings as well as the LOS excludions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link."),
+                                       a(href = "Mappings/Oncology Master Mapping File - Updated 4.22.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx'),
+                                       br(),
+                                       a(href = "Mappings/Oncology System Data - Zip Code Groupings 4.13.2021.csv",target='blank', 'Zip Code Groupings', download = 'Zip Code Groupings.csv')
+                              ))
+                       # column(12,
+                       #        tags$div(id = "home_usage",
+                       #                 h3("Usage"), 
+                       #                 #img(src = "homepage.png", width = "500px"),
+                       #                 br(),
+                       #                 p("Section 1 contains the sidebar menu where all the different tabs are listed"),
+                       #                 p("Section 2 includes the name of the tab currently being looked at as well as the date ranges that the tab is showing"),
+                       #                 p("Section 3 included the filter menu, it is hiearchical meaning the filter choices are based off the previously selected choices. The filters effect all the the outputs in the tab.  Below the filter dropdown menu is the download button which allows the user to save all the graphs and tables on the currently viewed tab as a PNG.")
+                       #                 
+                       #        ))
+                )),
         # Volume Trend Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumetrend",
                 div("Volume Trend - Site", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
