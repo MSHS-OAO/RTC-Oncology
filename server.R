@@ -2592,12 +2592,13 @@ server <- function(input, output, session) {
       graph <- 
         ggplot(bumps %>% filter(Cancel.Reason %in% top10), 
                aes(Cancel.Reason, factor(leadDays, levels=c("0 day","1-7 days","8-14 days","> 14 days")), fill = total))+
-        geom_tile(color = "grey")+
+        geom_tile(color = "black")+
         coord_flip()+
-        ggtitle(label="Top 10 Bumped Reasons \nby Lead Days\n")+
-        scale_fill_gradient2(low = "#212070", high = "#d80b8c", mid = "white", na.value = "black",
-                             midpoint = median(bumps$total), limit = c(min(bumps$total),max(bumps$total)), space = "Lab",
-                             name="Total Bumped Appointments\n by Lead Days") + # Change gradient color
+        labs(x=NULL, y=NULL,
+             title = "Top 10 Bumped Reasons by Lead Days",
+             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+        scale_fill_gradient(low = "white", high = "#d80b8c", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
+                            name="Total Bumped Appointments\n by Lead Days")+
         geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5)
       
     }else{
@@ -2605,25 +2606,27 @@ server <- function(input, output, session) {
       graph <- 
         ggplot(bumps %>% filter(Cancel.Reason %in% top10), 
                aes(Cancel.Reason, factor(leadDays, levels=c("0 day","1-7 days","8-14 days","> 14 days")), fill = percent))+
-        geom_tile(color = "grey")+
+        geom_tile(color = "black")+
         coord_flip()+
-        ggtitle(label="Top 10 Bumped Reasons \nby Lead Days\n")+
-        scale_fill_gradient2(low = "white", high = "#d80b8c", mid = "#fcc9e9", na.value = "black",
-                             midpoint = median(bumps$percent), limit = c(min(bumps$percent),max(bumps$percent)), space = "Lab",
-                             name="Total % of Bumped \nAppointments by Lead Days") + # Change gradient color
+        labs(x=NULL, y=NULL,
+             title = "Top 10 Bumped Reasons by Lead Days",
+             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+        scale_fill_gradient(low = "white", high = "#d80b8c", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
+                           name="Total % of Bumped \nAppointments by Lead Days")+
         geom_text(aes(label= ifelse(is.na(percent),"",paste0(percent,"%"))), color="black", size=5, fontface="bold")
       
     }
     
     graph +
-      scale_x_discrete(labels = wrap_format(30))+
+      scale_x_discrete(labels = wrap_format(25))+
       theme_minimal()+ # minimal theme
       theme(plot.title = element_text(face = "bold", size = 20, hjust=0.5),
+            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
             legend.position = "top",
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
-            axis.text.x = element_text(angle = 0, hjust = 0.5, size = 14),
-            axis.text.y = element_text(size = 14))
+            axis.text.x = element_text(angle = 0, hjust = 0.5, size = 14, colour = "black"),
+            axis.text.y = element_text(size = 14, colour = "black"))
     
   })
   
@@ -2649,6 +2652,7 @@ server <- function(input, output, session) {
       arrange(leadDays,desc(total))
     
     cancellations$percent <- round(cancellations$total/total,2)*100
+    cancellations$Cancel.Reason[which(is.na(cancellations$Cancel.Reason))] <- "No Reasons Recorded"
     
     top10 <- cancellations %>% 
       group_by(Cancel.Reason) %>% 
@@ -2663,12 +2667,13 @@ server <- function(input, output, session) {
       graph <- 
         ggplot(cancellations %>% filter(Cancel.Reason %in% top10), 
                aes(Cancel.Reason, factor(leadDays, levels=c("0 day","1-7 days","8-14 days","> 14 days")), fill = total))+
-        geom_tile(color = "grey")+
+        geom_tile(color = "black")+
         coord_flip()+
-        ggtitle(label="Top 10 Canceled Reasons \nby Lead Days\n")+
-        scale_fill_gradient2(low = "white", high = "#00aeef", mid = "#c9f0ff", 
-                             midpoint = median(cancellations$total), limit = c(min(cancellations$total),max(cancellations$total)), space = "Lab",
-                             name="Total Canceled Appointments\n by Lead Days") + # Change gradient color
+        labs(x=NULL, y=NULL,
+             title = "Top 10 Canceled Reasons by Lead Days",
+             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+        scale_fill_gradient(low = "white", high = "#00aeef", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
+                            name="Total Canceled Appointments\n by Lead Days")+
         geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5)
       
     }else{
@@ -2676,24 +2681,26 @@ server <- function(input, output, session) {
       graph <- 
         ggplot(cancellations %>% filter(Cancel.Reason %in% top10), 
                aes(Cancel.Reason, factor(leadDays, levels=c("0 day","1-7 days","8-14 days","> 14 days")), fill = percent))+
-        geom_tile(color = "grey")+
+        geom_tile(color = "black")+
         coord_flip()+
-        ggtitle(label="Top 10 Canceled Reasons \nby Lead Days\n")+
-        scale_fill_gradient2(low = "white", high = "#00aeef", mid = "#c9f0ff", 
-                             midpoint = median(cancellations$percent), limit = c(min(cancellations$percent),max(cancellations$percent)), space = "Lab",
-                             name="% of Total Canceled \nAppointments by Lead Days") + # Change gradient color
+        labs(x=NULL, y=NULL,
+             title = "Top 10 Canceled Reasons by Lead Days",
+             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+        scale_fill_gradient(low = "white", high = "#00aeef", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
+                            name="% of Total Canceled \nAppointments by Lead Days")+
         geom_text(aes(label= ifelse(is.na(percent),"",paste0(percent,"%"))), color="black", size=5)
     }
     
     graph +
-      scale_x_discrete(labels = wrap_format(30))+
+      scale_x_discrete(labels = wrap_format(25))+
       theme_minimal()+ # minimal theme
       theme(plot.title = element_text(face = "bold", size = 20, hjust=0.5),
+            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
             legend.position = "top",
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
-            axis.text.x = element_text(angle = 0, hjust = 0.5, size = 14),
-            axis.text.y = element_text(size = 14))
+            axis.text.x = element_text(angle = 0, hjust = 0.5, size = 14, colour = "black"),
+            axis.text.y = element_text(size = 14, colour = "black"))
     
   })
   

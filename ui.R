@@ -67,15 +67,17 @@ ui <- dashboardPage(
     
     sidebarMenu(id = "sbm",
                 br(),
-                tags$div("Overview",
-                         style= "
-                 font-size: 20px;
-                 text-align: center;
-                 margin: 0;
-                 background: rgba(255, 255, 255, 0);
-                 color: #FFFFFF"),
-                tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
-                br(),
+                # tags$div("Overview",
+                #          style= "
+                #  font-size: 20px;
+                #  text-align: center;
+                #  margin: 0;
+                #  background: rgba(255, 255, 255, 0);
+                #  color: #FFFFFF"),
+                # tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
+                # br(),
+                menuItem("Home", tabName = "homepage", icon= icon("home")),
+                br(), br(),
                 tags$div("Outpatient Visits",
                          style= "
                  font-size: 20px;
@@ -84,7 +86,6 @@ ui <- dashboardPage(
                  background: rgba(255, 255, 255, 0);
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
-                menuItem("Home", tabName = "homepage", icon= icon("home")),
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
@@ -106,19 +107,19 @@ ui <- dashboardPage(
                          menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
                          menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
                          menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
-                ),
+                )
                 # menuItem("Access", tabName = "access", icon = icon("hospital-user"),
                 #          menuItem("Booked/Filled Rates", tabName = "accessBooked")
                 # ),
-                br(),
-                tags$div("Surgical Cases",
-                         style= "
-                 font-size: 20px;
-                 text-align: center;
-                 margin: 0;
-                 background: rgba(255, 255, 255, 0);
-                 color: #FFFFFF"),
-                tags$hr(style="border-color: #FFFFFF; margin-top: 10px;")
+                # br(),
+                # tags$div("Surgical Cases",
+                #          style= "
+                #  font-size: 20px;
+                #  text-align: center;
+                #  margin: 0;
+                #  background: rgba(255, 255, 255, 0);
+                #  color: #FFFFFF"),
+                # tags$hr(style="border-color: #FFFFFF; margin-top: 10px;")
                 
                 
                 
@@ -730,10 +731,10 @@ ui <- dashboardPage(
                              right = TRUE,
                              status = "primary")), br(),
                          column(6, 
-                                plotOutput("reasonsBumps", height = "500px") %>%
+                                plotOutput("reasonsBumps", height = "600px") %>%
                                   withSpinner(type = 5, color = "#d80b8c")),
                          column(6, 
-                                plotOutput("reasonsCanc", height = "500px") %>%
+                                plotOutput("reasonsCanc", height = "600px") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
                          
                        )
