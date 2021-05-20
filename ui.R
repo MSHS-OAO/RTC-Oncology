@@ -872,7 +872,7 @@ ui <- dashboardPage(
             sliderInput(
               inputId = "plotWidth",
               label = NULL, 
-              value = 1000, min = 200, max = 2000,
+              value = 1500, min = 200, max = 2000,
               ticks = FALSE
             ),
             fluidRow(
