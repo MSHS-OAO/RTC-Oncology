@@ -77,7 +77,7 @@ ui <- dashboardPage(
                 # tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
                 # br(),
                 menuItem("Home", tabName = "homepage", icon= icon("home")),
-                br(), br(),
+                br(),
                 tags$div("Outpatient Visits",
                          style= "
                  font-size: 20px;
