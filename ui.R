@@ -172,17 +172,18 @@ ui <- dashboardPage(
                                        h3("Description"),
                                        p("This is a centralized analytics tool that inlcudes all necessary KPIs and metrics that will
                                  allow the users to identify operatinal oppoutunities, make data-driven decisions, and
-                                 track improvements")
+                                 track improvements", style = "font-size:16px")
                               )
                        ),
                        column(12,
                               tags$div(id = "home_data",
                                        h3("Data Sources"),
                                        p("The data used in this dashboard is pulled from the Clarity database using the slot and access datatables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
-                                      The master file including the department, PRC, and disease group mappings as well as the LOS excludions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link."),
-                                       a(href = "Mappings/Oncology Master Mapping File - Updated 4.22.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx'),
+                                      The master file including the department, PRC, and disease group mappings as well as the LOS excludions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link.",
+                                         style = "font-size:16px"),
+                                       a(href = "Mappings/Oncology Master Mapping File - Updated 4.22.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px"),
                                        br(),
-                                       a(href = "Mappings/Oncology System Data - Zip Code Groupings 4.13.2021.csv",target='blank', 'Zip Code Groupings', download = 'Zip Code Groupings.csv')
+                                       a(href = "Mappings/Oncology System Data - Zip Code Groupings 4.13.2021.csv",target='blank', 'Zip Code Groupings', download = 'Zip Code Groupings.csv', style = "font-size:16px")
                               ))
                        # column(12,
                        #        tags$div(id = "home_usage",
