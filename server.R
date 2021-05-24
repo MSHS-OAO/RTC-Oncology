@@ -2338,6 +2338,7 @@ server <- function(input, output, session) {
       
       noShowDist <-
         ggplot(noShow_count.df, aes(x=factor(Day, levels = daysOfWeek.options), y=Time))+
+        scale_y_discrete(limits = rev(unique(sort(noShow_count.df$Time))))+
         labs(x=NULL, y=NULL,
              title = "Average Daily No Shows*",
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
@@ -2361,6 +2362,7 @@ server <- function(input, output, session) {
       
       noShowDist <-
         ggplot(noShow_perc.df, aes(x=factor(Day, levels = daysOfWeek.options), y=Time))+
+        scale_y_discrete(limits = rev(unique(sort(noShow_perc.df$Time))))+
         labs(x=NULL, y=NULL,
              title = "Average Daily Percent of No Show*",
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
@@ -2372,7 +2374,6 @@ server <- function(input, output, session) {
     
     noShowDist + 
       scale_fill_gradient(low = "white", high = "red", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="No Shows")+
-      scale_y_discrete(limits = rev(unique(sort(noShow_count.df$Time))))+
       scale_x_discrete(position = "top")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
             plot.subtitle = element_text(hjust=0.5, size = 14),
@@ -2528,11 +2529,11 @@ server <- function(input, output, session) {
       group_by(Appt.Status) %>%
       mutate(perc = total/sum(total))
     
-    ggplot(lead.days.df, aes(x=Appt.Status, y=perc, fill=factor(leadDays, levels=c("> 14 days","8-14 days","1-7 days","0 day"))))+
+    ggplot(lead.days.df, aes(x=Appt.Status, y=perc, fill=factor(leadDays, levels=c("0 day","1-7 days","8-14 days","> 14 days"))))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_manual(values=c("grey","#00aeef","#d80b8c","midnightblue"))+
       labs(x=NULL, y=NULL,
-           title = "Lead Days* to Bumped/Canceled/Rescheduled Appointments",
+           title = "% of Bumped/Canceled/Rescheduled \nAppointments by Lead Days*",
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
            caption = "*Time from appointment scheduled to status changed.")+
       scale_y_continuous(labels = scales::percent_format(accuracy = 1))+
@@ -2556,6 +2557,35 @@ server <- function(input, output, session) {
       coord_flip()
     
   })
+  
+  
+  ## Average Daily Same-day Bumps/Canc/Resc Rate 
+  output$sameDayBumpedCanceledRescheduled <- renderPlot({
+    
+    data <- dataNoShow() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
+    # data <- noShow.data %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
+    
+    sameDay <- data %>%
+      group_by(Appt.Status) %>%
+      summarise(total = n()) %>%
+      mutate(avg = round(total/length(unique(all.data$Appt.DateYear))))
+    
+    ggplot(sameDay, aes(reorder(Appt.Status, -avg), avg, fill=Appt.Status)) +
+      geom_bar(stat="identity", width = 0.8) +
+      scale_y_continuous(limits=c(0,(max(sameDay$avg))*1.5))+
+      scale_fill_manual(values=MountSinai_pal("all")(10))+
+      labs(x=NULL, y=NULL,
+           title = "Average Daily Same-day \nBumped/Canceled/Rescheduled Appointments",
+           # subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           caption = "*Appointment status changed on the day of appoinment.")+
+      theme_new_line()+
+      theme_bw()+
+      graph_theme("none")+ theme(axis.text.x = element_text(angle = 0, hjust = 0.5))+
+      geom_text(aes(label=avg), hjust = 0.5, vjust = -1, color="black", fontface="bold",
+                position = position_dodge(1), size=5)
+    
+  })
+  
   
   ## Bumped Reasons by Lead Days
   output$reasonsBumps <- renderPlot({

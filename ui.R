@@ -700,7 +700,7 @@ ui <- dashboardPage(
                 
         ), # Close No Shows/Overbooks Tab
         
-        ## No Bumps/Cancellations Tab 
+        ## Bumps/Cancellations Tab 
         tabItem(tabName = "schedulingBumps",
                 div("Scheduling - Bumps/Cancellations", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_schedulingBump"),
@@ -716,11 +716,14 @@ ui <- dashboardPage(
                              withSpinner(type = 5, color = "#d80b8c"),
                            valueBoxOutput("avgDailyResc", width = 4) %>%
                              withSpinner(type = 5, color = "#d80b8c")), hr(),
-                         column(5, 
-                                plotOutput("avgBumpsCancRescRate") %>%
+                         column(4, 
+                                plotOutput("avgBumpsCancRescRate", height = "450px") %>%
                                   withSpinner(type = 5, color = "#d80b8c")),
-                         column(7,
-                                plotOutput("leadDaysBumpsCancResc") %>%
+                         column(4,
+                                plotOutput("leadDaysBumpsCancResc", height = "450px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")),
+                         column(4,
+                                plotOutput("sameDayBumpedCanceledRescheduled", height = "450px") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))),
                        boxPlus(
                          title = "Top Reasons to Bumps and Cancellations", width = 12, status = "primary",
@@ -741,7 +744,7 @@ ui <- dashboardPage(
                        )
                 )
                 
-        ) # Close No Shows/Overbooks Tab
+        ) # Close Bumps/Cancellations Tab
         
 
         
