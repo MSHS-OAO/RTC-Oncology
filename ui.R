@@ -423,13 +423,13 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          tableOutput("provVolumeExam_tb") %>%
                            withSpinner(type = 5, color = "#d80b8c")
-                       ),
-                       boxPlus(
-                         title = "Telehealth Visits Breakdown", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         tableOutput("provVolumeTele_tb") %>%
-                           withSpinner(type = 5, color = "#d80b8c")
                        )
+                       # boxPlus(
+                       #   title = "Telehealth Visits Breakdown", width = 12, status = "primary",
+                       #   solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                       #   tableOutput("provVolumeTele_tb") %>%
+                       #     withSpinner(type = 5, color = "#d80b8c")
+                       # )
                 )
         ), # Close volume Comparison
         

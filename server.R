@@ -908,80 +908,100 @@ server <- function(input, output, session) {
     data <- dataArrived_disease() %>%
       filter(AssociationListA == "Exam")
     
+    tele_data <- dataArrived_disease() %>%
+      filter(AssociationListB == "Telehealth Visit")
+    
     # data <- arrivedDisease.data %>%
     #   filter(AssociationListA == "Exam", SITE %in% c("DBC"))
-    
+    # 
+    # tele_data <- arrivedDisease.data %>%
+    #   filter(AssociationListB == "Telehealth Visit", SITE %in% c("DBC"))
+
     prov_tb <- data %>% 
-      group_by(Disease_Group, Provider, AssociationListB, Appt.MonthYear) %>%
+      group_by(Disease_Group, Provider, AssociationListB,  Appt.MonthYear) %>%
       summarise(total = n())  %>%
       `colnames<-` (c("Disease", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
                   values_fill = 0) %>%
-      adorn_totals("col", fill = "-", na.rm = TRUE, name = "YTD Total") %>%
-      arrange(Disease)
-    
-    row_total <- prov_tb %>% 
       split(.[,"Provider"]) %>%  
-      map_df(., janitor::adorn_totals, name = paste0("Exam Total"))
-    
-    
-    kable(prov_tb[,2:length(prov_tb)] %>%
-            split(.[,"Provider"]) %>%  
-            map_df(., janitor::adorn_totals, name = paste0("Exam Total"))) %>%
-      pack_rows(index = table(prov_tb$Disease), label_row_css = "background-color: #fcc9e9;") %>%
-      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
-      add_header_above(c("Physician Visits Breakdown" = (length(prov_tb)-1)),
-                       color = "black", font_size = 20, align = "center", line = FALSE) %>%
-      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
-      row_spec(which(row_total$Disease == "Exam Total"), bold = T, background = "#e6e6e6") %>%
-      column_spec(1, bold = T) %>%
-      column_spec(length(prov_tb)-1, background = "#d80b8c", color = "white", bold = T) %>%
-      collapse_rows(1, valign = "top")
-    
-  }
-  
-  
-  ## Telehealth Visits Breakdown Tab =========================================================================================
-  
-  output$provVolumeTele_tb <- function(){
-    
-    data <- dataArrived_disease() %>%
-      filter(AssociationListB == "Telehealth Visit")
-    
-    # data <- arrivedDisease.data %>%
-    #   filter(AssociationListB == "Telehealth Visit")
-    
-    tele_tb <- data %>% 
+      map_df(., janitor::adorn_totals, name = paste0("Total")) %>%
+      mutate(Disease = ifelse(Disease == "Total", lag(Disease, 1), Disease),
+             Provider = ifelse(Provider == "-", lag(Provider, 1), Provider),
+             `Appointment Type` = ifelse(`Appointment Type` == "-", "Exam Total", `Appointment Type`)) %>%
+      arrange(-desc(Disease))
+
+    tele_tb <- tele_data %>% 
       group_by(Disease_Group, Provider, Appt.Type, Appt.MonthYear) %>%
       summarise(total = n()) %>%
       `colnames<-` (c("Disease", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
-                  values_fill = 0) %>%
-      adorn_totals("col", fill = "-", na.rm = TRUE, name = "YTD Total") %>%
-      arrange(Provider, `Appointment Type`, Disease)
+                  values_fill = 0)
     
-    row_total <- tele_tb %>% 
-      split(.[,"Provider"]) %>%  
-      map_df(., janitor::adorn_totals, name = paste0("Telehealth Total"))
+    appt_order <- c("Exam Total", c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
     
+    final_df <- bind_rows(prov_tb, tele_tb)
+    final_df <- final_df[order(match(final_df$`Appointment Type`, appt_order)), ]
+    final_df <- final_df %>%
+      arrange(Disease, Provider) %>%
+      adorn_totals("col", fill = "-", na.rm = TRUE, name = "YTD Total") 
     
-    kable(tele_tb[,2:length(tele_tb)] %>%
-            split(.[,"Provider"]) %>%  
-            map_df(., janitor::adorn_totals, name = paste0("Telehealth Total"))) %>%
-      pack_rows(index = table(tele_tb$Disease), label_row_css = "background-color: #c9f0ff;") %>%
+    indent_rows <- which(final_df$`Appointment Type` %in% unique(tele_tb$`Appointment Type`))
+  
+      kable(final_df) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
-      add_header_above(c("Telehealth Visits Breakdown" = (length(tele_tb)-1)),
-                       color = "black", font_size = 20, align = "center", line = FALSE) %>%
-      row_spec(0, background = "#00aeef", color = "white", bold = T) %>%
-      row_spec(which(row_total$Disease == "Telehealth Total"), bold = T, background = "#e6e6e6") %>%
+      add_header_above(c("Physician Visits Breakdown" = length(final_df)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(which(final_df$`Appointment Type` == "Exam Total"), bold = T) %>%
+      column_spec(length(final_df), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
-      column_spec(length(tele_tb)-1, background = "#00aeef", color = "white", bold = T) %>%
-      collapse_rows(1, valign = "top")
-    
+      collapse_rows(c(1,2), valign = "top") %>%
+      add_indent(indent_rows, level_of_indent = 2)
   }
   
+  
+  ## Telehealth Visits Breakdown Tab =========================================================================================
+  
+  # output$provVolumeTele_tb <- function(){
+  #   
+  #   data <- dataArrived_disease() %>%
+  #     filter(AssociationListB == "Telehealth Visit")
+  #   
+  #   data <- arrivedDisease.data %>%
+  #     filter(AssociationListB == "Telehealth Visit")
+  #   
+  #   tele_tb <- data %>% 
+  #     group_by(Disease_Group, Provider, Appt.Type, Appt.MonthYear) %>%
+  #     summarise(total = n()) %>%
+  #     `colnames<-` (c("Disease", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
+  #     pivot_wider(names_from = Appt.MonthYear,
+  #                 values_from = Total,
+  #                 values_fill = 0) %>%
+  #     adorn_totals("col", fill = "-", na.rm = TRUE, name = "YTD Total") %>%
+  #     arrange(Provider, `Appointment Type`, Disease)
+  #   
+  #   row_total <- tele_tb %>% 
+  #     split(.[,"Provider"]) %>%  
+  #     map_df(., janitor::adorn_totals, name = paste0("Telehealth Total"))
+  #   
+  #   
+  #   kable(tele_tb[,2:length(tele_tb)] %>%
+  #           split(.[,"Provider"]) %>%  
+  #           map_df(., janitor::adorn_totals, name = paste0("Telehealth Total"))) %>%
+  #     pack_rows(index = table(tele_tb$Disease), label_row_css = "background-color: #c9f0ff;") %>%
+  #     kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+  #     add_header_above(c("Telehealth Visits Breakdown" = (length(tele_tb)-1)),
+  #                      color = "black", font_size = 20, align = "center", line = FALSE) %>%
+  #     row_spec(0, background = "#00aeef", color = "white", bold = T) %>%
+  #     row_spec(which(row_total$Disease == "Telehealth Total"), bold = T, background = "#e6e6e6") %>%
+  #     column_spec(1, bold = T) %>%
+  #     column_spec(length(tele_tb)-1, background = "#00aeef", color = "white", bold = T) %>%
+  #     collapse_rows(1, valign = "top")
+  #   
+  # }
+  # 
   
   # Unique Patients by System and Site - All Tab ---------------------------------------------------------------------------------
   ## Unique MRN by System
@@ -2105,11 +2125,11 @@ server <- function(input, output, session) {
   ## Average Daily Visits No Showed 
   output$avgNoShows <- renderValueBox({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShow() %>% filter(Appt.Status == "No Show")
     # data <- all.data
     
     valueBox(
-      prettyNum(round(nrow(data %>% filter(Appt.Status != "Arrived"))/length(unique(data$Appt.DateYear))), big.mark = ','),
+      prettyNum(round(nrow(data %>% filter(Appt.Status != "Arrived"))/length(unique(dataArrived()$Appt.DateYear))), big.mark = ','),
       subtitle = tags$p("AVG DAILY NO SHOW VISITS", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
   })
@@ -2222,11 +2242,11 @@ server <- function(input, output, session) {
   ## Average Daily No Show
   output$avgNoShows2 <- renderValueBox({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("No Show"))
     # data <- all.data
     
     valueBox(
-      prettyNum(round(nrow(data %>% filter(Appt.Status != "Arrived"))/length(unique(data$Appt.DateYear))), big.mark = ','),
+      prettyNum(round(nrow(data)/length(unique(dataArrived()$Appt.DateYear))), big.mark = ','),
       subtitle = tags$p("AVG DAILY NO SHOW VISITS", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
   })
@@ -2234,11 +2254,11 @@ server <- function(input, output, session) {
   ## Average Daily No Show %
   output$avgNoShowsPerc <- renderValueBox({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShow() 
     # data <- arrivedNoShow.data
     
     valueBox(
-      paste0(round((nrow(data %>% filter(Appt.Status != "Arrived"))/nrow(data))*100), "%"),
+      paste0(round((nrow(data %>% filter(Appt.Status == "No Show"))/nrow(data %>% filter(Appt.Status %in% c("Arrived","No Show"))))*100), "%"),
       subtitle = tags$p("AVG DAILY NO SHOW %", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
   })
@@ -2313,10 +2333,8 @@ server <- function(input, output, session) {
   ## No Shows by Time of Day and Day of Week 
   output$avgNoShowsDist <- renderPlot({
 
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("Arrived","No Show"))
     # data <- arrivedNoShow.data
-    
-    data$Appt.Status <- ifelse(data$Appt.Status == "Arrived","Arrived","No Show")
     
     if(input$percent1 == FALSE){
       
@@ -2342,7 +2360,7 @@ server <- function(input, output, session) {
         labs(x=NULL, y=NULL,
              title = "Average Daily No Shows*",
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
-             caption = "*No Show includes no show and same-day bumped, \ncanceled, and rescheduled appointments.")+
+             caption = "*No Show Rate = No Show / (Arrived + No Show)")+
         geom_tile(aes(fill=avgNoShows), colour = "black", size=0.5)+
         geom_text(aes(label= ifelse(is.na(avgNoShows),"",avgNoShows)), color="black", size=5, fontface="bold")
         
@@ -2366,7 +2384,7 @@ server <- function(input, output, session) {
         labs(x=NULL, y=NULL,
              title = "Average Daily Percent of No Show*",
              subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
-             caption = "*No Show includes no show and same-day bumped, \ncanceled, and rescheduled appointments.")+
+             caption = "*No Show Rate = No Show / (Arrived + No Show)")+
         geom_tile(aes(fill=percentage), colour = "black", size=0.5)+
         geom_text(aes(label= ifelse(is.na(percentage),"",paste0(percentage,"%"))), color="black", size=5, fontface="bold")
      
@@ -2562,7 +2580,7 @@ server <- function(input, output, session) {
   ## Average Daily Same-day Bumps/Canc/Resc Rate 
   output$sameDayBumpedCanceledRescheduled <- renderPlot({
     
-    data <- dataNoShow() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
+    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     # data <- noShow.data %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     
     sameDay <- data %>%

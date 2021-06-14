@@ -121,7 +121,7 @@ suppressMessages({
   library(viridis) # Load color brewer palettes
   library(zipcodeR)
   library(feather)
-  
+  library(reactable)
 })
 
 # ### (0) Maximize R Memory Size 
