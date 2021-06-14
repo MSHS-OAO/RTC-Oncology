@@ -227,35 +227,35 @@ server <- function(input, output, session) {
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
   dataAll <- reactive({
-    groupByFilters(all.data,
+    groupByFilters(historical.data[all.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # [2.2] Arrived + No Show data ============================================================================================================
   dataArrivedNoShow <- reactive({
-    groupByFilters(arrivedNoShow.data,
+    groupByFilters(historical.data[arrivedNoShow.data.rowws,],
                    input$selectedCampus, input$selectedDepartment, 
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- reactive({
-    groupByFilters(arrived.data,
+    groupByFilters(historical.data[arrived.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # Canceled data ============================================================================================================
   dataCanceled<- reactive({
-    groupByFilters(canceled.data,
+    groupByFilters(historical.data[canceled.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # Bumped data ============================================================================================================
   dataBumped<- reactive({
-    groupByFilters(bumped.data,
+    groupByFilters(historical.data[bumped.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
@@ -939,7 +939,8 @@ server <- function(input, output, session) {
                   values_from = Total,
                   values_fill = 0)
     
-    appt_order <- c("Exam Total", c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
+    # appt_order <- c("Exam Total", c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
+    appt_order <- c(c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)),"Exam Total")
     
     final_df <- bind_rows(prov_tb, tele_tb)
     final_df <- final_df[order(match(final_df$`Appointment Type`, appt_order)), ]

@@ -8,6 +8,8 @@ library(shinyscreenshot)
 
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
+arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
+
 default_campus <- "DBC"
 campus_choices <- sort(unique(historical.data$SITE))
 
@@ -384,7 +386,7 @@ ui <- dashboardPage(
                          fluidRow(
                            column(4,
                                   box(
-                                    title = "Select Disease Group:",
+                                    title = "Select Provider Group:",
                                     width = 12,
                                     height = "100px",
                                     solidHeader = FALSE,
