@@ -36,7 +36,10 @@ default_disease_group <- sort(unique(arrivedDisease.data[arrivedDisease.data$SIT
 
 default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
                                                       arrivedDisease.data$Department %in% default_departments_disease &
-                                                      arrivedDisease.data$Disease_Group %in% default_disease_group[1], "Provider"]))
+                                                      arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
+
+
+
 
 dateRange_min <- min(historical.data$Appt.DateYear) 
 dateRange_max <- max(historical.data$Appt.DateYear)
@@ -560,7 +563,7 @@ ui <- dashboardPage(
                                                   countSelectedText = "{0}/{1} Disease Groups",
                                                   dropupAuto = FALSE,
                                                   size = 10),
-                                                selected = default_disease_group[1]))),
+                                                selected = default_disease_group))),
                            column(4,
                                   box(
                                     title = "Select Provider:",
@@ -577,7 +580,7 @@ ui <- dashboardPage(
                                                   countSelectedText = "{0}/{1} Providers",
                                                   dropupAuto = FALSE,
                                                   size = 10),
-                                                selected = default_provider[1])))
+                                                selected = default_provider)))
                            
                          )),
                        boxPlus(

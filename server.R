@@ -103,12 +103,12 @@ server <- function(input, output, session) {
     updatePickerInput(session,
                       inputId = "selectedDisease",
                       choices = disease_choices,
-                      selected = disease_choices[1]
+                      selected = disease_choices
     )
     updatePickerInput(session,
                       inputId = "selectedDisease2",
                       choices = disease_choices,
-                      selected = disease_choices[1]
+                      selected = disease_choices
     )
   },
   ignoreNULL = FALSE,
@@ -147,12 +147,12 @@ server <- function(input, output, session) {
     updatePickerInput(session,
                       inputId = "selectedDisease",
                       choices = disease_choices,
-                      selected = disease_choices[1]
+                      selected = disease_choices
     )
     updatePickerInput(session,
                       inputId = "selectedDisease2",
                       choices = disease_choices,
-                      selected = disease_choices[1]
+                      selected = disease_choices
     )
   },
   ignoreNULL = FALSE,
@@ -204,7 +204,7 @@ server <- function(input, output, session) {
     updatePickerInput(session,
                       inputId = "selectedProvider",
                       choices = provider_choices,
-                      selected = provider_choices[1]
+                      selected = provider_choices
     )
   },
   ignoreNULL = FALSE,
@@ -218,7 +218,7 @@ server <- function(input, output, session) {
     updatePickerInput(session,
                       inputId = "selectedProvider2",
                       choices = provider_choices,
-                      selected = provider_choices[1]
+                      selected = provider_choices
     )
   },
   ignoreNULL = FALSE,
@@ -234,7 +234,7 @@ server <- function(input, output, session) {
   
   # [2.2] Arrived + No Show data ============================================================================================================
   dataArrivedNoShow <- reactive({
-    groupByFilters(historical.data[arrivedNoShow.data.rowws,],
+    groupByFilters(historical.data[arrivedNoShow.data.rows,],
                    input$selectedCampus, input$selectedDepartment, 
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
@@ -298,8 +298,8 @@ server <- function(input, output, session) {
       filter(AssociationListA %in% c("Exam","Treatment","Labs")) %>%
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -325,8 +325,8 @@ server <- function(input, output, session) {
     total_visits <- data %>% filter(AssociationListA == "Exam") %>% 
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -352,8 +352,8 @@ server <- function(input, output, session) {
     total_visits <- data %>% filter(AssociationListA == "Treatment") %>% 
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -378,8 +378,8 @@ server <- function(input, output, session) {
     
     total_visits <- data %>% filter(AssociationListA == "Labs") %>% group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -584,8 +584,8 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -640,8 +640,8 @@ server <- function(input, output, session) {
     max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
     total_visits_break$AssociationListB <- factor(total_visits_break$AssociationListB, levels = c("Telehealth Visit","New Visit","Established Visit"))
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -696,8 +696,8 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -816,8 +816,8 @@ server <- function(input, output, session) {
     
     
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
@@ -904,11 +904,12 @@ server <- function(input, output, session) {
       }
     }
     
-    if(length(unique(data$SITE)) == 1){
-      site <- unique(data$SITE)
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
+    
     
     
     graph + 
@@ -918,7 +919,9 @@ server <- function(input, output, session) {
            caption = paste0("\n*Includes ",apptType),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.text.x = element_text(angle = 40, hjust=1))
+      theme(axis.text.x = element_text(angle = 40, hjust=1))+
+      geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
+                 nudge_x = 0.1, size=5)
     
   }, height = function(x) input$plotHeight)
   
@@ -1063,12 +1066,18 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
     g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
-      labs(title = paste0("System Unique Patients over Time"),
+      labs(title = paste0(site, " Unique Patients over Time"),
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
@@ -1098,7 +1107,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_systemMonth(dataArrived(), c("Exam","Labs","Treatment"))
     # data <- uniquePts.all.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1113,7 +1122,7 @@ server <- function(input, output, session) {
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
-      labs(title = paste0("System Unique Patients by Month"),
+      labs(title = paste0(site, " Unique Patients by Month"),
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
