@@ -110,11 +110,15 @@ ui <- dashboardPage(
                                   menuSubItem("Exam", tabName = "provUniqueExam")),
                          menuItem("By Zip Code", tabName = "zipCode")
                 ),
-                menuItem("Scheduling", tabName = "scheduling", icon = icon("hospital-user"),
+                menuItem("Scheduling", tabName = "scheduling", icon = icon("user-clock"),
                          menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
                          menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
                          menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
+                ),
+                menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
+                         menuItem("Booked and Filled", tabName = "bookedFilled")
                 )
+                
                 # menuItem("Access", tabName = "access", icon = icon("hospital-user"),
                 #          menuItem("Booked/Filled Rates", tabName = "accessBooked")
                 # ),
@@ -650,14 +654,15 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "Scheduling Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         valueBoxOutput("totalScheduled", width = 3) %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                         valueBoxOutput("avgScheduled", width = 3) %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                         valueBoxOutput("avgArrived", width = 3) %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                         valueBoxOutput("avgNoShows", width = 3) %>%
-                           withSpinner(type = 5, color = "#d80b8c")),
+                         column(4,
+                                valueBoxOutput("avgScheduled", width = 12) %>%
+                                  withSpinner(type = 5, color = "#d80b8c"),
+                                valueBoxOutput("incompleteAppts", width = 12) %>%
+                                  withSpinner(type = 5, color = "#d80b8c"),
+                                tags$em("*Incomplete Appts = No Show + Same-day Bumped/Canceled/Rescheduled Appts")),
+                         column(8,
+                                plotOutput("schedulingStatusSummary") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))),
                        boxPlus(
                          title = "Patient Arrivals", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -690,6 +695,9 @@ ui <- dashboardPage(
                            right = TRUE,
                            status = "primary")),
                          plotOutput("avgNoShowsDist", height = "600px") %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         hr(),
+                         plotOutput("noShowLeadDays") %>%
                            withSpinner(type = 5, color = "#d80b8c"))),
                 column(6,
                        boxPlus(
@@ -774,7 +782,7 @@ ui <- dashboardPage(
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
-        input.sbm == `accessBooked` | 
+        input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'zipCode'",
         
@@ -869,7 +877,7 @@ ui <- dashboardPage(
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' |
          input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` | 
-         input.sbm == `accessBooked` |  
+         input.sbm == `bookedFilled` |  
          input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
          input.sbm == 'zipCode'",
         br(),
