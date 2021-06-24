@@ -965,6 +965,14 @@ server <- function(input, output, session) {
                   values_from = Total,
                   values_fill = 0)
     
+    
+    if(length(unique(data$SITE)) == length(default_campus)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    }
+    
+    
     # appt_order <- c("Exam Total", c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
     appt_order <- c(c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)),"Exam Total")
     
@@ -1056,7 +1064,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_system(dataArrived(), c("Exam","Labs","Treatment"))
     # data <- uniquePts.all.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
