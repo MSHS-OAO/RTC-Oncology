@@ -10,7 +10,9 @@ library(shinyscreenshot)
 
 arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
 
-default_campus <- "DBC"
+#default_campus <- "DBC"
+default_campus <- unique(historical.data$SITE)
+
 campus_choices <- sort(unique(historical.data$SITE))
 
 default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
@@ -34,7 +36,10 @@ default_disease_group <- sort(unique(arrivedDisease.data[arrivedDisease.data$SIT
 
 default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
                                                       arrivedDisease.data$Department %in% default_departments_disease &
-                                                      arrivedDisease.data$Disease_Group %in% default_disease_group[1], "Provider"]))
+                                                      arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
+
+
+
 
 dateRange_min <- min(historical.data$Appt.DateYear) 
 dateRange_max <- max(historical.data$Appt.DateYear)
@@ -177,15 +182,15 @@ ui <- dashboardPage(
                               tags$div(id = "home_description",
                                        h3("Description"),
                                        p("This is a centralized analytics tool that inlcudes all necessary KPIs and metrics that will
-                                 allow the users to identify operatinal oppoutunities, make data-driven decisions, and
+                                 allow the users to identify operational oppoutunities, make data-driven decisions, and
                                  track improvements", style = "font-size:16px")
                               )
                        ),
                        column(12,
                               tags$div(id = "home_data",
                                        h3("Data Sources"),
-                                       p("The data used in this dashboard is pulled from the Clarity database using the slot and access datatables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
-                                      The master file including the department, PRC, and disease group mappings as well as the LOS excludions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link.",
+                                       p("The data used in this dashboard is pulled from the Clarity database using the slot and access data tables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
+                                      The master file including the department, PRC, and disease group mappings as well as the LOS exclusions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link.",
                                          style = "font-size:16px"),
                                        a(href = "Mappings/Oncology Master Mapping File - Updated 4.22.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px"),
                                        br(),
@@ -562,7 +567,7 @@ ui <- dashboardPage(
                                                   countSelectedText = "{0}/{1} Disease Groups",
                                                   dropupAuto = FALSE,
                                                   size = 10),
-                                                selected = default_disease_group[1]))),
+                                                selected = default_disease_group))),
                            column(4,
                                   box(
                                     title = "Select Provider:",
@@ -579,7 +584,7 @@ ui <- dashboardPage(
                                                   countSelectedText = "{0}/{1} Providers",
                                                   dropupAuto = FALSE,
                                                   size = 10),
-                                                selected = default_provider[1])))
+                                                selected = default_provider)))
                            
                          )),
                        boxPlus(
