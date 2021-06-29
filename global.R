@@ -327,26 +327,26 @@ setwd(wdpath)
 
 
 ### (6) Data Subset -----------------------------------------------------------------------------------------------------
+
+
+##Data on Rconnect
+# historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
+# population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
+# holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
+
+
+
+#### Local Data Directories
 historical.data <- readRDS("Data/historical_data.rds")
 population.data_filtered <- readRDS("Data/population_data_filtered.rds")
-# historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
-# population.data_filtered <- as.data.frame(read_feather("Data/population_data_filtered.feather"))
+holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+
+
 max_date <- max(historical.data$Appt.DateYear)
 
 setDT(historical.data)
 
 ## Other datasets
-holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
-# all.data <- as.data.frame(read_feather(here::here("Data/all_data.feather")))
-# arrived.data <- as.data.frame(read_feather(here::here("Data/arrived_data.feather")))
-# canceled.bumped.rescheduled.data <- as.data.frame(read_feather(here::here("Data/canceled_bumped_rescheduled_data.feather")))
-# canceled.data <- as.data.frame(read_feather(here::here("Data/canceled_data.feather")))
-# bumped.data <- as.data.frame(read_feather(here::here("Data/bumped_data.feather")))
-# rescheduled.data <- as.data.frame(read_feather(here::here("Data/rescheduled_data.feather")))
-# sameDay <- as.data.frame(read_feather(here::here("Data/sameDay.feather")))
-# noShow.data <- as.data.frame(read_feather(here::here("Data/noShow_data.feather")))
-# arrivedNoShow.data <- as.data.frame(read_feather(here::here("Data/arrivedNoShow_data.feather")))
-# arrivedDisease.data <- as.data.frame(read_feather(here::here("Data/arrivedDisease_data.feather")))
 
 all.data.rows <- historical.data[Appt.DTTM >= max_date - 365, which = TRUE]
 

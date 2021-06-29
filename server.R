@@ -20,6 +20,22 @@ server <- function(input, output, session) {
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
   })
   
+  
+  output$practiceName_systemuniqueAll <- renderText({
+    paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
+           " for ", paste(sort(input$selectedCampus), collapse = ', '))
+  })
+  
+  output$practiceName_systemuniqueOffice <- renderText({
+    paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
+           " for ", paste(sort(input$selectedCampus), collapse = ', '))
+  })
+  
+  output$practiceName_systemuniqueTreatment <- renderText({
+    paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
+           " for ", paste(sort(input$selectedCampus), collapse = ', '))
+  })
+  
   output$practiceName_uniqueAll <- renderText({
     paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
@@ -249,6 +265,8 @@ server <- function(input, output, session) {
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
   dataAll <- reactive({
+    
+    input$sbm
     groupByFilters(historical.data[all.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -256,6 +274,7 @@ server <- function(input, output, session) {
   
   # [2.2] Arrived + No Show data ============================================================================================================
   dataArrivedNoShow <- reactive({
+    input$sbm
     groupByFilters(historical.data[arrivedNoShow.data.rows,],
                    input$selectedCampus, input$selectedDepartment, 
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -263,6 +282,7 @@ server <- function(input, output, session) {
   
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- reactive({
+    input$sbm
     groupByFilters(historical.data[arrived.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -270,6 +290,7 @@ server <- function(input, output, session) {
   
   # Canceled data ============================================================================================================
   dataCanceled<- reactive({
+    input$sbm
     groupByFilters(historical.data[canceled.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -277,6 +298,7 @@ server <- function(input, output, session) {
   
   # Bumped data ============================================================================================================
   dataBumped<- reactive({
+    input$sbm
     groupByFilters(historical.data[bumped.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -285,6 +307,7 @@ server <- function(input, output, session) {
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
   dataArrived_filtered<- reactive({
+    input$sbm
     groupByFilters_2(dataArrived(),
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType)
   })
@@ -293,17 +316,20 @@ server <- function(input, output, session) {
   # Arrived Disease Group data filtered: Disease Group, Provider ==============================================================
   
   dataArrived_disease <- reactive({
+    input$sbm
     groupByFilters_3(dataArrived(),
                      input$selectedDisease, input$selectedProvider)
   })
   
   dataArrived_disease_2 <- reactive({
+    input$sbm
     groupByFilters_3(dataArrived(),
                      input$selectedDisease2, input$selectedProvider2)
   })
   
   # Arrived population data ============================================================================================================
   dataArrivedPop <- reactive({
+    input$sbm
     groupByFilters(population.data_filtered,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -668,6 +694,8 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
+    total_visits_break <- total_visits_break %>% filter(!is.na(AssociationListB))
+    
     g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
@@ -717,6 +745,12 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, AssociationListT) %>% summarise(total = n())
     
     max <- total_visits_break %>% group_by(Appt.MonthYear) %>% summarise(max = sum(total))
+    
+    factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    
+    total_visits_break$AssociationListT <- factor(total_visits_break$AssociationListT, levels = factor_levels)
+    
+    total_visits_break <- total_visits_break %>% filter(!is.na(AssociationListT))
     
     if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
@@ -989,13 +1023,12 @@ server <- function(input, output, session) {
     
     
     if(length(unique(data$SITE)) == length(default_campus)){
-      site <- "System"
+      site <- "all sites"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
     
-    # appt_order <- c("Exam Total", c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
     appt_order <- c("Exam Total",c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
     
     final_df <- bind_rows(prov_tb, tele_tb)
@@ -1006,11 +1039,15 @@ server <- function(input, output, session) {
     
     indent_rows <- which(final_df$`Appointment Type` %in% unique(tele_tb$`Appointment Type`))
     
+    header_above <- c("Subtitle" = 8)
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
     final_df %>%
       mutate(`Appointment Type` = cell_spec(`Appointment Type`, italic = ifelse(row_number() %in% indent_rows, T, F), 
                                             font_size = ifelse(row_number() %in% indent_rows, 14, 16))) %>%
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
       add_header_above(c("Physician Visits Breakdown" = length(final_df)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
@@ -1111,8 +1148,8 @@ server <- function(input, output, session) {
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
-      labs(title = paste0(site, " Unique Patients over Time"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+      labs(title = paste0("System Unique Patients over Time"),
+           subtitle = paste0("Based on ", site," data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1156,8 +1193,8 @@ server <- function(input, output, session) {
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
-      labs(title = paste0(site, " Unique Patients by Month"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+      labs(title = paste0("System Unique Patients by Month"),
+           subtitle = paste0("Based on ", site, "data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1198,7 +1235,7 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
+      #theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_text(aes(label=total), color="white", 
                 size=5, fontface="bold", vjust = 1.2, position = position_dodge(0.9))
     
@@ -1225,7 +1262,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_site(dataArrived(), c("Exam","Labs","Treatment"))
     # data <- uniquePts.all.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1271,7 +1308,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_siteMonth(dataArrived(), c("Exam","Labs","Treatment"))
     # data <- uniquePts.all.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1342,7 +1379,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_system(dataArrived(), c("Exam"))
     # data <- uniquePts.office.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1358,7 +1395,7 @@ server <- function(input, output, session) {
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Exam Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site,  "data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1387,7 +1424,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_systemMonth(dataArrived(), c("Exam"))
     # data <- uniquePts.office.data
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1403,7 +1440,7 @@ server <- function(input, output, session) {
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month - Exam Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1585,7 +1622,7 @@ server <- function(input, output, session) {
     data <- uniquePts_df_system(dataArrived(), c("Treatment Visit"))
     # data <- uniquePts_df_system(arrived.data, c("Treatment Visit"))
     
-    if(length(unique(data$SITE)) == 9){
+    if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
@@ -1601,7 +1638,7 @@ server <- function(input, output, session) {
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Treatment Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1645,7 +1682,7 @@ server <- function(input, output, session) {
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month  - Treatment Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ",site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
