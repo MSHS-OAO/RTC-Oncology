@@ -574,3 +574,5 @@ valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL,
     boxContent
   )
 }
+
+default_campus <- unique(historical.data$SITE)
