@@ -428,6 +428,8 @@ groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, d
   return(result)
 }
 
+
+
 groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
   result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
   return(result)
@@ -435,6 +437,12 @@ groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
 
 groupByFilters_3 <- function(dt, diseaseGroup, provider){
   result <- dt %>% filter(Disease_Group != "No Disease Group") %>% filter(Disease_Group %in% diseaseGroup, Provider %in% provider)
+  return(result)
+}
+
+groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
   return(result)
 }
 
