@@ -38,6 +38,9 @@ default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in
                                                       arrivedDisease.data$Department %in% default_departments_disease &
                                                       arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
 
+default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                      historical.data$Department %in% default_departments_disease , "Provider"]))
+
 
 
 
@@ -102,7 +105,7 @@ ui <- dashboardPage(
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
                 menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
-                         menuItem("By Sytem", tabName = "SystemUnique",
+                         menuItem("By System", tabName = "SystemUnique",
                                  menuSubItem("All", tabName = "systemuniqueAll"),
                                  menuSubItem("Exam", tabName = "systemuniqueOffice"),
                                  menuSubItem("Treatment", tabName = "systemuniqueTreatment")),
@@ -118,10 +121,10 @@ ui <- dashboardPage(
                          menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
                          menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
                          menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
-                ),
-                menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
-                         menuItem("Booked and Filled", tabName = "bookedFilled")
-                )
+                )#,
+                # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
+                #          menuItem("Booked and Filled", tabName = "bookedFilled")
+                #)
                 
                 # menuItem("Access", tabName = "access", icon = icon("hospital-user"),
                 #          menuItem("Booked/Filled Rates", tabName = "accessBooked")
@@ -186,14 +189,14 @@ ui <- dashboardPage(
                               tags$div(id = "home_description",
                                        h3("Description"),
                                        p("This is a centralized analytics tool that inlcudes all necessary KPIs and metrics that will
-                                 allow the users to identify operational oppoutunities, make data-driven decisions, and
+                                 allow the users to identify operational opportunities, make data-driven decisions, and
                                  track improvements", style = "font-size:16px")
                               )
                        ),
                        column(12,
                               tags$div(id = "home_data",
                                        h3("Data Sources"),
-                                       p("The data used in this dashboard is pulled from the Clarity database using the slot and access data tables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
+                                       p("The data used in this dashboard is pulled from the Epic Clarity database using the slot and access data tables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
                                       The master file including the department, PRC, and disease group mappings as well as the LOS exclusions used in this analytics tool can be downloaded from the first hyperlink, while the zip code groupings file can be downloaded at the second link.",
                                          style = "font-size:16px"),
                                        a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 6.11.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px"),
@@ -321,7 +324,7 @@ ui <- dashboardPage(
                                            dropupAuto = FALSE),
                                          selected = default_visitType)),
                            box(
-                             title = "Select Appointment Type:",
+                             title = "Select Visit Type Detail:",
                              width = 4,
                              height = "100px",
                              solidHeader = FALSE,
@@ -332,7 +335,7 @@ ui <- dashboardPage(
                                            liveSearch = TRUE,
                                            actionsBox = TRUE,
                                            selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Visit Types",
+                                           countSelectedText = "{0}/{1} Visit Detail Types",
                                            dropupAuto = FALSE),
                                          selected = default_ApptType)),
                            box(
@@ -347,10 +350,26 @@ ui <- dashboardPage(
                                            liveSearch = TRUE,
                                            actionsBox = TRUE,
                                            selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Visit Types",
+                                           countSelectedText = "{0}/{1} Treatment Types",
                                            dropupAuto = FALSE),
-                                         selected = default_TreatmentType))
-                         ),
+                                         selected = default_TreatmentType)),
+                           br(),
+                           br(),
+                           br(),
+                           br(),
+                           fluidRow(
+                             column(2,
+                                  actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br()
+                                  ))
+                         )
+                       )),
+
+                column(11,
+                       boxPlus(
+                         title = "Visit Volume Comparison", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          fluidRow(
                            box(
                              title = "Compare by:",
@@ -374,12 +393,7 @@ ui <- dashboardPage(
                                choices = c("Monthly", "Weekly"),
                                selected = "Monthly",
                                status = "info"))
-                         )
-                       )),
-                column(11,
-                       boxPlus(
-                         title = "Visit Volume Comparison", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         ),
                          plotOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
                          plotOutput("volumeCompTrend_grh", height = "auto") %>%
@@ -432,7 +446,15 @@ ui <- dashboardPage(
                                                   size = 10),
                                                 selected = default_provider)))
                            
-                         )),
+                         ),
+                         fluidRow(
+                           column(2,
+                                  actionButton("update_filters1", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br(),
+                                  )
+                         )
+                         ),
                        boxPlus(
                          title = "Physician Visits Breakdown", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
@@ -525,7 +547,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(), 
                          column(12,
-                                plotOutput("uniqueAllSite", height = "auto") %>%
+                                plotOutput("uniqueAllSite", height = "auto", width = 12) %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
@@ -619,8 +641,16 @@ ui <- dashboardPage(
                                                   dropupAuto = FALSE,
                                                   size = 10),
                                                 selected = default_provider)))
-                           
-                         )),
+                         ),
+                         fluidRow(
+                           column(2,
+                                  actionButton("update_filters2", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br()
+                                  )
+                         )
+                         ),
+                      
                        boxPlus(
                          title = "Unique Patients by Provider over Time", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
@@ -686,6 +716,37 @@ ui <- dashboardPage(
                 tags$head(tags$style("#practiceName_schedulingArrived{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           column(4,
+                                  box(
+                                    title = "Select Provider:",
+                                    width = 12,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selectedProvider1",label=NULL,
+                                                choices = default_provider1,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Providers",
+                                                  dropupAuto = FALSE,
+                                                  size = 10),
+                                                selected = default_provider1)))
+
+                         ),
+                         fluidRow(
+                           column(2,
+                                  actionButton("update_filters3", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br()
+                                  )
+                         )
+                         ),
+                       boxPlus(
                          title = "Scheduling Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          column(4,
@@ -713,6 +774,36 @@ ui <- dashboardPage(
                 textOutput("practiceName_schedulingNoShow"),
                 tags$head(tags$style("#practiceName_schedulingNoShow{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
+                       boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           column(4,
+                                  box(
+                                    title = "Select Provider:",
+                                    width = 12,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selectedProvider4",label=NULL,
+                                                choices = default_provider1,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Providers",
+                                                  dropupAuto = FALSE,
+                                                  size = 10),
+                                                selected = default_provider1)))
+                           
+                         ),
+                         fluidRow(
+                           column(2,
+                                  actionButton("update_filters4", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br()
+                                  )
+                         )),       
                 column(6,
                        boxPlus(
                          title = "No Shows", width = 12, status = "primary",
@@ -755,6 +846,35 @@ ui <- dashboardPage(
                 textOutput("practiceName_schedulingBump"),
                 tags$head(tags$style("#practiceName_schedulingBump{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
+                       boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           column(4,
+                                  box(
+                                    title = "Select Provider:",
+                                    width = 12,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selectedProvider5",label=NULL,
+                                                choices = default_provider1,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Providers",
+                                                  dropupAuto = FALSE,
+                                                  size = 10),
+                                                selected = default_provider1)))
+                         ),
+                         fluidRow(
+                           column(2,
+                                  actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
+                                  br(),
+                                  br()
+                                  )
+                         )),
                        boxPlus(
                          title = "Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -810,6 +930,37 @@ ui <- dashboardPage(
       tags$head(tags$style(HTML("#dropdownUnique {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#dropdownUnique1 {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#dropdownZipCode {color: #d80b8c;}"))),
+      tags$head(tags$style(HTML("#update_filters {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+      tags$head(tags$style(HTML("#update_filters1 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+      tags$head(tags$style(HTML("#update_filters2 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+      tags$head(tags$style(HTML("#update_filters3 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+      tags$head(tags$style(HTML("#update_filters4 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+      tags$head(tags$style(HTML("#update_filters5 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+
       
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
@@ -823,6 +974,11 @@ ui <- dashboardPage(
         input.sbm == 'zipCode'",
         
         dropdown(
+          br(),
+          actionButton("update_filters", "CLICK TO UPDATE", width = "80%"),
+          br(),
+          br(),
+          br(),
           box(
             title = "Select Campus:",
             width = 12,
@@ -927,7 +1083,7 @@ ui <- dashboardPage(
             sliderInput(
               inputId = "plotWidth",
               label = NULL, 
-              value = 1500, min = 200, max = 2000,
+              value = 1400, min = 200, max = 2000,
               ticks = FALSE
             ),
             fluidRow(
@@ -1000,19 +1156,19 @@ ui <- dashboardPage(
         dropdown(
           box(
             title = NULL,
-            width = 30,
+            width = 20,
             height = "600px",
             solidHeader = FALSE,
             h3("TOTAL UNIQUE PATIENTS BY SITE:"),h4("Total count of unique patients who had >= 1 visit(s) at respective site (unique MRN by site)."),
             h3("UNIQUE PATIENTS BY SITE OVER TIME:"),h4("TOTAL UNIQUE PATIENTS BY SITE by month."),
             h3("UNIQUE PATIENTS BY SITE AND MONTH:"),h4("Total count of unique patients who had >= 1 visit(s) at respective site and month (unique MRN by site and month)."),
-            h3("UNIQUE PATIENTS BY SITE BY SITE, MONTH, AND PROVIDER/REFERRING PROVIDER:"),h4("Total count of unique patients who had >= 1 visit(s) at respective site and month with respective provider/referring provider (unique MRN by site, month, and provider/referring provider).")
+            h3("UNIQUE PATIENTS BY SITE, MONTH, AND PROVIDER/REFERRING PROVIDER:"),h4("Total count of unique patients who had >= 1 visit(s) at respective site and month with respective provider/referring provider (unique MRN by site, month, and provider/referring provider).")
           ),
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("info"), width = "1200px",
+          icon = icon("info"), width = "600px",
           
-          tooltip = tooltipOptions(title = "Click for addition info on the site unique patient analysis."),
+          tooltip = tooltipOptions(title = "Click for additional info on the site unique patient analysis."),
           inputId = "dropdownUnique"
           
         ) # Close Drop Down Button
@@ -1026,7 +1182,7 @@ ui <- dashboardPage(
         dropdown(
           box(
             title = NULL,
-            width = 30,
+            width = 20,
             height = "600px",
             solidHeader = FALSE,
             h3("TOTAL SYSTEM UNIQUE PATIENTS:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system)."),
@@ -1035,9 +1191,9 @@ ui <- dashboardPage(
           ),
           
           style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("info"), width = "1200px",
+          icon = icon("info"), width = "600px",
           
-          tooltip = tooltipOptions(title = "Click for addition info on the system unique patient analysis."),
+          tooltip = tooltipOptions(title = "Click for additional info on the system unique patient analysis."),
           inputId = "dropdownUnique1"
           
         ) # Close Drop Down Button

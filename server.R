@@ -148,6 +148,32 @@ server <- function(input, output, session) {
                       choices = disease_choices,
                       selected = disease_choices
     )
+  
+    provider_choices <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
+                                                          arrivedDisease.data$Department %in% department_choices_disease &
+                                                          arrivedDisease.data$Disease_Group %in% disease_choices, "Provider"]))
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider",
+                      choices = provider_choices,
+                      selected = provider_choices
+    )  
+    updatePickerInput(session,
+                      inputId = "selectedProvider2",
+                      choices = provider_choices,
+                      selected = provider_choices
+    )  
+    
+    
+    # prov3_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+    #                                                    historical.data$Department %in% department_choices_disease , "Provider"]))
+    # 
+    # updatePickerInput(session,
+    #                   inputId = "selectedProvider3",
+    #                   choices = provider_choices,
+    #                   selected = provider_choices
+    # )  
+    
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
@@ -192,6 +218,25 @@ server <- function(input, output, session) {
                       choices = disease_choices,
                       selected = disease_choices
     )
+    
+    
+    
+    provider_choices <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
+                                                          arrivedDisease.data$Department %in% department_choices_disease &
+                                                          arrivedDisease.data$Disease_Group %in% disease_choices, "Provider"]))
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider",
+                      choices = provider_choices,
+                      selected = provider_choices
+    )  
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider2",
+                      choices = provider_choices,
+                      selected = provider_choices
+    )  
+    
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
@@ -262,43 +307,86 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
+  
+  observeEvent(list(input$selectedDepartment),{
+    prov_choices <-  sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+                                                           historical.data$Department %in% input$selectedDepartment, "Provider"]))
+    updatePickerInput(session,
+                      inputId = "selectedProvider1",
+                      choices = prov_choices,
+                      selected = prov_choices
+    )
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider4",
+                      choices = prov_choices,
+                      selected = prov_choices
+    )
+    updatePickerInput(session,
+                      inputId = "selectedProvider5",
+                      choices = prov_choices,
+                      selected = prov_choices
+    )
+    
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  
+  
+
+  
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
-  dataAll <- reactive({
-    
-    input$sbm
+  dataAll <- eventReactive(list(input$sbm, input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
     groupByFilters(historical.data[all.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # [2.2] Arrived + No Show data ============================================================================================================
-  dataArrivedNoShow <- reactive({
-    input$sbm
+  dataArrivedNoShow <- eventReactive(list(input$sbm, input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
     groupByFilters(historical.data[arrivedNoShow.data.rows,],
                    input$selectedCampus, input$selectedDepartment, 
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- reactive({
-    input$sbm
+  dataArrived <- eventReactive(list(input$sbm, input$update_filters),{
+     validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+     )
     groupByFilters(historical.data[arrived.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # Canceled data ============================================================================================================
-  dataCanceled<- reactive({
-    input$sbm
+  dataCanceled<- eventReactive(list(input$sbm, input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
     groupByFilters(historical.data[canceled.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # Bumped data ============================================================================================================
-  dataBumped<- reactive({
-    input$sbm
+  dataBumped<- eventReactive(list(input$sbm, input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
     groupByFilters(historical.data[bumped.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -306,8 +394,12 @@ server <- function(input, output, session) {
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
-  dataArrived_filtered<- reactive({
-    input$sbm
+  dataArrived_filtered<- eventReactive(list(input$sbm, input$update_filters,input$update_filters5),{
+    validate(
+     need(input$selectedVisitType != "", "Please select a visit type"),
+     need(input$selectedApptType != "", "Please select a visit type detail"),
+     need(input$selectedTreatmentType != "", "Please select a treatment type")
+    )
     groupByFilters_2(dataArrived(),
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType)
   })
@@ -315,26 +407,87 @@ server <- function(input, output, session) {
   
   # Arrived Disease Group data filtered: Disease Group, Provider ==============================================================
   
-  dataArrived_disease <- reactive({
-    input$sbm
+  dataArrived_disease <- eventReactive(list(input$sbm, input$update_filters1),{
+    validate(
+      need(input$selectedDisease != "", "Please select a provider group"),
+      need(input$selectedProvider != "", "Please select a provider")
+    )
     groupByFilters_3(dataArrived(),
                      input$selectedDisease, input$selectedProvider)
   })
   
-  dataArrived_disease_2 <- reactive({
-    input$sbm
+  dataArrived_disease_2 <- eventReactive(list(input$sbm, input$update_filters2),{
+    validate(
+      need(input$selectedDisease2 != "", "Please select a provider group"),
+      need(input$selectedProvider2 != "", "Please select a provider")
+    )
     groupByFilters_3(dataArrived(),
                      input$selectedDisease2, input$selectedProvider2)
   })
   
   # Arrived population data ============================================================================================================
-  dataArrivedPop <- reactive({
-    input$sbm
+  dataArrivedPop <- eventReactive(list(input$sbm, input$update_filters, input$selectedProvider),{
+    validate(
+      need(input$selectedVisitType != "", "Please select a visit type"),
+      need(input$selectedApptType != "", "Please select a visit type detail"),
+      need(input$selectedTreatmentType != "", "Please select a treatment type")
+    )
     groupByFilters(population.data_filtered,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
+  # Scheduling  data ============================================================================================================
+  
+  dataAllsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_4(historical.data[all.data.rows,],
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  })
+  
+  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_4(historical.data[arrivedNoShow.data.rows,],
+                   input$selectedCampus, input$selectedDepartment, 
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  })
+  
+  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_4(historical.data[arrived.data.rows,],
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  })
+  
+  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_4(historical.data[bumped.data.rows,],
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  })
+  
+  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters(historical.data[canceled.data.rows,],
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  })
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
@@ -360,7 +513,9 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
+      geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, fontface="bold",
+                 nudge_x = 0.1, size=5)
     
   }, height = function(x) input$plotHeight)
   
@@ -387,8 +542,9 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
-    
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
+      geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, fontface="bold",
+                 nudge_x = 0.1, size=5)
   }, height = function(x) input$plotHeight)
   
   
@@ -414,7 +570,9 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
+      geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, fontface="bold",
+                 nudge_x = 0.1, size=5)
     
   }, height = function(x) input$plotHeight)
   
@@ -440,7 +598,9 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
+      geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, fontface="bold",
+                 nudge_x = 0.1, size=5)
     
   }, height = function(x) input$plotHeight)
   
@@ -738,7 +898,8 @@ server <- function(input, output, session) {
     
     data <- dataArrived()
     
-    #data <- arrived.data %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    #data <- historical.data[arrived.data.rows,] %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
+    #data <- historical.data[arrived.data.rows,] %>% filter(SITE == "MSW")
     # nrow(data)
     
     total_visits_break <- data %>% filter(AssociationListA == "Treatment") %>%
@@ -752,6 +913,10 @@ server <- function(input, output, session) {
     
     total_visits_break <- total_visits_break %>% filter(!is.na(AssociationListT))
     
+    sum <- total_visits_break %>% summarise(sum = sum(total))
+    
+    total_visits_break <- inner_join(total_visits_break,sum, by = c("Appt.MonthYear"))
+    
     if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
@@ -762,13 +927,12 @@ server <- function(input, output, session) {
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      
-      labs(title = paste0(site," ","Treatment Visit Volume Composition"), 
+      labs(title = paste0(site," ","Treatment Visit Volume Composition"),
            subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
+      geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
@@ -1318,11 +1482,18 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    
+    sum <- unique %>% summarise(sum = sum(total))
+    unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
+    
     #to get the upper limit for the y_continuous
     unique_ <- unique %>% spread(SITE, total)
     unique_$Appt.MonthYear <- NULL
     max_col <- function(data) sapply(data, max, na.rm = TRUE)
     max_tot_site <- max_col(unique_)
+    
+    
+    
     
     g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
@@ -1333,7 +1504,7 @@ server <- function(input, output, session) {
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
+      geom_text(data = subset(unique, total/sum > 0.1),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
@@ -2178,7 +2349,7 @@ server <- function(input, output, session) {
   ## Average Daily Visits Scheduled 
   output$avgScheduled <- renderValueBox({
     
-    data <- dataAll()
+    data <- dataAllsched()
     # data <- all.data
     
     valueBox(
@@ -2192,7 +2363,7 @@ server <- function(input, output, session) {
     
     valueBox(
       #prettyNum(round(nrow(dataNoShow() %>% filter(Appt.Status %in% c("No Show"))) / length(unique(dataArrived()$Appt.DateYear)),0), big.mark = ","),
-      paste0(prettyNum(round(nrow(dataArrivedNoShow() %>% filter(Appt.Status != "Arrived")) / 
+      paste0(prettyNum(round(nrow(dataArrivedNoShowsched() %>% filter(Appt.Status != "Arrived")) / 
                         nrow(dataArrivedNoShow()), 2)*100, big.mark = ","), "%"),
       subtitle = tags$p("% of INCOMPLETE APPOINTMENTS", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
@@ -2201,7 +2372,7 @@ server <- function(input, output, session) {
   
   output$schedulingStatusSummary <- renderPlot({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     # data <- kpi.all.data[arrivedNoShow.data.rows,]
     
     # sameDay <- data %>%
@@ -2267,7 +2438,7 @@ server <- function(input, output, session) {
   ## Average Scheduled vs. Arrived Patients Pattern
   output$avgPtArrival <- renderPlot({
 
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
     
     ptsScheduled <- data %>%
@@ -2312,7 +2483,7 @@ server <- function(input, output, session) {
   # Patient Arrivals by Day of Week 
   output$ptArrivalPattern <- renderPlot({
     
-    data <- dataArrived()
+    data <- dataArrivedsched()
     # data <- arrived.data
     
     arrived <- data %>%
@@ -2372,7 +2543,7 @@ server <- function(input, output, session) {
   ## Average Daily No Show
   output$avgNoShows2 <- renderValueBox({
     
-    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("No Show"))
+    data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("No Show"))
     # data <- all.data
     
     valueBox(
@@ -2384,7 +2555,7 @@ server <- function(input, output, session) {
   ## Average Daily No Show %
   output$avgNoShowsPerc <- renderValueBox({
     
-    data <- dataArrivedNoShow() 
+    data <- dataArrivedNoShowsched() 
     # data <- arrivedNoShow.data
     
     valueBox(
@@ -2396,7 +2567,7 @@ server <- function(input, output, session) {
   ## Average Daily Overbooks
   output$avgOverbooks <- renderValueBox({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     overbooks <- data %>%
       group_by(Provider, Appt.DateYear, Time) %>%
       dplyr::summarise(total = n()-1) %>%
@@ -2411,7 +2582,7 @@ server <- function(input, output, session) {
   ## Average Daily Overbooks per Provider
   output$avgOverbooksProv <- renderValueBox({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
     
     overbooks <- data %>%
@@ -2428,7 +2599,7 @@ server <- function(input, output, session) {
   ## No Show Breakdown 
   output$noShowBreakdown <- renderPlot({
 
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
 
     data$Appt.Status[which(data$Appt.Status == "Bumped")] <- "Same-day Bumped"
@@ -2463,7 +2634,7 @@ server <- function(input, output, session) {
   ## No Shows by Time of Day and Day of Week 
   output$avgNoShowsDist <- renderPlot({
 
-    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("Arrived","No Show"))
+    data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("Arrived","No Show"))
     # data <- arrivedNoShow.data
     
     if(input$percent1 == FALSE){
@@ -2543,7 +2714,7 @@ server <- function(input, output, session) {
   ## Overbooks by Time of Day and Day of Week 
   output$avgOverbooksDist <- renderPlot({
     
-    data <- dataArrivedNoShow()
+    data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
     
     daily.overbooks <- data %>%
@@ -2595,7 +2766,7 @@ server <- function(input, output, session) {
   # Distribution of No Shows (%) by Lead Days 
   output$noShowLeadDays <- renderPlot({
     
-    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("Arrived", "No Show")) %>%
+    data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("Arrived", "No Show")) %>%
       mutate(apptLeadDays = as.numeric(round(difftime(Appt.DTTM, Appt.Made.DTTM,  units = "days"),2))) 
 
     # data <- historical.data[arrivedNoShow.data.rows,] %>% filter(Appt.Status %in% c("Arrived", "No Show")) %>%
@@ -2651,7 +2822,7 @@ server <- function(input, output, session) {
   ## AVerage Daily Bumped Appts
   output$avgDailyBumps <- renderValueBox({
     
-    data <- dataAll() 
+    data <- dataAllsched() 
     # data <- all.data %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     
     valueBox(
@@ -2663,7 +2834,7 @@ server <- function(input, output, session) {
   ## AVerage Daily Canceled Appts
   output$avgDailyCanc <- renderValueBox({
     
-    data <- dataAll() 
+    data <- dataAllsched() 
     # data <- canceled.bumped.rescheduled.data
     
     valueBox(
@@ -2675,7 +2846,7 @@ server <- function(input, output, session) {
   ## Average Daily Rescheduled Appts
   output$avgDailyResc <- renderValueBox({
     
-    data <- dataAll() 
+    data <- dataAllsched() 
     # data <- canceled.bumped.rescheduled.data
     
     valueBox(
@@ -2687,7 +2858,7 @@ server <- function(input, output, session) {
   ## Average Bumps/Canc/Resc Rate 
   output$avgBumpsCancRescRate <- renderPlot({
     
-    data <- dataAll()
+    data <- dataAllsched()
     # data <- all.data
     
     apptsCanceled <- data %>%
@@ -2718,7 +2889,7 @@ server <- function(input, output, session) {
   ## Lead Days to Bumps/Canc/Resc 
   output$leadDaysBumpsCancResc <- renderPlot({
     
-    data <- dataAll() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
+    data <- dataAllsched() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     # data <- canceled.bumped.rescheduled.data
     
     lead.days.df <- data %>%
@@ -2765,7 +2936,7 @@ server <- function(input, output, session) {
   ## Average Daily Same-day Bumps/Canc/Resc Rate 
   output$sameDayBumpedCanceledRescheduled <- renderPlot({
     
-    data <- dataArrivedNoShow() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
+    data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     # data <- historical.data[arrivedNoShow.data.rows, ] %>% filter(Appt.Status %in% c("Bumped","Canceled","Rescheduled"))
     
     sameDay <- data %>%
@@ -2793,7 +2964,7 @@ server <- function(input, output, session) {
   ## Bumped Reasons by Lead Days
   output$reasonsBumps <- renderPlot({
     
-    data <- dataBumped()
+    data <- dataBumpedsched()
     # data <- historical.data[bumped.data.rows,]
     
     total <- nrow(data)
@@ -2867,7 +3038,7 @@ server <- function(input, output, session) {
   ## Canceled Reasons by Lead Days
   output$reasonsCanc <- renderPlot({
     
-    data <- dataCanceled()
+    data <- dataCanceledsched()
     # data <- canceled.data
     
     total <- nrow(data)
