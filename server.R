@@ -439,7 +439,7 @@ server <- function(input, output, session) {
   
   # Scheduling  data ============================================================================================================
   
-  dataAllsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataAllsched <- eventReactive(list(input$sbm, input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -449,7 +449,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -459,7 +459,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -469,7 +469,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -479,7 +479,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -1719,8 +1719,8 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueOfficeMonthSite <- renderPlot({
     
-    data <- uniquePts_df_siteMonth(dataArrived(), c("Exam"))
-    # data <- uniquePts.office.data
+    #data <- uniquePts_df_siteMonth(dataArrived(), c("Exam"))
+    data <- uniquePts_df_siteMonth(historical.data[arrived.data.rows,], c("Exam"))
     
     if(length(unique(data$SITE)) == 9){
       site <- "System"
@@ -1731,6 +1731,10 @@ server <- function(input, output, session) {
     unique <- data %>% 
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
+    
+    sum <- unique %>% summarise(sum = sum(total))
+    
+    unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
     
     #to get the upper limit for the y_continuous
     unique_ <- unique %>% spread(SITE, total)
@@ -1748,7 +1752,7 @@ server <- function(input, output, session) {
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
+      geom_text(data=subset(unique, total/sum > .1),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
@@ -1973,6 +1977,12 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    sum <- unique %>% summarise(sum = sum(total))
+    
+    unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
+    
+    
+    
     #to get the upper limit for the y_continuous
     unique_ <- unique %>% spread(SITE, total)
     unique_$Appt.MonthYear <- NULL
@@ -1990,7 +2000,7 @@ server <- function(input, output, session) {
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       
-      geom_text(aes(label=total), color="white", 
+      geom_text(data=subset(unique, total/sum > 0.1),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
@@ -2052,8 +2062,8 @@ server <- function(input, output, session) {
       summarise(total = n()) %>%
       arrange(Appt.MonthYear, SITE) %>%
       `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
-      pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) %>%
-      adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
+      pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) #%>%
+      #adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
     
     row_total <- uniquePts_tb %>% 
       split(.[,"Provider"]) %>%  
@@ -2066,8 +2076,8 @@ server <- function(input, output, session) {
       add_header_above(c("Unique Patients Seen per Provider and Month - Exam Visits" = (length(uniquePts_tb)-1)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>%
       row_spec(0, background = "#00aeef", color = "white", bold = T) %>%
-      column_spec(1, bold = T) %>%
-      column_spec(length(uniquePts_tb)-1, background = "#00aeef", color = "white", bold = T) 
+      column_spec(1, bold = T) #%>%
+      #column_spec(length(uniquePts_tb)-1, background = "#00aeef", color = "white", bold = T) 
     
   }
   

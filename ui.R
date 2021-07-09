@@ -8,8 +8,6 @@ library(shinyscreenshot)
 
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
-arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
-
 #default_campus <- "DBC"
 default_campus <- unique(historical.data$SITE)
 
@@ -359,7 +357,7 @@ ui <- dashboardPage(
                            br(),
                            fluidRow(
                              column(2,
-                                  actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
                                   ))
@@ -449,7 +447,7 @@ ui <- dashboardPage(
                          ),
                          fluidRow(
                            column(2,
-                                  actionButton("update_filters1", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters1", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br(),
                                   )
@@ -644,7 +642,7 @@ ui <- dashboardPage(
                          ),
                          fluidRow(
                            column(2,
-                                  actionButton("update_filters2", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters2", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
                                   )
@@ -740,7 +738,7 @@ ui <- dashboardPage(
                          ),
                          fluidRow(
                            column(2,
-                                  actionButton("update_filters3", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters3", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
                                   )
@@ -799,7 +797,7 @@ ui <- dashboardPage(
                          ),
                          fluidRow(
                            column(2,
-                                  actionButton("update_filters4", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters4", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
                                   )
@@ -870,7 +868,7 @@ ui <- dashboardPage(
                          ),
                          fluidRow(
                            column(2,
-                                  actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
+                                  #actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
                                   )
