@@ -330,16 +330,16 @@ setwd(wdpath)
 
 
 ##Data on Rconnect
-# historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
-# population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-# holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
+historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
+population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
+holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
 
 
 
 #### Local Data Directories
-historical.data <- readRDS("Data/historical_data.rds")
-population.data_filtered <- readRDS("Data/population_data_filtered.rds")
-holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+# historical.data <- readRDS("Data/historical_data.rds")
+# population.data_filtered <- readRDS("Data/population_data_filtered.rds")
+# holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
 
 
 max_date <- max(historical.data$Appt.DateYear)
