@@ -309,8 +309,11 @@ server <- function(input, output, session) {
   
   
   observeEvent(list(input$selectedDepartment),{
-    prov_choices <-  sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
-                                                           historical.data$Department %in% input$selectedDepartment, "Provider"]))
+    prov_choices <- historical.data %>% filter(!(Disease_Group %in% c("No Disease Group"))) %>% drop_na(Disease_Group)
+    
+    prov_choices <-  sort(unique(prov_choices[prov_choices$SITE %in% input$selectedCampus &
+                                                prov_choices$Department %in% input$selectedDepartment, "Provider"]))
+
     updatePickerInput(session,
                       inputId = "selectedProvider1",
                       choices = prov_choices,
@@ -394,7 +397,7 @@ server <- function(input, output, session) {
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
-  dataArrived_filtered<- eventReactive(list(input$sbm, input$update_filters,input$update_filters5),{
+  dataArrived_filtered<- eventReactive(list(input$sbm, input$update_filters,input$update_filters6),{
     validate(
      need(input$selectedVisitType != "", "Please select a visit type"),
      need(input$selectedApptType != "", "Please select a visit type detail"),
@@ -407,7 +410,7 @@ server <- function(input, output, session) {
   
   # Arrived Disease Group data filtered: Disease Group, Provider ==============================================================
   
-  dataArrived_disease <- eventReactive(list(input$sbm, input$update_filters1),{
+  dataArrived_disease <- eventReactive(list(input$sbm, input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedDisease != "", "Please select a provider group"),
       need(input$selectedProvider != "", "Please select a provider")
@@ -416,7 +419,7 @@ server <- function(input, output, session) {
                      input$selectedDisease, input$selectedProvider)
   })
   
-  dataArrived_disease_2 <- eventReactive(list(input$sbm, input$update_filters2),{
+  dataArrived_disease_2 <- eventReactive(list(input$sbm, input$update_filters,input$update_filters2),{
     validate(
       need(input$selectedDisease2 != "", "Please select a provider group"),
       need(input$selectedProvider2 != "", "Please select a provider")
@@ -439,7 +442,7 @@ server <- function(input, output, session) {
   
   # Scheduling  data ============================================================================================================
   
-  dataAllsched <- eventReactive(list(input$sbm, input$update_filters),{
+  dataAllsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -449,7 +452,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters),{
+  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -459,7 +462,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters),{
+  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -469,7 +472,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters),{
+  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -479,12 +482,12 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters),{
+  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters(historical.data[canceled.data.rows,],
+    groupByFilters_4(historical.data[canceled.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
@@ -1151,11 +1154,30 @@ server <- function(input, output, session) {
   
   output$provVolumeExam_tb <- function(){
     
+      # 
+      # data <- dataArrived()
+      # 
+      # data <- data %>%
+      #   filter(AssociationListA == "Exam") %>%
+      #   filter(Disease_Group != "No Disease Group") %>% 
+      #   filter(Disease_Group %in% input$selectedDisease)
+      # 
+      # 
+      # 
+      # tele_data <- dataArrived()
+      # 
+      # tele_data <- tele_data %>%
+      #   filter(AssociationListB == "Telehealth Visit") %>%
+      #   filter(Disease_Group != "No Disease Group") %>% 
+      #   filter(Provider %in% input$selectedProvider)
+    
     data <- dataArrived_disease() %>%
       filter(AssociationListA == "Exam")
-    
+
     tele_data <- dataArrived_disease() %>%
       filter(AssociationListB == "Telehealth Visit")
+    
+    
     # 
     # data <- historical.data[arrived.data.rows,] %>%
     #   filter(AssociationListA == "Exam", SITE %in% c("DBC"))
@@ -1719,8 +1741,8 @@ server <- function(input, output, session) {
   ## Unique MRN by Month
   output$uniqueOfficeMonthSite <- renderPlot({
     
-    #data <- uniquePts_df_siteMonth(dataArrived(), c("Exam"))
-    data <- uniquePts_df_siteMonth(historical.data[arrived.data.rows,], c("Exam"))
+    data <- uniquePts_df_siteMonth(dataArrived(), c("Exam"))
+    #data <- uniquePts_df_siteMonth(historical.data[arrived.data.rows,], c("Exam"))
     
     if(length(unique(data$SITE)) == 9){
       site <- "System"
@@ -2025,6 +2047,8 @@ server <- function(input, output, session) {
   output$uniqueProvExam_tb <- function(){
     
     data <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
+    # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
+    # data <- uniquePts_df_system(data, c("Exam","Labs","Treatment"))
     
     uniquePts_tb <- data %>%
       group_by(SITE, Provider, Appt.MonthYear) %>%
