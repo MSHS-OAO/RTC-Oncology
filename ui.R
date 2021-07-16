@@ -352,7 +352,7 @@ ui <- dashboardPage(
                                            dropupAuto = FALSE),
                                          selected = default_TreatmentType)),
                            
-                           column(2,
+                           column(4,
                                   actionButton("update_filters6", "CLICK TO UPDATE", width = "80%"),
                                   br(),
                                   br()
@@ -439,7 +439,7 @@ ui <- dashboardPage(
                                                   dropupAuto = FALSE,
                                                   size = 10),
                                                 selected = default_provider))),
-                           column(2,
+                           column(4,
                                   br(),
                                   br(),
                                   actionButton("update_filters1", "CLICK TO UPDATE", width = "80%", height = "40%"),
@@ -634,7 +634,7 @@ ui <- dashboardPage(
                                                   size = 10),
                                                 selected = default_provider))),
 
-                           column(2,
+                           column(4,
                                   br(),
                                   br(),
                                   actionButton("update_filters2", "CLICK TO UPDATE", width = "80%"),
@@ -727,7 +727,7 @@ ui <- dashboardPage(
                                                   dropupAuto = FALSE,
                                                   size = 10),
                                                 selected = default_provider))),
-                           column(2,
+                           column(4,
                                   br(),
                                   br(),
                                   actionButton("update_filters3", "CLICK TO UPDATE", width = "80%"),
@@ -785,7 +785,7 @@ ui <- dashboardPage(
                                                   dropupAuto = FALSE,
                                                   size = 10),
                                                 selected = default_provider))),
-                           column(2,
+                           column(4,
                                   br(),
                                   br(),
                                   actionButton("update_filters4", "CLICK TO UPDATE", width = "80%")
@@ -856,7 +856,7 @@ ui <- dashboardPage(
                                                   dropupAuto = FALSE,
                                                   size = 10),
                                                 selected = default_provider))),
-                           column(2,
+                           column(4,
                                   br(),
                                   br(),
                                   actionButton("update_filters5", "CLICK TO UPDATE", width = "80%"),
@@ -923,7 +923,9 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute;
-                                                left: 25px}"))),
+                                                left: 25px;
+                                                top: 53px;
+                                                height 85%}"))),
       tags$head(tags$style(HTML("#update_filters1 {background-color: #00aeef;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
@@ -979,6 +981,7 @@ ui <- dashboardPage(
         dropdown(
           br(),
           actionButton("update_filters", "CLICK TO UPDATE", width = "80%"),
+          br(),
           br(),
           br(),
           br(),

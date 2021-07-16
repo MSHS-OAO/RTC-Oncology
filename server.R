@@ -2078,8 +2078,9 @@ server <- function(input, output, session) {
     
     data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
     
-    # data <- uniquePts_df_siteProvMonth(arrivedDisease.data, c("Exam")) %>%
-    #   filter(uniqueSiteProvMonth == 1)
+    # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
+    # data <- uniquePts_df_siteProvMonth(data, c("Exam"))
+    
     
     uniquePts_tb <- data %>%
       group_by(SITE, Provider, Appt.MonthYear) %>%
@@ -2087,7 +2088,27 @@ server <- function(input, output, session) {
       arrange(Appt.MonthYear, SITE) %>%
       `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) #%>%
-      #adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
+    #adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
+    
+    
+    
+    
+    data_over_time <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
+    # data_over_time <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
+    # data_over_time <- uniquePts_df_siteProv(data_over_time, c("Exam"))
+
+    
+    uniquePts_tb_over_time <- data_over_time %>%
+      group_by(SITE, Provider, Appt.MonthYear) %>%
+      summarise(total = n()) %>%
+      arrange(Appt.MonthYear, SITE) %>%
+      `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
+      pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) %>%
+      adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "Total Unique Patients Over Time")
+    
+    uniquePts_tb_over_time <- uniquePts_tb_over_time[,c(1:2,ncol(uniquePts_tb_over_time))]
+    
+    uniquePts_tb <- merge(uniquePts_tb, uniquePts_tb_over_time, by = c("Site", "Provider"))
     
     row_total <- uniquePts_tb %>% 
       split(.[,"Provider"]) %>%  
@@ -2100,8 +2121,8 @@ server <- function(input, output, session) {
       add_header_above(c("Unique Patients Seen per Provider and Month - Exam Visits" = (length(uniquePts_tb)-1)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>%
       row_spec(0, background = "#00aeef", color = "white", bold = T) %>%
-      column_spec(1, bold = T) #%>%
-      #column_spec(length(uniquePts_tb)-1, background = "#00aeef", color = "white", bold = T) 
+      column_spec(1, bold = T) %>%
+      column_spec(length(uniquePts_tb)-1, background = "#00aeef", color = "white", bold = T) 
     
   }
   
