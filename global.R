@@ -162,11 +162,16 @@ MountSinai_cols <- function(...) {
   MountSinai_colors[cols]
 }
 
+
+types_pallete <- c("#00aeef", "#7f7f7f","#3a5fcd", "#5753d0", "#d80b8c", "#e69f00", "#8b814c", "#212070")
+
 # Color Function that can be used to call all colors is "MountSinai_cols()"
 # Use in ggplot 
 
 #MountSinai_cols()       # will provide all colors and their hex codes in a table 
 #MountSinai_cols("pink") # will provide color name and the hex code for the pink color
+
+all_pallete <- c("#212070","#d80b8c","#00aeef","#7f7f7f","#5753d0","#f75dbe","#5cd3ff","#a5a7a5","#c7c6ef", "#fcc9e9","#c9f0ff","#dddedd")
 
 # Create palettes 
 MountSinai_palettes <- list(
@@ -430,6 +435,14 @@ groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, d
 
 
 
+groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
+  return(result)
+}
+
+
+
 groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
   result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
   return(result)
@@ -461,6 +474,22 @@ uniquePts_df_system <- function(dt, visitType){
   
   return(result)
 }
+
+uniquePts_df_system_reversed <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% filter(uniqueSystem == max(uniqueSystem))
+  
+  return(result)
+}
+
+
 
 uniquePts_df_systemMonth <- function(dt, visitType){
   
