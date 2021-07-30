@@ -353,28 +353,28 @@ setDT(historical.data)
 
 ## Other datasets
 
-all.data.rows <- historical.data[Appt.DTTM >= max_date - 365, which = TRUE]
+all.data.rows <- historical.data[Appt.DTTM >= max_date - 1350, which = TRUE]
 
-arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
+arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
                                     Appt.Status %in% c("Arrived"), which = TRUE]
 
-canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
+canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                                         Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
 
-canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
+canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
                                      Appt.Status %in% c("Canceled"), which = TRUE]
 
-bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
+bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                    Appt.Status %in% c("Bumped"), which = TRUE]
 
-rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
+rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                         Appt.Status %in% c("Rescheduled"), which = TRUE]
 
-sameDay.rows <- historical.data[Appt.DTTM >= max_date - 365 &
+sameDay.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
                                Lead.Days == 0, which = TRUE]
 
-noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
+noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                    Appt.Status %in% c("No Show"),
                                  which = TRUE
                                 ]
@@ -383,7 +383,7 @@ noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
 
 arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
 
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
+arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
                                                Appt.Status %in% c("Arrived") &
                                                !(Disease_Group %in% c("No Disease Group")), which = TRUE]
 
