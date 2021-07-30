@@ -516,7 +516,7 @@ server <- function(input, output, session) {
       geom_point(aes(color=Appt.Year), size=3)+
       scale_color_MountSinai('dark')+
       labs(title = paste0(site," ","Annual All Visits"),
-           subtitle = paste0("Based on data from ",min_date," to ",max_date,"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
