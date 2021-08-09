@@ -1231,6 +1231,11 @@ server <- function(input, output, session) {
     header_above <- c("Subtitle" = ncol(final_df))
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
+    
+    months_sorted <- sort(colnames(final_df)[4:(length(final_df)-1)])
+    col_order <- c(colnames(final_df)[1:3], months_sorted, colnames(final_df)[length(final_df)])
+    final_df <- final_df[, col_order]
+    
     final_df %>%
       mutate(`Appointment Type` = cell_spec(`Appointment Type`, italic = ifelse(row_number() %in% indent_rows, T, F), 
                                             font_size = ifelse(row_number() %in% indent_rows, 14, 16))) %>%
