@@ -180,8 +180,8 @@ MountSinai_palettes <- list(
                             "light purple","light pink","light blue","light grey"),
   
   `dark`  = MountSinai_cols("dark purple","dark grey",
-                             "yellow","med pink","dark pink","dark blue",
-                             "med purple","med grey","med blue"),
+                            "yellow","med pink","dark pink","dark blue",
+                            "med purple","med grey","med blue"),
   
   `main`  = MountSinai_cols("dark purple","dark grey","dark pink","dark blue","med purple","med pink","med blue","med grey"),
   
@@ -340,6 +340,14 @@ setwd(wdpath)
 # holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
 
 
+#### Local Data Directories
+historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
+population.data_filtered <- as.data.frame(read_feather("Data/historical_data.feather"))
+holid <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
+
+tool_data_DBC <- historical.data %>% filter(SITE == "DBC") %>% filter(Appt.Year == "2020")
+write_xlsx(tool_data_DBC, "tool_data_DBC.xlsx")
+  
 
 # #### Local Data Directories
 historical.data <- readRDS("Data/historical_data.rds")
@@ -384,11 +392,11 @@ noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
 arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
 
 arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                               Appt.Status %in% c("Arrived") &
-                                               !(Disease_Group %in% c("No Disease Group")), which = TRUE]
-
+                                              Appt.Status %in% c("Arrived") &
+                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
 
 historical.data <- as.data.frame(historical.data)
+
 ### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
@@ -474,21 +482,6 @@ uniquePts_df_system <- function(dt, visitType){
   
   return(result)
 }
-
-uniquePts_df_system_reversed <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% filter(uniqueSystem == max(uniqueSystem))
-  
-  return(result)
-}
-
 
 
 uniquePts_df_systemMonth <- function(dt, visitType){

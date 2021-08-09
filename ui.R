@@ -37,7 +37,7 @@ default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in
                                                       arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
 
 default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                      historical.data$Department %in% default_departments_disease , "Provider"]))
+                                                   historical.data$Department %in% default_departments_disease , "Provider"]))
 
 
 
@@ -106,9 +106,9 @@ ui <- dashboardPage(
                 ),
                 menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
                          menuItem("By System", tabName = "SystemUnique",
-                                 menuSubItem("All", tabName = "systemuniqueAll"),
-                                 menuSubItem("Exam", tabName = "systemuniqueOffice"),
-                                 menuSubItem("Treatment", tabName = "systemuniqueTreatment")),
+                                  menuSubItem("All", tabName = "systemuniqueAll"),
+                                  menuSubItem("Exam", tabName = "systemuniqueOffice"),
+                                  menuSubItem("Treatment", tabName = "systemuniqueTreatment")),
                          menuItem("By Site", tabName = "siteUnique", 
                                   menuSubItem("All", tabName = "uniqueAll"),
                                   menuSubItem("Exam", tabName = "uniqueOffice"),
@@ -358,10 +358,10 @@ ui <- dashboardPage(
                                   actionButton("update_filters6", "CLICK TO UPDATE", width = "75%"),
                                   br(),
                                   br()
-                                  )
+                           )
                          )
                        )),
-
+                
                 column(11,
                        boxPlus(
                          title = "Visit Volume Comparison", width = 12, status = "primary", 
@@ -407,45 +407,45 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                                  box(
-                                    title = "Select Provider Group:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedDisease",label=NULL,
-                                                choices = default_disease_group,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Provider Groups",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_disease_group)),
-                                  box(
-                                    title = "Select Provider:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedProvider",label=NULL,
-                                                choices = default_provider,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Providers",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_provider)),
-                                  column(5,
-                                         actionButton("update_filters1", "CLICK TO UPDATE", width = "75%"),
-                                         br(),
-                                         br()
-                                  )
-                                  )
-                         )),
+                           box(
+                             title = "Select Provider Group:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedDisease",label=NULL,
+                                         choices = default_disease_group,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Provider Groups",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_disease_group)),
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
+                           column(5,
+                                  actionButton("update_filters1", "CLICK TO UPDATE", width = "75%"),
+                                  br(),
+                                  br()
+                           )
+                         )
+                       )),
                 column(11,
                        boxPlus(
                          title = "Physician Visits Breakdown", width = 12, status = "primary", 
@@ -477,7 +477,7 @@ ui <- dashboardPage(
                          column(12,
                                 materialSwitch(
                                   inputId = "sort_unique",
-                                  label = "Oldest to Newest", 
+                                  label = "Oldest to Newest",
                                   right = TRUE,
                                   status = "primary"),
                                 plotOutput("uniqueAllTrendSystem", height = "auto") %>%
@@ -485,7 +485,7 @@ ui <- dashboardPage(
                                 plotOutput("uniqueAllMonthSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
-
+                       
                 )
         ), #Close Unique Patients - All tab
         
@@ -501,12 +501,17 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueOfficeSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
+                                materialSwitch(
+                                  inputId = "sort_unique2",
+                                  label = "Oldest to Newest",
+                                  right = TRUE,
+                                  status = "primary"),
                                 plotOutput("uniqueOfficeTrendSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueOfficeMonthSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
-
+                       
                 )
         ), #Close Unique Patients - Exam tab
         
@@ -522,12 +527,17 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
+                                materialSwitch(
+                                  inputId = "sort_unique5",
+                                  label = "Oldest to Newest",
+                                  right = TRUE,
+                                  status = "primary"),
                                 plotOutput("uniqueTreatmentTrendSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueTreatmentMonthSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
-
+                       
                 )
         ), #Close Ystsem Unique Patients - Treatment tab
         
@@ -546,6 +556,11 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueAllSite", height = "auto", width = 12) %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                                materialSwitch(
+                                  inputId = "sort_unique3",
+                                  label = "Oldest to Newest",
+                                  right = TRUE,
+                                  status = "primary"),
                                 plotOutput("uniqueAllTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllMonthSite", height = "auto") %>%
@@ -566,6 +581,11 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueOfficeSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                                materialSwitch(
+                                  inputId = "sort_unique4",
+                                  label = "Oldest to Newest",
+                                  right = TRUE,
+                                  status = "primary"),
                                 plotOutput("uniqueOfficeTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueOfficeMonthSite", height = "auto") %>%
@@ -586,6 +606,11 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueTreatmentSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                                materialSwitch(
+                                  inputId = "sort_unique6",
+                                  label = "Oldest to Newest",
+                                  right = TRUE,
+                                  status = "primary"),
                                 plotOutput("uniqueTreatmentTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueTreatmentMonthSite", height = "auto") %>%
@@ -604,46 +629,45 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                                  box(
-                                    title = "Select Provider Group:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedDisease2",label=NULL,
-                                                choices = default_disease_group,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Provider Groups",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_disease_group)),
-                                  box(
-                                    title = "Select Provider:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedProvider2",label=NULL,
-                                                choices = default_provider,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Providers",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_provider)),
-
+                           box(
+                             title = "Select Provider Group:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedDisease2",label=NULL,
+                                         choices = default_disease_group,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Provider Groups",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_disease_group)),
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider2",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
                            column(5,
                                   actionButton("update_filters2", "CLICK TO UPDATE", width = "75%"),
                                   br(),
                                   br()
-                                  )
+                           )
                          )
-                         ),
+                       ),
                        boxPlus(
                          title = "Unique Patients by Provider and Month", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
@@ -685,7 +709,7 @@ ui <- dashboardPage(
                                   br(),
                                   br()
                            )
-                           )
+                         )
                        ),
                        boxPlus(
                          title = "Total Unique Patients by Zip Code", width = 12, status = "primary",
@@ -734,31 +758,30 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                                  box(
-                                    title = "Select Provider:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedProvider1",label=NULL,
-                                                choices = default_provider,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Providers",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_provider)),
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider1",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
                            column(9,
                                   actionButton("update_filters3", "CLICK TO UPDATE", width = "42%"),
                                   br(),
                                   br()
-                                 
                            )
                          )
-
-                         ),
+                         
+                       ),
                        boxPlus(
                          title = "Scheduling Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -791,22 +814,22 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                                  box(
-                                    title = "Select Provider:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedProvider4",label=NULL,
-                                                choices = default_provider,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Providers",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_provider)),
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider4",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
                            column(9,
                                   actionButton("update_filters4", "CLICK TO UPDATE", width = "42%"),
                                   br(),
@@ -814,39 +837,39 @@ ui <- dashboardPage(
                            )
                            
                          )
-                         ),       
-                column(6,
-                       boxPlus(
-                         title = "No Shows", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         fluidRow(
-                           valueBoxOutput("avgNoShows2", width = 6) %>%
-                             withSpinner(type = 5, color = "#d80b8c"),
-                           valueBoxOutput("avgNoShowsPerc", width = 6) %>%
-                             withSpinner(type = 5, color = "#d80b8c")), hr(),
-                         fluidRow(
-                           materialSwitch(
-                           inputId = "percent1",
-                           label = "Percent (%)", 
-                           right = TRUE,
-                           status = "primary")),
-                         plotOutput("avgNoShowsDist", height = "600px") %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                         hr(),
-                         plotOutput("noShowLeadDays") %>%
-                           withSpinner(type = 5, color = "#d80b8c"))),
-                column(6,
-                       boxPlus(
-                         title = "Overbooks", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, 
-                         fluidRow(
-                           valueBoxOutput("avgOverbooks", width = 6) %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                           valueBoxOutput("avgOverbooksProv", width = 6) %>%
-                           withSpinner(type = 5, color = "#d80b8c")), hr(),
-                         br(), br(), 
-                         plotOutput("avgOverbooksDist", height = "600px") %>%
-                           withSpinner(type = 5, color = "#d80b8c")))
+                       ),       
+                       column(6,
+                              boxPlus(
+                                title = "No Shows", width = 12, status = "primary",
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                                fluidRow(
+                                  valueBoxOutput("avgNoShows2", width = 6) %>%
+                                    withSpinner(type = 5, color = "#d80b8c"),
+                                  valueBoxOutput("avgNoShowsPerc", width = 6) %>%
+                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
+                                fluidRow(
+                                  materialSwitch(
+                                    inputId = "percent1",
+                                    label = "Percent (%)", 
+                                    right = TRUE,
+                                    status = "primary")),
+                                plotOutput("avgNoShowsDist", height = "600px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"),
+                                hr(),
+                                plotOutput("noShowLeadDays") %>%
+                                  withSpinner(type = 5, color = "#d80b8c"))),
+                       column(6,
+                              boxPlus(
+                                title = "Overbooks", width = 12, status = "primary",
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE, 
+                                fluidRow(
+                                  valueBoxOutput("avgOverbooks", width = 6) %>%
+                                    withSpinner(type = 5, color = "#d80b8c"),
+                                  valueBoxOutput("avgOverbooksProv", width = 6) %>%
+                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
+                                br(), br(), 
+                                plotOutput("avgOverbooksDist", height = "600px") %>%
+                                  withSpinner(type = 5, color = "#d80b8c")))
                 )
                 
         ), # Close No Shows/Overbooks Tab
@@ -861,30 +884,29 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                                  box(
-                                    title = "Select Provider:",
-                                    width = 4,
-                                    height = "100px",
-                                    solidHeader = FALSE,
-                                    pickerInput("selectedProvider5",label=NULL,
-                                                choices = default_provider,
-                                                multiple=TRUE,
-                                                options = pickerOptions(
-                                                  liveSearch = TRUE,
-                                                  actionsBox = TRUE,
-                                                  selectedTextFormat = "count > 1",
-                                                  countSelectedText = "{0}/{1} Providers",
-                                                  dropupAuto = FALSE,
-                                                  size = 10),
-                                                selected = default_provider)),
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider5",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
                            column(9,
                                   actionButton("update_filters5", "CLICK TO UPDATE", width = "42%"),
                                   br(),
                                   br()
                            )
                          )
-
-                         ),
+                       ),
                        boxPlus(
                          title = "Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -925,7 +947,7 @@ ui <- dashboardPage(
                 
         ) # Close Bumps/Cancellations Tab
         
-
+        
         
         # Slot Usage Tab ---------------------------------------------------------------------------------------------------------
         
@@ -975,7 +997,6 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
-
       
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
@@ -1098,7 +1119,7 @@ ui <- dashboardPage(
             sliderInput(
               inputId = "plotWidth",
               label = NULL, 
-              value = 1400, min = 200, max = 2000,
+              value = 1000, min = 200, max = 2000,
               ticks = FALSE
             ),
             fluidRow(
@@ -1243,4 +1264,3 @@ ui <- dashboardPage(
 )# Close Dashboard Page
 
 #shinyApp(ui, server)
-
