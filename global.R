@@ -350,9 +350,9 @@ write_xlsx(tool_data_DBC, "tool_data_DBC.xlsx")
   
 
 # #### Local Data Directories
-# historical.data <- readRDS("Data/historical_data.rds")
-# population.data_filtered <- readRDS("Data/population_data_filtered.rds")
-# holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+historical.data <- readRDS("Data/historical_data.rds")
+population.data_filtered <- readRDS("Data/population_data_filtered.rds")
+holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
 
 
 max_date <- max(historical.data$Appt.DateYear)
@@ -364,28 +364,28 @@ setDT(historical.data)
 all.data.rows <- historical.data[Appt.DTTM >= max_date - 1350, which = TRUE]
 
 arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                       Appt.Status %in% c("Arrived"), which = TRUE]
+                                    Appt.Status %in% c("Arrived"), which = TRUE]
 
 canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                                           Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
+                                                        Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
 
 canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                        Appt.Status %in% c("Canceled"), which = TRUE]
+                                     Appt.Status %in% c("Canceled"), which = TRUE]
 
 bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                      Appt.Status %in% c("Bumped"), which = TRUE]
+                                   Appt.Status %in% c("Bumped"), which = TRUE]
 
 rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                           Appt.Status %in% c("Rescheduled"), which = TRUE]
+                                        Appt.Status %in% c("Rescheduled"), which = TRUE]
 
 sameDay.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                  Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
-                                  Lead.Days == 0, which = TRUE]
+                               Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
+                               Lead.Days == 0, which = TRUE]
 
 noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                      Appt.Status %in% c("No Show"),
-                                    which = TRUE
-]
+                                   Appt.Status %in% c("No Show"),
+                                 which = TRUE
+                                ]
 
 noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
 
@@ -395,8 +395,8 @@ arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                               Appt.Status %in% c("Arrived") &
                                               !(Disease_Group %in% c("No Disease Group")), which = TRUE]
 
-
 historical.data <- as.data.frame(historical.data)
+
 ### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
 ### (6) Shiny App Components Set-up -------------------------------------------------------------------------------
@@ -482,27 +482,6 @@ uniquePts_df_system <- function(dt, visitType){
   
   return(result)
 }
-# 
-# uniquePts_df_system_reversed <- function(dt, visitType){
-#   
-#   if(visitType == "Treatment Visit"){
-#     data <- historical.data[arrived.data.rows,] %>% filter(AssociationListB %in% c("Treatment Visit")) 
-#   } else{
-#     data <- dt %>% filter(AssociationListA %in% visitType) 
-#   }
-#   
-#   # result <- data %>%
-#   #   arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% filter(uniqueSystem == max(uniqueSystem))
-#   
-#   result <- data %>%
-#     arrange(MRN, desc(Appt.DTTM)) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
-#     filter(uniqueSystem == 1)
-#   
-#   return(result)
-# }
-
-
-
 
 
 uniquePts_df_systemMonth <- function(dt, visitType){

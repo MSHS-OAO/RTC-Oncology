@@ -661,7 +661,6 @@ ui <- dashboardPage(
                                            dropupAuto = FALSE,
                                            size = 10),
                                          selected = default_provider)),
-                           
                            column(5,
                                   actionButton("update_filters2", "CLICK TO UPDATE", width = "75%"),
                                   br(),
@@ -779,7 +778,6 @@ ui <- dashboardPage(
                                   actionButton("update_filters3", "CLICK TO UPDATE", width = "42%"),
                                   br(),
                                   br()
-                                  
                            )
                          )
                          
@@ -908,7 +906,6 @@ ui <- dashboardPage(
                                   br()
                            )
                          )
-                         
                        ),
                        boxPlus(
                          title = "Summary", width = 12, status = "primary",
@@ -1000,7 +997,6 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
-      
       
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  

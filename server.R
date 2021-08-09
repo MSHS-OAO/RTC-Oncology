@@ -313,7 +313,7 @@ server <- function(input, output, session) {
     
     prov_choices <-  sort(unique(prov_choices[prov_choices$SITE %in% input$selectedCampus &
                                                 prov_choices$Department %in% input$selectedDepartment, "Provider"]))
-    
+
     updatePickerInput(session,
                       inputId = "selectedProvider1",
                       choices = prov_choices,
@@ -1175,29 +1175,11 @@ server <- function(input, output, session) {
   
   output$provVolumeExam_tb <- function(){
     
-    # 
-    # data <- dataArrived()
-    # 
-    # data <- data %>%
-    #   filter(AssociationListA == "Exam") %>%
-    #   filter(Disease_Group != "No Disease Group") %>% 
-    #   filter(Disease_Group %in% input$selectedDisease)
-    # 
-    # 
-    # 
-    # tele_data <- dataArrived()
-    # 
-    # tele_data <- tele_data %>%
-    #   filter(AssociationListB == "Telehealth Visit") %>%
-    #   filter(Disease_Group != "No Disease Group") %>% 
-    #   filter(Provider %in% input$selectedProvider)
-    
     data <- dataArrived_disease() %>%
       filter(AssociationListA == "Exam")
-    
+
     tele_data <- dataArrived_disease() %>%
       filter(AssociationListB == "Telehealth Visit")
-    
     
     # 
     # data <- historical.data[arrived.data.rows,] %>%
@@ -1377,7 +1359,7 @@ server <- function(input, output, session) {
       labs(y = NULL, x = NULL)+
       theme_minimal() +
       table_theme()
-    
+
     library(patchwork)
     g9 + g10 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
@@ -2158,7 +2140,7 @@ server <- function(input, output, session) {
   
   ## Unique Patients by Provider and Month
   output$uniqueProvMonthExam_tb <- function(){
-    
+
     data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
     
     # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
