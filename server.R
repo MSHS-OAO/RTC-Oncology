@@ -3,7 +3,7 @@ server <- function(input, output, session) {
   output$practiceName_volumetrend <- renderText({
     paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
-    })
+  })
   
   output$practiceName_volumebreakdown <- renderText({
     paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
@@ -148,7 +148,7 @@ server <- function(input, output, session) {
                       choices = disease_choices,
                       selected = disease_choices
     )
-  
+    
     provider_choices <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
                                                           arrivedDisease.data$Department %in% department_choices_disease &
                                                           arrivedDisease.data$Disease_Group %in% disease_choices, "Provider"]))
@@ -309,8 +309,11 @@ server <- function(input, output, session) {
   
   
   observeEvent(list(input$selectedDepartment),{
-    prov_choices <-  sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
-                                                           historical.data$Department %in% input$selectedDepartment, "Provider"]))
+    prov_choices <- historical.data %>% filter(!(Disease_Group %in% c("No Disease Group"))) %>% drop_na(Disease_Group)
+    
+    prov_choices <-  sort(unique(prov_choices[prov_choices$SITE %in% input$selectedCampus &
+                                                prov_choices$Department %in% input$selectedDepartment, "Provider"]))
+    
     updatePickerInput(session,
                       inputId = "selectedProvider1",
                       choices = prov_choices,
@@ -334,7 +337,7 @@ server <- function(input, output, session) {
   
   
   
-
+  
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
@@ -361,10 +364,10 @@ server <- function(input, output, session) {
   
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- eventReactive(list(input$sbm, input$update_filters),{
-     validate(
+    validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
-     )
+    )
     groupByFilters(historical.data[arrived.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
@@ -394,11 +397,11 @@ server <- function(input, output, session) {
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
-  dataArrived_filtered<- eventReactive(list(input$sbm, input$update_filters,input$update_filters5),{
+  dataArrived_filtered<- eventReactive(list(input$sbm, input$update_filters,input$update_filters6),{
     validate(
-     need(input$selectedVisitType != "", "Please select a visit type"),
-     need(input$selectedApptType != "", "Please select a visit type detail"),
-     need(input$selectedTreatmentType != "", "Please select a treatment type")
+      need(input$selectedVisitType != "", "Please select a visit type"),
+      need(input$selectedApptType != "", "Please select a visit type detail"),
+      need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
     groupByFilters_2(dataArrived(),
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType)
@@ -407,7 +410,7 @@ server <- function(input, output, session) {
   
   # Arrived Disease Group data filtered: Disease Group, Provider ==============================================================
   
-  dataArrived_disease <- eventReactive(list(input$sbm, input$update_filters1),{
+  dataArrived_disease <- eventReactive(list(input$sbm, input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedDisease != "", "Please select a provider group"),
       need(input$selectedProvider != "", "Please select a provider")
@@ -416,7 +419,7 @@ server <- function(input, output, session) {
                      input$selectedDisease, input$selectedProvider)
   })
   
-  dataArrived_disease_2 <- eventReactive(list(input$sbm, input$update_filters2),{
+  dataArrived_disease_2 <- eventReactive(list(input$sbm, input$update_filters,input$update_filters2),{
     validate(
       need(input$selectedDisease2 != "", "Please select a provider group"),
       need(input$selectedProvider2 != "", "Please select a provider")
@@ -426,15 +429,15 @@ server <- function(input, output, session) {
   })
   
   # Arrived population data ============================================================================================================
-  dataArrivedPop <- eventReactive(list(input$sbm, input$update_filters, input$selectedProvider),{
+  dataArrivedPop <- eventReactive(list(input$sbm, input$update_filters, input$update_filters7),{
     validate(
       need(input$selectedVisitType != "", "Please select a visit type"),
       need(input$selectedApptType != "", "Please select a visit type detail"),
       need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
-    groupByFilters(population.data_filtered,
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+    groupByFilters_pop(population.data_filtered,
+                       input$selectedCampus, input$selectedDepartment,
+                       input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider7)
   })
   
   # Scheduling  data ============================================================================================================
@@ -445,48 +448,48 @@ server <- function(input, output, session) {
       need(input$selectedDepartment != "", "Please select a Department")
     )
     groupByFilters_4(historical.data[all.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+                     input$selectedCampus, input$selectedDepartment,
+                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataArrivedNoShowsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
     groupByFilters_4(historical.data[arrivedNoShow.data.rows,],
-                   input$selectedCampus, input$selectedDepartment, 
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+                     input$selectedCampus, input$selectedDepartment, 
+                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataArrivedsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
     groupByFilters_4(historical.data[arrived.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+                     input$selectedCampus, input$selectedDepartment,
+                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataBumpedsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
     groupByFilters_4(historical.data[bumped.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+                     input$selectedCampus, input$selectedDepartment,
+                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
-  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  dataCanceledsched <- eventReactive(list(input$sbm, input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters(historical.data[canceled.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+    groupByFilters_4(historical.data[canceled.data.rows,],
+                     input$selectedCampus, input$selectedDepartment,
+                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
   })
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
@@ -494,6 +497,9 @@ server <- function(input, output, session) {
   output$trend_totalvisitsgraph <- renderPlot({
     
     data <- dataArrived()
+    
+    min_date <- min(data$Appt.DateYear)
+    max_date <- max(data$Appt.DateYear)
     
     total_visits <- data %>%
       filter(AssociationListA %in% c("Exam","Treatment","Labs")) %>%
@@ -510,7 +516,7 @@ server <- function(input, output, session) {
       geom_point(aes(color=Appt.Year), size=3)+
       scale_color_MountSinai('dark')+
       labs(title = paste0(site," ","Annual All Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
@@ -539,7 +545,7 @@ server <- function(input, output, session) {
       geom_point(aes(color=Appt.Year), size=3)+
       scale_color_MountSinai('dark')+
       labs(title = paste0(site," ","Annual Exam Visits"), 
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
@@ -567,7 +573,7 @@ server <- function(input, output, session) {
       geom_point(aes(color=Appt.Year), size=3)+
       scale_color_MountSinai('dark')+
       labs(title = paste0(site," ","Annual Treatment Visits"), 
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
@@ -595,7 +601,7 @@ server <- function(input, output, session) {
       geom_point(aes(color=Appt.Year), size=3)+
       scale_color_MountSinai('dark')+
       labs(title = paste0(site," ","Annual Lab Visits"), 
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))+
@@ -608,8 +614,8 @@ server <- function(input, output, session) {
   output$trend_visitstable <- function(){
     
     #options(knitr.kable.NA = "-")
-    data <- dataArrived()
-    #data <- arrived.data
+    # data <- dataArrived()
+    data <- historical.data[arrived.data.rows,]
     #created an if statement to include another table for all of the visit types
     #to show the total volume and the variance per month per year.
     
@@ -688,8 +694,8 @@ server <- function(input, output, session) {
       year1 <- colnames(visits_tb_total)[2]
       year2 <- colnames(visits_tb_total)[3]
       
-      visits_variance_only <- as.data.frame(visits_tb_total[1:month(input$dateRange[2]),4])
-      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(input$dateRange[2]),5])
+      visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4])
+      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),5])
       #visits_variance_only <- as.data.frame(visits_tb_total[1:3,4])
       #visits_variance_percentage <- as.data.frame(visits_tb_total[1:3,5])
       
@@ -736,8 +742,8 @@ server <- function(input, output, session) {
       year3 <- colnames(visits_tb_total)[4]
       
       
-      visits_variance_only <- as.data.frame(visits_tb_total[1:month(input$dateRange[2]),4:5])
-      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(input$dateRange[2]),6])
+      visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4:5])
+      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),6])
       #visits_variance_only <- as.data.frame(visits_tb_total[1:3,4:5])
       #visits_variance_percentage <- as.data.frame(visits_tb_total[1:3,6])
       
@@ -803,7 +809,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","All Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -820,8 +826,12 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
+    
+    total_visits_break$AssociationListA <- factor(total_visits_break$AssociationListA, levels = c("Exam","Treatment","Labs"))
+    
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total, color = AssociationListA)) +
-      scale_color_MountSinai('dark' )+
+      #scale_color_MountSinai('dark' )+
+      scale_color_manual(values = c("#5cd3ff", "#d80b8c","#212070"))+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
@@ -861,7 +871,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","Exam Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -878,8 +888,13 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
+    total_visits_break$AssociationListB <- factor(total_visits_break$AssociationListB, levels = c("Established Visit","New Visit","Telehealth Visit"))
+    
+    total_in_list <- length(unique(total_visits_break$AssociationListB))
+    
     g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total, color = AssociationListB)) +
-      scale_color_MountSinai('dark' )+
+      #scale_color_MountSinai('dark')+
+      scale_color_manual(values = all_pallete[total_in_list:1])+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
@@ -928,7 +943,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","Treatment Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
       theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -945,8 +960,17 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
+    
+    factor_levels = c("Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")
+    
+    total_visits_break$AssociationListT <- factor(total_visits_break$AssociationListT, levels = factor_levels)
+    
+    list_length <- length(unique(total_visits_break$AssociationListT))
+    
+    
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total, color = AssociationListT)) +
-      scale_color_MountSinai('dark')+
+      #scale_color_MountSinai('dark')+
+      scale_color_manual(values = types_pallete[1:8])+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = 'bold')+
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
@@ -1048,7 +1072,7 @@ server <- function(input, output, session) {
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       scale_fill_MountSinai('dark')+
       labs(title = paste0(site, " Monthly ",visitType, " Volume Breakdown by ",input$comp_choices),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            caption = paste0("\n*Includes ",apptType),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
@@ -1135,7 +1159,7 @@ server <- function(input, output, session) {
     graph + 
       scale_color_MountSinai('dark')+
       labs(title = paste0(site, " Monthly ",visitType, " Volume Trend by ",input$comp_choices),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            caption = paste0("\n*Includes ",apptType),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
@@ -1151,18 +1175,37 @@ server <- function(input, output, session) {
   
   output$provVolumeExam_tb <- function(){
     
+    # 
+    # data <- dataArrived()
+    # 
+    # data <- data %>%
+    #   filter(AssociationListA == "Exam") %>%
+    #   filter(Disease_Group != "No Disease Group") %>% 
+    #   filter(Disease_Group %in% input$selectedDisease)
+    # 
+    # 
+    # 
+    # tele_data <- dataArrived()
+    # 
+    # tele_data <- tele_data %>%
+    #   filter(AssociationListB == "Telehealth Visit") %>%
+    #   filter(Disease_Group != "No Disease Group") %>% 
+    #   filter(Provider %in% input$selectedProvider)
+    
     data <- dataArrived_disease() %>%
       filter(AssociationListA == "Exam")
     
     tele_data <- dataArrived_disease() %>%
       filter(AssociationListB == "Telehealth Visit")
+    
+    
     # 
     # data <- historical.data[arrived.data.rows,] %>%
     #   filter(AssociationListA == "Exam", SITE %in% c("DBC"))
     # 
     # tele_data <- historical.data[arrived.data.rows,] %>%
     #   filter(AssociationListB == "Telehealth Visit", SITE %in% c("DBC"))
-
+    
     prov_tb <- data %>% 
       group_by(Disease_Group, Provider, AssociationListB,  Appt.MonthYear) %>%
       summarise(total = n())  %>%
@@ -1176,7 +1219,7 @@ server <- function(input, output, session) {
              Provider = ifelse(Provider == "-", lag(Provider, 1), Provider),
              `Appointment Type` = ifelse(`Appointment Type` == "-", "Exam Total", `Appointment Type`)) %>%
       arrange(-desc(Disease))
-
+    
     tele_tb <- tele_data %>% 
       group_by(Disease_Group, Provider, Appt.Type, Appt.MonthYear) %>%
       summarise(total = n()) %>%
@@ -1203,7 +1246,7 @@ server <- function(input, output, session) {
     
     indent_rows <- which(final_df$`Appointment Type` %in% unique(tele_tb$`Appointment Type`))
     
-    header_above <- c("Subtitle" = 8)
+    header_above <- c("Subtitle" = ncol(final_df))
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
     final_df %>%
@@ -1287,45 +1330,50 @@ server <- function(input, output, session) {
   
   ## Unique MRN  over Time (Months)
   output$uniqueAllTrendSystem <- renderPlot({
-    
+
     data <- uniquePts_df_system(dataArrived(), c("Exam","Labs","Treatment"))
-    # data <- uniquePts.all.data
-    
-    if(length(unique(data$SITE)) == length(default_campus)){
-      site <- "System"
-    } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
-    }
     
     unique <- data %>%
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
     if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    if(input$sort_unique == FALSE){
+      g9 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1))
+      g10 <-  ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total))
+      
+    }else{
+      g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
+      g10 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      
+    }
+    
+    g9 <- g9+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time"),
-           subtitle = paste0("Based on ", site," data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site," data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g10 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g10 <- g10+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
       geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
+      scale_x_discrete(position = "top") +
       labs(y = NULL, x = NULL)+
       theme_minimal() +
       table_theme()
@@ -1352,20 +1400,32 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
-    g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique == FALSE){
+      g11 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1))
+      g12 <-  ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total))
+      
+    }else{
+      g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
+      g12 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      
+    }
+    
+    g11 <- g11+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month"),
-           subtitle = paste0("Based on ", site, "data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site, "data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g12 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g12 <- g12+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
@@ -1396,7 +1456,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Total Unique Patients by Site"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       #theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1424,7 +1484,7 @@ server <- function(input, output, session) {
   output$uniqueAllTrendSite <- renderPlot({
     
     data <- uniquePts_df_site(dataArrived(), c("Exam","Labs","Treatment"))
-    # data <- uniquePts.all.data
+    # data <- uniquePts_df_site(historical.data[arrived.data.rows,], c("Exam","Labs","Treatment"))
     
     if(length(unique(data$SITE)) == length(default_campus)){
       site <- "System"
@@ -1436,13 +1496,19 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique3 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
+    
     g9 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Unique Patients by Site over Time"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
@@ -1450,7 +1516,7 @@ server <- function(input, output, session) {
     # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
     #            nudge_x = 0.1, size=5)
     
-    g10 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+    g10 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE))+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
@@ -1482,7 +1548,6 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
-    
     sum <- unique %>% summarise(sum = sum(total))
     unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
     
@@ -1492,15 +1557,18 @@ server <- function(input, output, session) {
     max_col <- function(data) sapply(data, max, na.rm = TRUE)
     max_tot_site <- max_col(unique_)
     
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
     
-    
+    if(input$sort_unique3 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
     
     g11 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
       labs(title = paste0("Unique Patients by Site and Month"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1560,20 +1628,32 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
-    g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique2 == FALSE){
+      g15 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1))
+      g16 <-  ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total))
+      
+    }else{
+      g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
+      g16 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      
+    }
+    
+    g15 <- g15+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Exam Visits"),
-           subtitle = paste0("Based on ", site,  "data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site,  "data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g16 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g16 <- g16 +
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
@@ -1605,20 +1685,32 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
-    g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique2 == FALSE){
+      g17 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1))
+      g18 <-  ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total))
+      
+    }else{
+      g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
+      g18 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      
+    }
+    
+    g17 <- g17+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month - Exam Visits"),
-           subtitle = paste0("Based on ", site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site, " data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g18 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g18 <- g18+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
@@ -1649,7 +1741,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Total Unique Patients by Site - Exam Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1687,20 +1779,26 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
-    g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique4 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
+    
+    g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE)) +
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Unique Patients by Site over Time - Exam Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
     # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
     #            nudge_x = 0.1, size=5)
     
-    g16 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+    g16 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE))+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
@@ -1720,7 +1818,7 @@ server <- function(input, output, session) {
   output$uniqueOfficeMonthSite <- renderPlot({
     
     data <- uniquePts_df_siteMonth(dataArrived(), c("Exam"))
-    # data <- uniquePts.office.data
+    #data <- uniquePts_df_siteMonth(historical.data[arrived.data.rows,], c("Exam"))
     
     if(length(unique(data$SITE)) == 9){
       site <- "System"
@@ -1732,11 +1830,20 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    sum <- unique %>% summarise(sum = sum(total))
+    unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
+    
     #to get the upper limit for the y_continuous
     unique_ <- unique %>% spread(SITE, total)
     unique_$Appt.MonthYear <- NULL
     max_col <- function(data) sapply(data, max, na.rm = TRUE)
     max_tot_site <- max_col(unique_)
+    
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique4 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
     
     g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
@@ -1744,16 +1851,16 @@ server <- function(input, output, session) {
       scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
       
       labs(title = paste0("Unique Patients by Site and Month - Exam Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
+      geom_text(data=subset(unique, total/sum > .1),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
     
-    g18 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+    g18 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE))+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
@@ -1803,20 +1910,31 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
-    g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique5 == FALSE){
+      g21 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1)) 
+      g22 <-  ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total)) 
+   
+    }else{
+      g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1)) 
+      g22 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) 
+    }
+    
+    g21 <- g21+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Treatment Visits"),
-           subtitle = paste0("Based on ", site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ", site, " data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g22 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g22 <- g22+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
@@ -1847,20 +1965,31 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear) %>%
       summarise(total = n())
     
-    g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))+
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique5 == FALSE){
+      g23 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y=total, group=1))
+      g24 <- ggplot(unique, aes(x=factor(Appt.MonthYear, levels = rev(as.vector(Appt.MonthYear))), y= "System", label= total)) 
+   
+    }else{
+      g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
+      g24 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) 
+    }
+    
+    g23 <- g23+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month  - Treatment Visits"),
-           subtitle = paste0("Based on ",site, " data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on ",site, " data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
                  nudge_x = 0.1, size=5)
     
-    g24 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total)) +
+    g24 <- g24+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = c(2.5), colour='black')+
@@ -1890,7 +2019,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Total Unique Patients by Site - Treatment Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -1928,13 +2057,19 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique6 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
+    
     g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE, color=SITE))+
       geom_line(size=1.1)+
       geom_point(size=3)+
       scale_color_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("Unique Patients by Site over Time - Treatment Visit"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))
@@ -1942,7 +2077,7 @@ server <- function(input, output, session) {
     #            nudge_x = 0.1, size=5)
     
     
-    g22 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE)) +
+    g22 <- ggplot(unique, aes(x=Appt.MonthYear, y= SITE, label=total, group = SITE, color = SITE))+
       scale_color_MountSinai('dark')+
       geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
       geom_hline(yintercept = seq(0.5, length(unique(unique$SITE)), by= 1)[-1], colour='black')+
@@ -1961,7 +2096,7 @@ server <- function(input, output, session) {
   output$uniqueTreatmentMonthSite <- renderPlot({
     
     data <- uniquePts_df_siteMonth(dataArrived(), c("Treatment Visit"))
-    # data <- uniquePts_df(arrived.data, c("Treatment Visit"))
+    # data <- uniquePts_df_siteMonth(historical.data[arrived.data.rows,], c("Treatment Visit"))
     
     if(length(unique(data$SITE)) == 9){
       site <- "System"
@@ -1973,24 +2108,32 @@ server <- function(input, output, session) {
       group_by(Appt.MonthYear, SITE) %>%
       summarise(total = n())
     
+    sum <- unique %>% summarise(sum = sum(total))
+    unique <- inner_join(unique,sum, by = c("Appt.MonthYear"))
+    
     #to get the upper limit for the y_continuous
     unique_ <- unique %>% spread(SITE, total)
     unique_$Appt.MonthYear <- NULL
     max_col <- function(data) sapply(data, max, na.rm = TRUE)
     max_tot_site <- max_col(unique_)
     
+    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    
+    if(input$sort_unique6 == FALSE){
+      unique$Appt.MonthYear <- factor(unique$Appt.MonthYear, levels = rev(unique(unique$Appt.MonthYear)), ordered = TRUE)
+    }
+    
     g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,sum(max_tot_site)*1.2))+
-      
       labs(title = paste0("Unique Patients by Site and Month - Treatment Visits"),
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2],"\n"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
       
-      geom_text(aes(label=total), color="white", 
+      geom_text(data=subset(unique, total/sum > 0.1),aes(label=total), color="white", 
                 size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
                    size=5, fontface="bold.italic")
@@ -2012,53 +2155,42 @@ server <- function(input, output, session) {
   
   ## Unique Patients by Provider - Breakdown Tab -----------------------------------------------------------------------------------
   ## Unique Patients by Provider
-  output$uniqueProvExam_tb <- function(){
-    
-    data <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
-    
-    uniquePts_tb <- data %>%
-      group_by(SITE, Provider, Appt.MonthYear) %>%
-      summarise(total = n()) %>%
-      arrange(Appt.MonthYear, SITE) %>%
-      `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
-      pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) %>%
-      adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
-    
-    row_total <- uniquePts_tb %>% 
-      split(.[,"Provider"]) %>%  
-      map_df(., janitor::adorn_totals, name = paste0("Provider Month Total"))
-    
-    kable(uniquePts_tb[,2:length(uniquePts_tb)]) %>%
-      pack_rows(index = table(uniquePts_tb$Site), label_row_css = "background-color: #fcc9e9;") %>%
-      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
-      add_header_above(c("Unique Patients Seen per Provider - Exam Visits" = (length(uniquePts_tb)-1)),
-                       color = "black", font_size = 20, align = "center", line = FALSE) %>%
-      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
-      column_spec(1, bold = T) %>%
-      column_spec(length(uniquePts_tb)-1, background = "#d80b8c", color = "white", bold = T) 
-    
-  }
   
   ## Unique Patients by Provider and Month
   output$uniqueProvMonthExam_tb <- function(){
     
     data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
     
-    # data <- uniquePts_df_siteProvMonth(arrivedDisease.data, c("Exam")) %>%
-    #   filter(uniqueSiteProvMonth == 1)
-    
+    # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
+    # data <- uniquePts_df_siteProvMonth(data, c("Exam"))
+
     uniquePts_tb <- data %>%
       group_by(SITE, Provider, Appt.MonthYear) %>%
       summarise(total = n()) %>%
       arrange(Appt.MonthYear, SITE) %>%
       `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
+      pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) #%>%
+    #adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
+    
+    data_over_time <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
+    # data_over_time <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
+    # data_over_time <- uniquePts_df_siteProv(data_over_time, c("Exam"))
+    
+    uniquePts_tb_over_time <- data_over_time %>%
+      group_by(SITE, Provider, Appt.MonthYear) %>%
+      summarise(total = n()) %>%
+      arrange(Appt.MonthYear, SITE) %>%
+      `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) %>%
-      adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
+      adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "Total Unique Patients Over Time")
+    
+    uniquePts_tb_over_time <- uniquePts_tb_over_time[,c(1:2,ncol(uniquePts_tb_over_time))]
+    
+    uniquePts_tb <- merge(uniquePts_tb, uniquePts_tb_over_time, by = c("Site", "Provider"))
     
     row_total <- uniquePts_tb %>% 
       split(.[,"Provider"]) %>%  
       map_df(., janitor::adorn_totals, name = paste0("Provider Month Total"))
-    
     
     kable(uniquePts_tb[,2:length(uniquePts_tb)]) %>%
       pack_rows(index = table(uniquePts_tb$Site), label_row_css = "background-color: #c9f0ff;") %>%
@@ -2284,7 +2416,7 @@ server <- function(input, output, session) {
     long_is_ref <-  which(zip_table$`Zip Code Layer` == "Long Island")
     northern_ny_ref <-  which(zip_table$`Zip Code Layer` == "Northern New York")
     header_above <- c("Subtitle" = 3)
-    names(header_above) <- paste0(c("Based on data from "),c(input$dateRange[1]),c(" to "),c(input$dateRange[2]))
+    names(header_above) <- paste0(c("Based on data from "),c(isolate(input$dateRange[1])),c(" to "),c(isolate(input$dateRange[2])))
     
     zip_table %>%
       kable(escape = F, 
@@ -2364,7 +2496,7 @@ server <- function(input, output, session) {
     valueBox(
       #prettyNum(round(nrow(dataNoShow() %>% filter(Appt.Status %in% c("No Show"))) / length(unique(dataArrived()$Appt.DateYear)),0), big.mark = ","),
       paste0(prettyNum(round(nrow(dataArrivedNoShowsched() %>% filter(Appt.Status != "Arrived")) / 
-                        nrow(dataArrivedNoShow()), 2)*100, big.mark = ","), "%"),
+                               nrow(dataArrivedNoShow()), 2)*100, big.mark = ","), "%"),
       subtitle = tags$p("% of INCOMPLETE APPOINTMENTS", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
@@ -2398,7 +2530,7 @@ server <- function(input, output, session) {
       scale_fill_manual(values=MountSinai_pal("all")(10))+
       labs(x=NULL, y=NULL,
            title = "Avg Daily No Shows and Same-day \nBumped/Canceled/Rescheduled Appointments",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
       theme_new_line()+
       theme_bw()+
       graph_theme("none")+ theme(axis.text.x = element_text(angle = 0, hjust = 0.5))+
@@ -2409,7 +2541,7 @@ server <- function(input, output, session) {
   
   
   
-
+  
   
   # ## Average Daily Visits Arrived
   # output$avgArrived <- renderValueBox({
@@ -2437,7 +2569,7 @@ server <- function(input, output, session) {
   
   ## Average Scheduled vs. Arrived Patients Pattern
   output$avgPtArrival <- renderPlot({
-
+    
     data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
     
@@ -2471,7 +2603,7 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("maroon1","midnightblue"))+
       labs(x=NULL, y=NULL,
            title = "Average Scheduled* vs. Arrived Patients",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*Scheduled = Arrived + No Show Patients")+
       theme_new_line()+
       theme_bw()+
@@ -2504,7 +2636,7 @@ server <- function(input, output, session) {
       geom_line(size=1.2)+
       labs(x=NULL, y=NULL,
            title = "Average Patients Arrived* by Time of Day and Day of Week",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*Based on scehduled appointment time.")+
       scale_color_MountSinai("main")+
       guides(colour = guide_legend(nrow = 1))+
@@ -2589,7 +2721,7 @@ server <- function(input, output, session) {
       group_by(Provider, Appt.DateYear, Time) %>%
       dplyr::summarise(total = n()-1) %>%
       filter(total > 1) 
-
+    
     valueBox(
       round(sum(overbooks$total)/length(unique(data$Appt.DateYear))/length(unique(data$Provider)), 1),
       subtitle = tags$p("AVG DAILY OVERBOOKS PER PROVIDER", style = "font-size: 130%;"), icon = NULL, color = "yellow"
@@ -2598,10 +2730,10 @@ server <- function(input, output, session) {
   
   ## No Show Breakdown 
   output$noShowBreakdown <- renderPlot({
-
+    
     data <- dataArrivedNoShowsched()
     # data <- arrivedNoShow.data
-
+    
     data$Appt.Status[which(data$Appt.Status == "Bumped")] <- "Same-day Bumped"
     data$Appt.Status[which(data$Appt.Status == "Canceled")] <- "Same-day Canceled"
     data$Appt.Status[which(data$Appt.Status == "Rescheduled")] <- "Same-day Rescheduled"
@@ -2611,11 +2743,11 @@ server <- function(input, output, session) {
       group_by(Appt.Status) %>%
       summarise(Total = n()) %>%
       mutate(Appt.Status = fct_reorder(Appt.Status, Total),
-        avg = round(Total/length(unique(data$Appt.DateYear))),
+             avg = round(Total/length(unique(data$Appt.DateYear))),
              prop = (avg / sum(avg))*100) %>%
       arrange(-prop) %>%
       mutate(ypos = cumsum(prop))
-
+    
     ggplot(breakdown, aes(x=1, y=prop, fill=Appt.Status)) +
       geom_col() +
       geom_text(aes(x=1,y = ypos-prop/2, label=paste0(avg,"\n(",round(prop),"%)"))) +
@@ -2624,16 +2756,16 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('blue')+
       labs(x=NULL, y=NULL,
            title = "No Show Breakdown",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
       theme(plot.title = element_text(face = "bold", size = 20, hjust=0.5),
             plot.subtitle = element_text(size = 15, face = "italic",hjust=0.5))
-
+    
   })
-
+  
   
   ## No Shows by Time of Day and Day of Week 
   output$avgNoShowsDist <- renderPlot({
-
+    
     data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("Arrived","No Show"))
     # data <- arrivedNoShow.data
     
@@ -2660,11 +2792,11 @@ server <- function(input, output, session) {
         scale_y_discrete(limits = rev(unique(sort(noShow_count.df$Time))))+
         labs(x=NULL, y=NULL,
              title = "Average Daily No Shows*",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
              caption = "*No Show Rate = No Show / (Arrived + No Show)")+
         geom_tile(aes(fill=avgNoShows), colour = "black", size=0.5)+
         geom_text(aes(label= ifelse(is.na(avgNoShows),"",avgNoShows)), color="black", size=5, fontface="bold")
-        
+      
     }else{
       
       noShow_perc <- data %>%
@@ -2684,11 +2816,11 @@ server <- function(input, output, session) {
         scale_y_discrete(limits = rev(unique(sort(noShow_perc.df$Time))))+
         labs(x=NULL, y=NULL,
              title = "Average Daily Percent of No Show*",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
              caption = "*No Show Rate = No Show / (Arrived + No Show)")+
         geom_tile(aes(fill=percentage), colour = "black", size=0.5)+
         geom_text(aes(label= ifelse(is.na(percentage),"",paste0(percentage,"%"))), color="black", size=5, fontface="bold")
-     
+      
     }
     
     noShowDist + 
@@ -2723,7 +2855,7 @@ server <- function(input, output, session) {
       filter(total > 1) %>%
       group_by(Appt.Day, Appt.TM.Hr) %>%
       dplyr::summarise(total = sum(total))
-
+    
     days <- unique(data[,c("Appt.Day","Appt.DateYear")])
     days <- days %>% group_by(Appt.Day) %>% dplyr::summarise(days = n())
     
@@ -2743,7 +2875,7 @@ server <- function(input, output, session) {
       scale_x_discrete(position = "top")+
       labs(x=NULL, y=NULL,
            title = "Average Daily Overbooks*",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*Overbooks are defined as all Arrived/No Show Appointments \nscheduled in the same time slots.")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
             plot.subtitle = element_text(hjust=0.5, size = 14),
@@ -2768,7 +2900,7 @@ server <- function(input, output, session) {
     
     data <- dataArrivedNoShowsched() %>% filter(Appt.Status %in% c("Arrived", "No Show")) %>%
       mutate(apptLeadDays = as.numeric(round(difftime(Appt.DTTM, Appt.Made.DTTM,  units = "days"),2))) 
-
+    
     # data <- historical.data[arrivedNoShow.data.rows,] %>% filter(Appt.Status %in% c("Arrived", "No Show")) %>%
     #   mutate(apptLeadDays = as.numeric(round(difftime(Appt.DTTM, Appt.Made.DTTM,  units = "days"),2))) 
     # 
@@ -2806,7 +2938,7 @@ server <- function(input, output, session) {
            # caption = "*No Show includes no show and same-day bumped,
            # canceled, and rescheduled appointments.",
            title = "Average No Show Rate by \nLead Days to Appointment*",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
       scale_y_continuous(labels=scales::percent_format(accuracy=1),limits = c(0,max(noShows_bar_tb$value)*1.2))+
       theme_new_line()+
       theme_bw()+
@@ -2875,14 +3007,14 @@ server <- function(input, output, session) {
       scale_fill_manual(values=MountSinai_pal("all")(10))+
       labs(x=NULL, y=NULL,
            title = "Bumped/Canceled/Rescheduled Rate*",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*% of Total Appointments Scheduled.")+
       theme_new_line()+
       theme_bw()+
       graph_theme("none")+ theme(axis.text.x = element_text(angle = 0, hjust = 0.5))+
       geom_text(aes(label=paste0(round(percent*100),"%")), hjust = 0.5, vjust = -1, color="black", fontface="bold",
                 position = position_dodge(1), size=5)
-      
+    
     
   })
   
@@ -2908,7 +3040,7 @@ server <- function(input, output, session) {
       scale_fill_manual(values=c("grey","#00aeef","#d80b8c","midnightblue"))+
       labs(x=NULL, y=NULL,
            title = "% of Bumped/Canceled/Rescheduled \nAppointments by Lead Days*",
-           subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]),
+           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*Time from appointment scheduled to status changed.")+
       scale_y_continuous(labels = scales::percent_format(accuracy = 1))+
       guides(colour = guide_legend(nrow = 1))+
@@ -3000,7 +3132,7 @@ server <- function(input, output, session) {
         coord_flip()+
         labs(x=NULL, y=NULL,
              title = "Top 10 Bumped Reasons by Lead Days",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
         scale_fill_gradient(low = "white", high = "#d80b8c", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
                             name="Total Bumped Appointments\n by Lead Days")+
         geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5)
@@ -3014,9 +3146,9 @@ server <- function(input, output, session) {
         coord_flip()+
         labs(x=NULL, y=NULL,
              title = "Top 10 Bumped Reasons by Lead Days",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
         scale_fill_gradient(low = "white", high = "#d80b8c", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
-                           name="% of Total Bumped \nAppointments by Lead Days")+
+                            name="% of Total Bumped \nAppointments by Lead Days")+
         geom_text(aes(label= ifelse(is.na(percent),"",paste0(percent,"%"))), color="black", size=5, fontface="bold")
       
     }
@@ -3075,7 +3207,7 @@ server <- function(input, output, session) {
         coord_flip()+
         labs(x=NULL, y=NULL,
              title = "Top 10 Canceled Reasons by Lead Days",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
         scale_fill_gradient(low = "white", high = "#00aeef", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
                             name="Total Canceled Appointments\n by Lead Days")+
         geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5)
@@ -3089,7 +3221,7 @@ server <- function(input, output, session) {
         coord_flip()+
         labs(x=NULL, y=NULL,
              title = "Top 10 Canceled Reasons by Lead Days",
-             subtitle = paste0("Based on data from ",input$dateRange[1]," to ",input$dateRange[2]))+
+             subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])))+
         scale_fill_gradient(low = "white", high = "#00aeef", space = "Lab", na.value = "#dddedd", guide = "colourbar", 
                             name="% of Total Canceled \nAppointments by Lead Days")+
         geom_text(aes(label= ifelse(is.na(percent),"",paste0(percent,"%"))), color="black", size=5)
@@ -3115,14 +3247,9 @@ server <- function(input, output, session) {
   
   
   
- 
+  
   
   
   
   
 } # Close Server
-
-
-
-
-

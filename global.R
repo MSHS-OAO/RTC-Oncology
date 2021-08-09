@@ -162,11 +162,16 @@ MountSinai_cols <- function(...) {
   MountSinai_colors[cols]
 }
 
+
+types_pallete <- c("#00aeef", "#7f7f7f","#3a5fcd", "#5753d0", "#d80b8c", "#e69f00", "#8b814c", "#212070")
+
 # Color Function that can be used to call all colors is "MountSinai_cols()"
 # Use in ggplot 
 
 #MountSinai_cols()       # will provide all colors and their hex codes in a table 
 #MountSinai_cols("pink") # will provide color name and the hex code for the pink color
+
+all_pallete <- c("#212070","#d80b8c","#00aeef","#7f7f7f","#5753d0","#f75dbe","#5cd3ff","#a5a7a5","#c7c6ef", "#fcc9e9","#c9f0ff","#dddedd")
 
 # Create palettes 
 MountSinai_palettes <- list(
@@ -175,8 +180,8 @@ MountSinai_palettes <- list(
                             "light purple","light pink","light blue","light grey"),
   
   `dark`  = MountSinai_cols("dark purple","dark grey",
-                             "yellow","med pink","dark pink","dark blue",
-                             "med purple","med grey","med blue"),
+                            "yellow","med pink","dark pink","dark blue",
+                            "med purple","med grey","med blue"),
   
   `main`  = MountSinai_cols("dark purple","dark grey","dark pink","dark blue","med purple","med pink","med blue","med grey"),
   
@@ -330,13 +335,21 @@ setwd(wdpath)
 
 
 ##Data on Rconnect
-historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
-population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-
+# historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
+# population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
+# holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
 
 
 #### Local Data Directories
+historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
+population.data_filtered <- as.data.frame(read_feather("Data/historical_data.feather"))
+holid <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
+
+tool_data_DBC <- historical.data %>% filter(SITE == "DBC") %>% filter(Appt.Year == "2020")
+write_xlsx(tool_data_DBC, "tool_data_DBC.xlsx")
+  
+
+# #### Local Data Directories
 # historical.data <- readRDS("Data/historical_data.rds")
 # population.data_filtered <- readRDS("Data/population_data_filtered.rds")
 # holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
@@ -348,39 +361,39 @@ setDT(historical.data)
 
 ## Other datasets
 
-all.data.rows <- historical.data[Appt.DTTM >= max_date - 365, which = TRUE]
+all.data.rows <- historical.data[Appt.DTTM >= max_date - 1350, which = TRUE]
 
-arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
-                                    Appt.Status %in% c("Arrived"), which = TRUE]
+arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                       Appt.Status %in% c("Arrived"), which = TRUE]
 
-canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
-                                                        Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
+canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                                           Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
 
-canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
-                                     Appt.Status %in% c("Canceled"), which = TRUE]
+canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                        Appt.Status %in% c("Canceled"), which = TRUE]
 
-bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
-                                   Appt.Status %in% c("Bumped"), which = TRUE]
+bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                      Appt.Status %in% c("Bumped"), which = TRUE]
 
-rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
-                                        Appt.Status %in% c("Rescheduled"), which = TRUE]
+rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                           Appt.Status %in% c("Rescheduled"), which = TRUE]
 
-sameDay.rows <- historical.data[Appt.DTTM >= max_date - 365 &
-                               Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
-                               Lead.Days == 0, which = TRUE]
+sameDay.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                  Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
+                                  Lead.Days == 0, which = TRUE]
 
-noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 365 &
-                                   Appt.Status %in% c("No Show"),
-                                 which = TRUE
-                                ]
+noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                      Appt.Status %in% c("No Show"),
+                                    which = TRUE
+]
 
 noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
 
 arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
 
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 365 & 
-                                               Appt.Status %in% c("Arrived") &
-                                               !(Disease_Group %in% c("No Disease Group")), which = TRUE]
+arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                              Appt.Status %in% c("Arrived") &
+                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
 
 
 historical.data <- as.data.frame(historical.data)
@@ -430,6 +443,14 @@ groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, d
 
 
 
+groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
+  return(result)
+}
+
+
+
 groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
   result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
   return(result)
@@ -461,6 +482,28 @@ uniquePts_df_system <- function(dt, visitType){
   
   return(result)
 }
+# 
+# uniquePts_df_system_reversed <- function(dt, visitType){
+#   
+#   if(visitType == "Treatment Visit"){
+#     data <- historical.data[arrived.data.rows,] %>% filter(AssociationListB %in% c("Treatment Visit")) 
+#   } else{
+#     data <- dt %>% filter(AssociationListA %in% visitType) 
+#   }
+#   
+#   # result <- data %>%
+#   #   arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% filter(uniqueSystem == max(uniqueSystem))
+#   
+#   result <- data %>%
+#     arrange(MRN, desc(Appt.DTTM)) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
+#     filter(uniqueSystem == 1)
+#   
+#   return(result)
+# }
+
+
+
+
 
 uniquePts_df_systemMonth <- function(dt, visitType){
   
@@ -584,3 +627,4 @@ valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL,
 }
 
 default_campus <- unique(historical.data$SITE)
+arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
