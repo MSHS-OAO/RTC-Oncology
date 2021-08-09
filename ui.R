@@ -1069,8 +1069,7 @@ ui <- dashboardPage(
                         options = pickerOptions(
                           liveSearch = TRUE,
                           actionsBox = TRUE,
-                          dropupAuto = FALSE),
-                        selected = unique(holid$holiday)
+                          dropupAuto = FALSE)
             )
           ),
           
