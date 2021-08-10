@@ -614,8 +614,8 @@ server <- function(input, output, session) {
   output$trend_visitstable <- function(){
     
     #options(knitr.kable.NA = "-")
-    # data <- dataArrived()
-    data <- historical.data[arrived.data.rows,]
+     data <- dataArrived()
+    #data <- historical.data[arrived.data.rows,]
     #created an if statement to include another table for all of the visit types
     #to show the total volume and the variance per month per year.
     
@@ -657,7 +657,8 @@ server <- function(input, output, session) {
     visits_ytd <- visits_tb
     visits_ytd[is.na(visits_ytd)] = 0  
     visits_ytd$Appt.Month <- NULL
-    visits_ytd <- visits_ytd[1:month(input$dateRange[2]),]
+    #visits_ytd <- visits_ytd[1:month(input$dateRange[2]),]
+    visits_ytd <- visits_ytd[1:2,]
     visits_ytd <- as.data.frame(colSums(visits_ytd))
     visits_ytd <- as.data.frame(t(as.matrix(visits_ytd)))
     visits_ytd <- cbind(Appt.Month = "YTD Comparison",visits_ytd)
@@ -677,7 +678,7 @@ server <- function(input, output, session) {
       column_names <- c("Month", paste0(year1))
       header_above <- c("Total Visit Volume" = 2)
       names(header_above) <- paste(c(input$annualVolSummary), c("Visit Volume"))
-      
+      rownames(visits_tb_total) <- NULL
       
       column_border <- c(1, 2)
       
