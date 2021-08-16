@@ -2339,7 +2339,7 @@ server <- function(input, output, session) {
   output$zipCode_tb <- function(){
     
     data <- dataArrivedPop()
-    data <- population.data_filtered
+    #data <- population.data_filtered
     
     if(input$selectedZipCodeMap == "System"){
       if(input$selectedZipCodeMap2 == "All"){
