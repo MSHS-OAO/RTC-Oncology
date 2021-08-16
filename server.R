@@ -2590,7 +2590,7 @@ server <- function(input, output, session) {
       scale_linetype_manual(values=c("dashed","solid"))+
       scale_color_manual(values=c("maroon1","midnightblue"))+
       labs(x=NULL, y=NULL,
-           title = "Average Scheduled* vs. Arrived Patients",
+           title = "Average Scheduled* vs. Average Arrived Patients",
            subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2])),
            caption = "*Scheduled = Arrived + No Show Patients")+
       theme_new_line()+
