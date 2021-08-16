@@ -1090,7 +1090,8 @@ ui <- dashboardPage(
                         options = pickerOptions(
                           liveSearch = TRUE,
                           actionsBox = TRUE,
-                          dropupAuto = FALSE)
+                          dropupAuto = FALSE),
+                        selected = NULL
             )
           ),
           
