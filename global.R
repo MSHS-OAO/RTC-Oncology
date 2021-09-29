@@ -341,17 +341,20 @@ setwd(wdpath)
 
 
 #### Local Data Directories
-historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
-population.data_filtered <- as.data.frame(read_feather("Data/historical_data.feather"))
-holid <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
+#historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
+#historical.data <- readRDS("Data/historical_data.rds")
+#population.data_filtered <- as.data.frame(read_feather("Data/historical_data.feather"))
+#holid <- as.data.frame(read_feather(here::here("Data/historical_data.feather")))
 
-tool_data_DBC <- historical.data %>% filter(SITE == "DBC") %>% filter(Appt.Year == "2020")
-write_xlsx(tool_data_DBC, "tool_data_DBC.xlsx")
+#holid <- readRDS(here::here("Data/historical_data.rds"))
+
+# tool_data_DBC <- historical.data %>% filter(SITE == "DBC") %>% filter(Appt.Year == "2020")
+# write_xlsx(tool_data_DBC, "tool_data_DBC.xlsx")
   
 
 # #### Local Data Directories
-historical.data <- readRDS("Data/historical_data.rds")
-population.data_filtered <- readRDS("Data/population_data_filtered.rds")
+historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
+population.data_filtered <- as.data.frame(read_feather("Data/population_data_filtered.feather"))
 holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
 
 
@@ -359,30 +362,32 @@ max_date <- max(historical.data$Appt.DateYear)
 
 setDT(historical.data)
 
+min_date <- "2021-01-01"
+
 ## Other datasets
 
-all.data.rows <- historical.data[Appt.DTTM >= max_date - 1350, which = TRUE]
+all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
 
-arrived.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
                                     Appt.Status %in% c("Arrived"), which = TRUE]
 
 canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
                                                         Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
 
-canceled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
                                      Appt.Status %in% c("Canceled"), which = TRUE]
 
-bumped.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
                                    Appt.Status %in% c("Bumped"), which = TRUE]
 
-rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
                                         Appt.Status %in% c("Rescheduled"), which = TRUE]
 
-sameDay.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+sameDay.rows <- historical.data[Appt.DTTM >= min_date &
                                Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
                                Lead.Days == 0, which = TRUE]
 
-noshow.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
                                    Appt.Status %in% c("No Show"),
                                  which = TRUE
                                 ]
@@ -391,9 +396,15 @@ noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
 
 arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
 
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 & 
+arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
                                               Appt.Status %in% c("Arrived") &
                                               !(Disease_Group %in% c("No Disease Group")), which = TRUE]
+
+
+####TREND 
+
+arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                       Appt.Status %in% c("Arrived"), which = TRUE]
 
 historical.data <- as.data.frame(historical.data)
 

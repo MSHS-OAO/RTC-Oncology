@@ -42,14 +42,13 @@ default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% defau
 
 
 
-dateRange_min <- min(historical.data$Appt.DateYear) 
+#dateRange_min <- min(historical.data$Appt.DateYear) 
+#dateRange_min <- min(historical.data[all.data.rows,])
 dateRange_min_default <- as.Date("2021-01-01")
 #dateRange_min_default <- min(historical.data$Appt.DateYear) 
 dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
-# holid <- unique(holid$holiday)
-# default_appttypes <- NULL
-# default_treattype <- NULL
+dateRangetrend_min <- min(historical.data[arrived.data.rows.trend,]$Appt.DateYear)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Oncology Analytics Tool",
@@ -199,7 +198,7 @@ ui <- dashboardPage(
                                        p("The data used in this dashboard is pulled from the Epic Clarity database using the slot and access data tables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
                                       The master file including the department, PRC, provider, zip code, and disease group mappings as well as the LOS exclusions used in this analytics tool can be downloaded from the hyperlink below.",
                                          style = "font-size:16px"),
-                                       a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 7.20.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px")
+                                       a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 9.17.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px")
                               ))
                        # column(12,
                        #        tags$div(id = "home_usage",
@@ -475,7 +474,7 @@ ui <- dashboardPage(
                          column(12,
                                 materialSwitch(
                                   inputId = "sort_unique",
-                                  label = "Oldest to Newest",
+                                  label = "Newest to Oldest",
                                   right = TRUE,
                                   status = "primary"),
                                 plotOutput("uniqueAllTrendSystem", height = "auto") %>%
@@ -501,7 +500,7 @@ ui <- dashboardPage(
                          column(12,
                                 materialSwitch(
                                   inputId = "sort_unique2",
-                                  label = "Oldest to Newest",
+                                  label = "Newest to Oldest",
                                   right = TRUE,
                                   status = "primary"),
                                 plotOutput("uniqueOfficeTrendSystem", height = "auto") %>%
@@ -527,7 +526,7 @@ ui <- dashboardPage(
                          column(12,
                                 materialSwitch(
                                   inputId = "sort_unique5",
-                                  label = "Oldest to Newest",
+                                  label = "Newest to Oldest",
                                   right = TRUE,
                                   status = "primary"),
                                 plotOutput("uniqueTreatmentTrendSystem", height = "auto") %>%
@@ -967,31 +966,31 @@ ui <- dashboardPage(
                                                 left: 25px;
                                                 top: 53px;
                                                 height 85%}"))),
-      tags$head(tags$style(HTML("#update_filters1 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters1 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
-      tags$head(tags$style(HTML("#update_filters2 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters2 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
-      tags$head(tags$style(HTML("#update_filters3 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters3 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
-      tags$head(tags$style(HTML("#update_filters4 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters4 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
-      tags$head(tags$style(HTML("#update_filters5 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters5 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
-      tags$head(tags$style(HTML("#update_filters6 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters6 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
-      tags$head(tags$style(HTML("#update_filters7 {background-color: #00aeef;
+      tags$head(tags$style(HTML("#update_filters7 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
@@ -1048,26 +1047,36 @@ ui <- dashboardPage(
                         selected = default_departments
             )
           ),
-          box(
-            title = "Select Date Range:",
-            width = 12, 
-            height = "100px",
-            solidHeader = FALSE, 
-            dateRangeInput("dateRange", label = NULL,
-                           start = dateRange_min_default, end = dateRange_max,
-                           min = dateRange_min, max = dateRange_max
+          conditionalPanel(
+            condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+        input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
+        input.sbm == `bookedFilled` | 
+        input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
+        input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
+        input.sbm == 'zipCode'",
+              box(
+                title = "Select Date Range:",
+                width = 12, 
+                height = "100px",
+                solidHeader = FALSE, 
+                dateRangeInput("dateRange", label = NULL,
+                               start = dateRange_min_default, end = dateRange_max,
+                               min = dateRange_min_default, max = dateRange_max
+                )
             )
-            # fluidRow(
-            #   column(12, offset = 2,
-            #          radioGroupButtons(
-            #            inputId = "dateRangePreset",
-            #            #label = "Choices", 
-            #            choices = c("3M", "6M", "1Y"),
-            #            #status = "primary"
-            #            selected = character(0)
-            #          )
-            #   )
-            # )
+          ),
+          conditionalPanel(
+            condition = "input.sbm == 'volumetrend'",
+            box(
+              title = "Select Date Range:",
+              width = 12, 
+              height = "100px",
+              solidHeader = FALSE, 
+              dateRangeInput("dateRangetrend", label = NULL,
+                             start = dateRangetrend_min, end = dateRange_max,
+                             min = dateRangetrend_min, max = dateRange_max
+              )
+            )
           ),
           box(
             title = "Select Days of Week:",
@@ -1110,6 +1119,7 @@ ui <- dashboardPage(
          input.sbm == 'zipCode'",
         br(),
         dropdown(
+        conditionalPanel(condition = "input.sbm == 'uniqueAll'",
           box(
             title = "Change Width:",
             width = 12,
@@ -1126,7 +1136,8 @@ ui <- dashboardPage(
                      actionButton("resetwidth", "Reset")
               )
             )
-          ),
+          )
+        ),
           box(
             title = "Change Height:",
             width = 12,
