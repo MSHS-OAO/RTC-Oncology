@@ -42,13 +42,21 @@ default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% defau
 
 
 
+
+
 #dateRange_min <- min(historical.data$Appt.DateYear) 
 #dateRange_min <- min(historical.data[all.data.rows,])
 dateRange_min_default <- as.Date("2021-01-01")
+dateRange_min_default_unique <- as.Date("2021-01-01")
 #dateRange_min_default <- min(historical.data$Appt.DateYear) 
 dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
-dateRangetrend_min <- min(historical.data[arrived.data.rows.trend,]$Appt.DateYear)
+#today <- Sys.Date()
+
+dateRangetrend_min <- as.Date("2019-01-01")
+
+dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+  
 
 ui <- dashboardPage(
   dashboardHeader(title = "Oncology Analytics Tool",
@@ -472,11 +480,6 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueAllSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                materialSwitch(
-                                  inputId = "sort_unique",
-                                  label = "Newest to Oldest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueAllTrendSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllMonthSystem", height = "auto") %>%
@@ -498,11 +501,6 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueOfficeSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                materialSwitch(
-                                  inputId = "sort_unique2",
-                                  label = "Newest to Oldest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueOfficeTrendSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueOfficeMonthSystem", height = "auto") %>%
@@ -513,7 +511,7 @@ ui <- dashboardPage(
         ), #Close Unique Patients - Exam tab
         
         tabItem(tabName = "systemuniqueTreatment",
-                div("System Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("System Unique Patients - Treatment Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_systemuniqueTreatment"),
                 tags$head(tags$style("#practiceName_systemuniqueTreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
@@ -524,11 +522,6 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                materialSwitch(
-                                  inputId = "sort_unique5",
-                                  label = "Newest to Oldest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueTreatmentTrendSystem", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueTreatmentMonthSystem", height = "auto") %>%
@@ -553,18 +546,13 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueAllSite", height = "auto", width = 12) %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                materialSwitch(
-                                  inputId = "sort_unique3",
-                                  label = "Oldest to Newest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueAllTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllMonthSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
                        )
                 )
-        ), #Close Unique Patients - All tab
+        ), #Close Unique Patients - Exam tab
         
         tabItem(tabName = "uniqueOffice",
                 div("Site Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -578,11 +566,6 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueOfficeSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                materialSwitch(
-                                  inputId = "sort_unique4",
-                                  label = "Oldest to Newest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueOfficeTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueOfficeMonthSite", height = "auto") %>%
@@ -592,7 +575,7 @@ ui <- dashboardPage(
         ), #Close Unique Patients - Exam tab
         
         tabItem(tabName = "uniqueTreatment",
-                div("Site Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Site Unique Patients - Treatment Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_uniqueTreatment"),
                 tags$head(tags$style("#practiceName_uniqueTreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
@@ -603,11 +586,6 @@ ui <- dashboardPage(
                          column(12,
                                 plotOutput("uniqueTreatmentSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                materialSwitch(
-                                  inputId = "sort_unique6",
-                                  label = "Oldest to Newest",
-                                  right = TRUE,
-                                  status = "primary"),
                                 plotOutput("uniqueTreatmentTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueTreatmentMonthSite", height = "auto") %>%
@@ -1050,12 +1028,10 @@ ui <- dashboardPage(
           conditionalPanel(
             condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
-        input.sbm == `bookedFilled` | 
-        input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
-        input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
-        input.sbm == 'zipCode'",
+        input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
+        input.sbm == 'zipCode'" ,
               box(
-                title = "Select Date Range:",
+                title = "Select Date Range:", 
                 width = 12, 
                 height = "100px",
                 solidHeader = FALSE, 
@@ -1075,6 +1051,21 @@ ui <- dashboardPage(
               dateRangeInput("dateRangetrend", label = NULL,
                              start = dateRangetrend_min, end = dateRange_max,
                              min = dateRangetrend_min, max = dateRange_max
+              )
+            )
+          ),
+          
+          conditionalPanel(
+            condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueAll'| input.sbm == 'systemuniqueTreatment' |
+                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
+            box(
+              title = "Select Date Range:",
+              width = 12,
+              height = "100px",
+              solidHeader = FALSE,
+              dateRangeInput("dateRangeunique", label = NULL,
+                             start = dateRange_min_default_unique, end = unique_max,
+                             min = unique_min, max = unique_max
               )
             )
           ),

@@ -124,6 +124,229 @@ suppressMessages({
   library(reactable)
 })
 
+
+
+
+# (7) Data Reactive functions ---------------------------------------------------------------------------------
+
+## Filtered Scheduling Data
+
+groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
+  return(result)
+}
+
+
+
+groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
+  return(result)
+}
+
+
+
+groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
+  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
+  return(result)
+}
+
+groupByFilters_3 <- function(dt, diseaseGroup, provider){
+  result <- dt %>% filter(Disease_Group != "No Disease Group") %>% filter(Disease_Group %in% diseaseGroup, Provider %in% provider)
+  return(result)
+}
+
+groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
+  return(result)
+}
+
+## Unique Patients Functions  -----------------------------------------------------------------
+uniquePts_df_system <- function(dt, visitType){
+
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+    # name <- ifelse(visitType == "Exam", "exam",
+    #                ifelse(visitType == "Treatment","treatment", "all"), "none")
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
+  filter(uniqueSystem == 1)
+  
+
+  #names(result)[names(result) == "uniqueSystem"] <- paste0("sys_unique_",name)
+  #names(result)[names(result) == "uniqueSystem"] <- name
+  
+  
+  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSystem","Appt.Day", "holiday")]
+  #result <- result$uniqueId
+  return(result)
+}
+
+
+# uniquePts_df_system_rev <- function(dt, visitType){
+#   
+#   if(visitType == "Treatment Visit"){
+#     data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+#   } else{
+#     data <- dt %>% filter(AssociationListA %in% visitType) 
+#   }
+#   
+#   result <- data %>%
+#     arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% filter(uniqueSystem == max(uniqueSystem)) %>% ungroup() 
+#   
+#   return(result)
+# }
+
+
+uniquePts_df_systemMonth <- function(dt, visitType, name){
+
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit"))
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM) %>% group_by(MRN, Appt.MonthYear) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
+    filter(uniqueSystemMonth == 1)
+  
+
+  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSystemMonth","Appt.Day", "holiday")]
+  
+  return(result)
+}
+
+# uniquePts_df_systemMonth_rev <- function(dt, visitType){
+#   
+#   if(visitType == "Treatment Visit"){
+#     data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+#   } else{
+#     data <- dt %>% filter(AssociationListA %in% visitType) 
+#   }
+#   
+#   result <- data %>%
+#     arrange(MRN, Appt.DTTM) %>% group_by(MRN, Appt.MonthYear) %>% mutate(uniqueSystemMonth = row_number()) %>% filter(uniqueSystemMonth == max(uniqueSystemMonth))  %>% ungroup() 
+#   
+#   return(result)
+# }
+
+
+uniquePts_df_site <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, SITE) %>% mutate(uniqueSite = row_number()) %>% ungroup() %>%
+    filter(uniqueSite == 1) 
+  
+  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSite","Appt.Day", "holiday")]
+  
+  return(result)
+}
+
+uniquePts_df_siteMonth <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, Appt.MonthYear, SITE) %>% mutate(uniqueSiteMonth = row_number()) %>% ungroup() %>%
+    filter(uniqueSiteMonth == 1) 
+  
+  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSiteMonth","Appt.Day", "holiday")]
+  
+  return(result)
+}
+
+uniquePts_df_siteProv <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, EPIC_Provider_ID, Appt.DTTM, SITE) %>% group_by(MRN, EPIC_Provider_ID, SITE) %>% mutate(uniqueSiteProv = row_number()) %>% ungroup() %>%
+    filter(uniqueSiteProv == 1)
+  
+  return(result)
+}
+
+uniquePts_df_siteProvMonth <- function(dt, visitType){
+  
+  if(visitType == "Treatment Visit"){
+    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
+  } else{
+    data <- dt %>% filter(AssociationListA %in% visitType) 
+  }
+  
+  result <- data %>%
+    arrange(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% group_by(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% 
+    mutate(uniqueSiteProvMonth = row_number()) %>% ungroup() %>% filter(uniqueSiteProvMonth== 1) 
+  
+  return(result)
+}
+
+
+### Function for Value Boxes ------------------------------------------------------------------
+valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
+                          icon = NULL, color = "aqua", width = 4, href = NULL){
+  
+  shinydashboard:::validateColor(color)
+  
+  if (!is.null(icon))
+    shinydashboard:::tagAssert(icon, type = "i")
+  
+  info_icon <- tags$small(
+    tags$i(
+      class = "fa fa-info-circle fa-lg",
+      title = info,
+      `data-toggle` = "tooltip",
+      style = "color: rgba(255, 255, 255, 0.75);"
+    ),
+    # bs3 pull-right 
+    # bs4 float-right
+    class = "pull-right float-right"
+  )
+  
+  boxContent <- div(
+    class = paste0("small-box bg-", color),
+    div(
+      class = "inner",
+      h4(title),
+      if (!is.null(sparkobj)) info_icon,
+      h3(value),
+      if (!is.null(sparkobj)) sparkobj,
+      em(subtitle)
+    ),
+    # bs3 icon-large
+    # bs4 icon
+    if (!is.null(icon)) div(class = "icon-large icon", icon, style = "z-index; 0")
+  )
+  
+  if (!is.null(href)) 
+    boxContent <- a(href = href, boxContent)
+  
+  div(
+    class = if (!is.null(width)) paste0("col-sm-", width), 
+    boxContent
+  )
+}
+
 # ### (0) Maximize R Memory Size 
 memory.limit(size = 8000000)
 
@@ -360,6 +583,14 @@ holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
 
 max_date <- max(historical.data$Appt.DateYear)
 
+
+# 
+# ####Unique Patient Processing 
+# 
+# historical.data <- uniquePts_df_system(historical.data, c("Exam"))
+
+
+
 setDT(historical.data)
 
 min_date <- "2021-01-01"
@@ -406,7 +637,19 @@ arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date &
 arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
                                        Appt.Status %in% c("Arrived"), which = TRUE]
 
+
+
+##### Unique
+arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
+                                             Appt.Status %in% c("Arrived"), which = TRUE]
+
+
+
+
+
 historical.data <- as.data.frame(historical.data)
+unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 
 ### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
@@ -442,179 +685,25 @@ Day <- rep(daysOfWeek.options, each = 24)
 byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
 
 
-# (7) Data Reactive functions ---------------------------------------------------------------------------------
 
-## Filtered Scheduling Data
-
-groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
-  return(result)
-}
-
-
-
-groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
-  return(result)
-}
-
-
-
-groupByFilters_2 <- function(dt, visitType, apptType, treatmentType){
-  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType)
-  return(result)
-}
-
-groupByFilters_3 <- function(dt, diseaseGroup, provider){
-  result <- dt %>% filter(Disease_Group != "No Disease Group") %>% filter(Disease_Group %in% diseaseGroup, Provider %in% provider)
-  return(result)
-}
-
-groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
-  return(result)
-}
-
-## Unique Patients Functions  -----------------------------------------------------------------
-uniquePts_df_system <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
-    filter(uniqueSystem == 1)
-  
-  return(result)
-}
-
-
-uniquePts_df_systemMonth <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN, Appt.MonthYear) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
-    filter(uniqueSystemMonth == 1)
-  
-  return(result)
-}
-
-uniquePts_df_site <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, SITE) %>% mutate(uniqueSite = row_number()) %>% ungroup() %>%
-    filter(uniqueSite == 1) 
-  
-  return(result)
-}
-
-uniquePts_df_siteMonth <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, Appt.MonthYear, SITE) %>% mutate(uniqueSiteMonth = row_number()) %>% ungroup() %>%
-    filter(uniqueSiteMonth == 1) 
-  
-  return(result)
-}
-
-uniquePts_df_siteProv <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, EPIC_Provider_ID, Appt.DTTM, SITE) %>% group_by(MRN, EPIC_Provider_ID, SITE) %>% mutate(uniqueSiteProv = row_number()) %>% ungroup() %>%
-    filter(uniqueSiteProv == 1)
-  
-  return(result)
-}
-
-uniquePts_df_siteProvMonth <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% group_by(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% 
-    mutate(uniqueSiteProvMonth = row_number()) %>% ungroup() %>% filter(uniqueSiteProvMonth== 1) 
-  
-  return(result)
-}
-
-
-### Function for Value Boxes ------------------------------------------------------------------
-valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
-                          icon = NULL, color = "aqua", width = 4, href = NULL){
-  
-  shinydashboard:::validateColor(color)
-  
-  if (!is.null(icon))
-    shinydashboard:::tagAssert(icon, type = "i")
-  
-  info_icon <- tags$small(
-    tags$i(
-      class = "fa fa-info-circle fa-lg",
-      title = info,
-      `data-toggle` = "tooltip",
-      style = "color: rgba(255, 255, 255, 0.75);"
-    ),
-    # bs3 pull-right 
-    # bs4 float-right
-    class = "pull-right float-right"
-  )
-  
-  boxContent <- div(
-    class = paste0("small-box bg-", color),
-    div(
-      class = "inner",
-      h4(title),
-      if (!is.null(sparkobj)) info_icon,
-      h3(value),
-      if (!is.null(sparkobj)) sparkobj,
-      em(subtitle)
-    ),
-    # bs3 icon-large
-    # bs4 icon
-    if (!is.null(icon)) div(class = "icon-large icon", icon, style = "z-index; 0")
-  )
-  
-  if (!is.null(href)) 
-    boxContent <- a(href = href, boxContent)
-  
-  div(
-    class = if (!is.null(width)) paste0("col-sm-", width), 
-    boxContent
-  )
-}
 
 default_campus <- unique(historical.data$SITE)
 arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
+
+
+
+### Uniqie Patietns
+historical.data.unique.exam <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.exam.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.all <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.all.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.treatment <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
+historical.data.unique.treatment.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
+
+
+historical.data.site.exam.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.exam <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.all.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
+historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
