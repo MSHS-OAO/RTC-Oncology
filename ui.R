@@ -14,6 +14,8 @@ default_campus <- unique(historical.data$SITE)
 campus_choices <- sort(unique(historical.data$SITE))
 
 default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
+default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                      historical.data$Department %in% default_departments, "Dx.Grouper"])) 
 
 default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"])) 
 
@@ -36,12 +38,24 @@ default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in
                                                       arrivedDisease.data$Department %in% default_departments_disease &
                                                       arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
 
+default_dx_grouper_zip <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
+                                                      arrivedDisease.data$Department %in% default_departments_disease &
+                                                      arrivedDisease.data$Disease_Group %in% default_disease_group &
+                                                      arrivedDisease.data$Provider %in%   default_provider, "Dx.Grouper"]))
+
 default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
                                                    historical.data$Department %in% default_departments_disease , "Provider"]))
 
+default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
+                                                              historical.data$Department %in% default_departments, "Provider"])),
+                                           stringsAsFactors=FALSE
+                                  )
+
+default_provider_utilization <- as.character(t(inner_join(default_provider_utilization, all_provider)))
 
 
-
+util_date_start = min(utilization.data$Appt.DateYear)
+util_date_end = max(utilization.data$Appt.DateYear)
 
 
 #dateRange_min <- min(historical.data$Appt.DateYear) 
@@ -53,16 +67,92 @@ dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 #today <- Sys.Date()
 
-dateRangetrend_min <- as.Date("2019-01-01")
+dateRangetrend_min <- as.Date("2021-01-01")
 
 dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
 
+header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
+                            disable = FALSE,
+                            titleWidth = 400,
+                            tags$li(class = "dropdown", actionButton("download1",
+                                                                     label = icon("download")
+                            )
+                            ),
+                            
+                            tags$li(class = "dropdown",
+                                    dropdown(
+                                      box(
+                                        title = "Name preset input:",
+                                        width = 12,
+                                        height = "100px",
+                                        solidHeader = FALSE,
+                                        textInput("filter_name", label = NULL)
+                                      ), br(), br(), br(), br(), br(),
+                                      actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
+                                      style = "material-circle", size = "lg", right = TRUE, status = "default",
+                                      icon = icon("save"), width = "300px",
+                                      inputId = "dropdownbutton4"
+                                    )
+                            ),
+                            
+                            tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
+                                                                     width = 12,
+                                                                     height = "100px",
+                                                                     solidHeader = FALSE,
+                                                                     pickerInput("filter_list", choices = NULL, multiple = TRUE,
+                                                                                 selected = NULL, options = pickerOptions(maxOptions = 1)
+                                                                     )
+                            ), br(), br(), br(), br(), br(),
+                            actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
+                            actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
+                            style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            icon = icon("star"), width = "300px",
+                            tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+                            inputId = "dropdownbutton3"
+                            ), 
+                            )
+                            
+                            #)
+                            
+)
+
+
+
+header$children[[2]]$children[[2]] <- header$children[[2]]$children[[1]]
+header$children[[2]]$children[[1]] <-  tags$a(href='https://peak.mountsinai.org/',
+                                              tags$img(src='Sinai_logo_white.png',height='100%',width='30%'))
+
 ui <- dashboardPage(
-  dashboardHeader(title = "Oncology Analytics Tool",
-                  titleWidth = 250),
+
+  header,
+  
   # Sidebar ------------------------------------------------------------------------------------------------------
   dashboardSidebar(
+    tags$head(tags$style(HTML("#save_filters {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))), 
+    tags$head(tags$style(HTML("#update_filters0 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+    tags$head(tags$style(HTML("#remove_filters {background-color: #221f72;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute;
+                                                left: 25px}"))),
+    
+    tags$head(tags$style(HTML("#dropdownbutton4 {color: #fff;
+                                                   background-color: #212070;
+                                                   box-shadow: none;
+                                                }"))),
+    tags$head(tags$style(HTML("#dropdownbutton3 {color: #fff;
+                                                   background-color: #212070;
+                                                   box-shadow: none;
+                                                }"))),
     # Customize dashboard color scheme: title bar = .logo & .navbar; side bar = .main-sidebar; background = .content-wrapper
     tags$head(tags$style(HTML('.logo {
                               background-color: #221f72 !important;
@@ -103,13 +193,10 @@ ui <- dashboardPage(
                  background: rgba(255, 255, 255, 0);
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
-                menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
-                         menuItem("By Site", tabName = "siteVolume",
-                                  menuSubItem("Trend", tabName = "volumetrend"),
-                                  menuSubItem("Breakdown", tabName = "volumebreakdown"),
-                                  menuSubItem("Comparison", tabName = "volumecomparison")),
-                         menuItem("By Provider", tabName = "providerVolume",
-                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"))
+                menuItem("Scheduling", tabName = "scheduling", icon = icon("user-clock"),
+                         menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
+                         menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
+                         menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
                 ),
                 menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
                          menuItem("By System", tabName = "SystemUnique",
@@ -124,11 +211,17 @@ ui <- dashboardPage(
                                   menuSubItem("Exam", tabName = "provUniqueExam")),
                          menuItem("By Zip Code", tabName = "zipCode")
                 ),
-                menuItem("Scheduling", tabName = "scheduling", icon = icon("user-clock"),
-                         menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
-                         menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
-                         menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
-                )#,
+                menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
+                         menuItem("By Site", tabName = "siteVolume",
+                                  menuSubItem("Trend", tabName = "volumetrend"),
+                                  menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                                  menuSubItem("Comparison", tabName = "volumecomparison")),
+                         menuItem("By Provider", tabName = "providerVolume",
+                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"))
+                ),
+                menuItem("Utilization", tabName = "utilization", icon = icon("percent")
+                )
+                
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
                 #)
@@ -151,6 +244,28 @@ ui <- dashboardPage(
     ) # Close sidebarMenu
   ), # Close Dashboard Sidebar
   dashboardBody(
+    
+    tags$head(tags$style(HTML("
+    .logo {
+    image-rendering: -webkit-optimize-contrast;
+    
+    }
+                    "))),
+    # 
+    # box "status" color for Mount Sinai Grey
+    tags$style(HTML("
+    .box.box-solid.box-warning>.box-header {
+    color:#000000;
+    background:#e5e6e5
+    }
+    .box.box-solid.box-warning{
+    border-bottom-color:#e5e6e5;
+    border-left-color:#e5e6e5;
+    border-right-color:#e5e6e5;
+    border-top-color:#e5e6e5;
+    }
+                    ")),
+    
     tags$head(tags$style(
       HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
     )),
@@ -186,38 +301,69 @@ ui <- dashboardPage(
         # HomePage ------------------------------------------------------------------------------------------------------------------
         tabItem(tabName = "homepage",
                 column(12,
-                       div("About Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                       # setBackgroundImage(
+                       #   src = "MS_RGB_Vrtl_test.png", shinydashboard = TRUE
+                       # ),
+                       div("Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                       tags$div(id = "home_text",
+                                HTML("<p>Version: 1.0 <br> Last Updated: 9/16/2021</p>")
+                       ),
+                       tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: -4em; margin-left: 20px}")), 
+                       br(), br(),
+                       tags$image(src = "Sinai_logo_color.png", height = "200px", width = "300px", alt = "Something went wrong", deleteFiles = FALSE),
+                       fluidRow(
+                         column(4,
+                                box(
+                                  title = p("About this Tool", style = "font-size:34px; font-weight:bold"), width = 12,  height = "400px", status = "warning", solidHeader = TRUE,
+                                  p("- Oncology Analytics Tool is a system-wide analytics tool that 
+                                aims to provide analytical solutions to help", strong("drive data-driven decisions and operational improvements."), style = "font-size:22px"),
+                                  p("- Oncology Analytics Tool provides", strong("current state assessment and historical trending"), "of key operational metrics.", style = "font-size:22px")
+                                )),
+                         
+                         column(4,
+                                tags$div(id = "home_data",
+                                         box(
+                                           title = p("Data Sources", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
+                                           p("Oncology Analytics Tool is developed based on the following data from EPIC Clarity:", style = "font-size:22px; font-weight: bold"),
+                                           p("1. ", strong("Scheduling Data"), " provides scheduling details on arrived, bumped, canceled, no show, and rescheduled appointments.", style = "font-size:22px"),
+                                           # p("2. ", strong("Slot Availability Data"), " provides slot level details inlcuding booked and filled hours and slots.", style = "font-size:22px"),
+                                         ))),
+                         
+                         column(4,
+                                tags$div(id = "home_mapping",
+                                         box(
+                                           title = p("Reference Files", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
+                                           # p("- Metrics Overview:", style = "font-size:22px; font-weight: bold"),
+                                           # a(href = "Mappings/Metrics_Overview.pdf",target='blank', 'Click to View', download = 'Ambulatory Care Analysis Tool - Metric Overview.pdf', style = "font-size:22px"),
+                                           # p("- Metric Definitions and Analysis Methodology:", style = "font-size:20px; font-weight: bold"),
+                                           # a(href = "Mappings/Analysis Methodology.xlsx",target='blank', 'Click to Download', download = 'Ambulatory Care Analysis Tool - Metric definitions.xlsx', style = "font-size:22px"),
+                                           # p("- EPIC Site, Specialty, Department, and Provider Breakdown:", style = "font-size:20px; font-weight: bold"),
+                                           # a(href = "Mappings/Master Mapping File.xlsx",target='blank', 'Click to Download', download = 'Ambulatory Analytics Tool - Mappings.xlsx', style = "font-size:22px"),
+                                           p("- Mapping File:", style = "font-size:22px; font-weight: bold"),
+                                           a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
+                                         )))
+                       ),
                        
-                       tags$div( id = "home_text",
-                                 HTML("<p>Version: 1.0 <br> Last Updated: 8/16/2021</p>")
-                       ),
-                       tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), 
-                       column(12,
-                              tags$div(id = "home_description",
-                                       h3("Description"),
-                                       p("This is a centralized analytics tool that includes all necessary KPIs and metrics that will
-                                 allow the users to identify operational opportunities, make data-driven decisions, and
-                                 track improvements", style = "font-size:16px")
-                              )
-                       ),
-                       column(12,
-                              tags$div(id = "home_data",
-                                       h3("Data Sources"),
-                                       p("The data used in this dashboard is pulled from the Epic Clarity database using the slot and access data tables, named CRREPORT_REP.Y_DM_BOOKED_FILLED_RATE and CRREPORT_REP.MV_DM_PATIENT_ACCESS respectively.
-                                      The master file including the department, PRC, provider, zip code, and disease group mappings as well as the LOS exclusions used in this analytics tool can be downloaded from the hyperlink below.",
-                                         style = "font-size:16px"),
-                                       a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 9.17.2021.xlsx",target='blank', 'Oncology Master Mapping File', download = 'Oncology Master Mappings.xlsx', style = "font-size:16px")
-                              ))
-                       # column(12,
-                       #        tags$div(id = "home_usage",
-                       #                 h3("Usage"), 
-                       #                 #img(src = "homepage.png", width = "500px"),
-                       #                 br(),
-                       #                 p("Section 1 contains the sidebar menu where all the different tabs are listed"),
-                       #                 p("Section 2 includes the name of the tab currently being looked at as well as the date ranges that the tab is showing"),
-                       #                 p("Section 3 included the filter menu, it is hiearchical meaning the filter choices are based off the previously selected choices. The filters effect all the the outputs in the tab.  Below the filter dropdown menu is the download button which allows the user to save all the graphs and tables on the currently viewed tab as a PNG.")
-                       #                 
-                       #        ))
+                       # fluidRow(
+                       #   column(6,
+                       #          tags$div(id = "home_video",
+                       #                   box(
+                       #                     title = p("How to Use this Tool", style = "font-size:34px; font-weight:bold"), width = 12, status = "warning", solidHeader = TRUE,
+                       #                     shiny::tags$video(src = "Quick_HowtoUse_Amb Care Tool_Intro.mp4", type = "video/mp4",  autoplay = 'autoplay',
+                       #                                       controls = 'controls', width = "700px", height = "550px",
+                       #                                       style="display: block; margin-left: auto; margin-right: auto"),
+                       #                     p("For any technical issues, please reach out to OAO@mssm.edu.", 
+                       #                       style = "font-size:18px; font-style: italic")))),
+                         # column(6,
+                         #        tags$div(id = "home_use_case",
+                         #                 box(
+                         #                   title = p("Targeted Use", style = "font-size:34px; font-weight:bold"), width = 12, status = "warning", solidHeader = TRUE,
+                         #                   p("Data-driven insights and findings obtained from this tool should be used in conjunction with the learnings from the Ambulatory Care Academy to achieve operational improvements.", 
+                         #                     style = "font-size:20px; font-weight: bold; font-style: italic"),
+                         #                   img(src = "Use_Case.png", width = "700px", style="display: block; margin-left: auto; margin-right: auto"))))
+                       #)
+                       
+                       
                 )),
         # Volume Trend Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumetrend",
@@ -544,7 +690,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(), 
                          column(12,
-                                plotOutput("uniqueAllSite", height = "auto", width = 12) %>%
+                                plotOutput("uniqueAllSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
                                 plotOutput("uniqueAllTrendSite", height = "auto") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
@@ -572,7 +718,7 @@ ui <- dashboardPage(
                                   withSpinner(type = 5, color = "#d80b8c"))
                        )
                 )
-        ), #Close Unique Patients - Exam tab
+        ), #Close Unique Patients - Lab tab
         
         tabItem(tabName = "uniqueTreatment",
                 div("Site Unique Patients - Treatment Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -679,6 +825,22 @@ ui <- dashboardPage(
                                            dropupAuto = FALSE,
                                            size = 10),
                                          selected = default_provider)),
+                           box(
+                             title = "Select Diagnosis Gropuer:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("dx_grouper_zip",label=NULL,
+                                         choices = default_dx_grouper_zip,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} groups",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_dx_grouper_zip)),
                            column(9,
                                   actionButton("update_filters7", "CLICK TO UPDATE", width = "42%"),
                                   br(),
@@ -920,9 +1082,75 @@ ui <- dashboardPage(
                        )
                 )
                 
-        ) # Close Bumps/Cancellations Tab
+        ), # Close Bumps/Cancellations Tab
         
-        
+        # Utilization Tab ------------------------------------------------------------------------------------------------------
+        tabItem(tabName = "utilization",
+                       div("Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                       textOutput("practiceName_utilization"),
+                       tags$head(tags$style("#practiceName_utilization{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                       column(11,
+                              boxPlus(
+                                title = "Utilization Overview", width = 12, status = "primary",
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                                br(),
+                                column(12,
+                                       column(3,
+                                              #util_choices <- list("SCHEDULED time and duration" = "scheduled", "ACTUAL time and duration" = "arrived"),
+                                              box(title = NULL, width = 12, solidHeader = FALSE,
+                                                  radioGroupButtons(
+                                                    inputId = "utilType",
+                                                    label = h4("Analysis based on:"),
+                                                    size = "lg",
+                                                    choices = list("SCHEDULED time and duration" = "scheduled", "ACTUAL time and duration" = "actual"),
+                                                    # choices = util_choices,
+                                                    # selected = util_choices[1],
+                                                    checkIcon = list(
+                                                      yes = tags$i(class = "fa fa-check-square", style = "color: steelblue"),
+                                                      no = tags$i(class = "fa fa-square-o", style = "color: steelblue"))),
+                                                  hr(),
+                                                  h5("SCHEDULED: Utilization of all arrived appointments based on scheduled appointment start and end time."),
+                                                  h5("ACTUAL: Utilization of all arrived appointments based on actual appointment start and end time."))),
+                                       column(3,
+                                              box(title = NULL, width = 12, solidHeader = FALSE,
+                                                  sliderInput("setRooms", label = h4("Set Rooms Available:"), min = 1, max = 65, value = 30)),
+                                              box(title = NULL, width = 12, solidHeader = FALSE,
+                                                  sliderInput("setHours", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8))),
+                                       column(6,
+                                              valueBoxOutput("roomStat1", width=12) %>%
+                                                withSpinner(type = 5, color = "#d80b8c"),
+                                              valueBoxOutput("avgUtilization", width=12),
+                                              valueBoxOutput("maxUtilization", width=12),
+                                              valueBoxOutput("maxRoomsRequired", width=12))
+                                )),
+                              boxPlus(
+                                title = "Space Utilization", width = 12, status = "primary",
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                                tabBox(
+                                  title = NULL,
+                                  id = "tabset1", width = "100%", height = "1000px",
+                                  tabPanel("Average",
+                                           plotOutput("spaceUtil", height = "900px") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c")),
+                                  tabPanel("Percentiles",
+                                           plotOutput("spaceUtilPerc", height = "900px") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c")))),
+                              boxPlus(
+                                title = "Space Required", width = 12, status = "primary",
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                                tabBox(
+                                  title = NULL,
+                                  id = "tabset2", width = "100%", height = "1000px",
+                                  tabPanel("Average",
+                                           plotOutput("spaceUsed", height = "900px") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c")),
+                                  tabPanel("Percentiles",
+                                           plotOutput("spaceUsedPerc", height = "900px") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c"))))
+                              
+                              
+                       )
+        )
         
         # Slot Usage Tab ---------------------------------------------------------------------------------------------------------
         
@@ -982,7 +1210,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
-        input.sbm == 'zipCode'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization'",
         
         dropdown(
           br(),
@@ -1026,6 +1254,50 @@ ui <- dashboardPage(
             )
           ),
           conditionalPanel(
+            condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+                          input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueAll'| input.sbm == 'systemuniqueTreatment' |
+                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam'",
+            box(
+              title = "Select Diagnosis Grouper:",
+              width = 12,
+              height = "100px",
+              solidHeader = FALSE,
+              pickerInput("diag_grouper",label=NULL,
+                          choices = default_diag_grouper,
+                          multiple=TRUE,
+                          options = pickerOptions(
+                            liveSearch = TRUE,
+                            actionsBox = TRUE,
+                            selectedTextFormat = "count > 1",
+                            countSelectedText = "{0}/{1} Groups",
+                            dropupAuto = FALSE,
+                            size = 10),
+                          selected = default_diag_grouper
+              )
+            ),
+          ),
+          conditionalPanel(
+              condition = "input.sbm == 'utilization'",
+              box(
+                title = "Select Provider:",
+                width = 12,
+                height = "100px",
+                solidHeader = FALSE,
+                pickerInput("selectedProviderUtil",label=NULL,
+                            choices=default_provider_utilization,
+                            multiple=TRUE,
+                            options = pickerOptions(
+                              liveSearch = TRUE,
+                              actionsBox = TRUE,
+                              selectedTextFormat = "count > 1",
+                              countSelectedText = "{0}/{1} Providers",
+                              dropupAuto = FALSE,
+                              size = 10),
+                            selected = default_provider_utilization
+                )
+              )
+          ),
+          conditionalPanel(
             condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
         input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
@@ -1037,7 +1309,7 @@ ui <- dashboardPage(
                 solidHeader = FALSE, 
                 dateRangeInput("dateRange", label = NULL,
                                start = dateRange_min_default, end = dateRange_max,
-                               min = dateRange_min_default, max = dateRange_max
+                               min = min_date, max = dateRange_max
                 )
             )
           ),
@@ -1053,6 +1325,17 @@ ui <- dashboardPage(
                              min = dateRangetrend_min, max = dateRange_max
               )
             )
+          ),
+          
+          conditionalPanel(
+            condition = "input.sbm=='utilization'",
+            box(
+              title = "Select Date Range:",
+              width = 12, 
+              solidHeader = FALSE, 
+              dateRangeInput("dateRangeUtil", label = NULL,
+                             start = util_date_start, end = util_date_end,
+                             min = util_date_start, max = util_date_end)),
           ),
           
           conditionalPanel(
@@ -1163,8 +1446,8 @@ ui <- dashboardPage(
         tags$head(
           tags$style(HTML("
                   #download1 {
-                    background: #fff;
-                    color: #212070;
+                    background: #212070;
+                    color: #fff;
                     padding: 8px 15px;
                     font-size: 24px;
                     font-family: inherit;
@@ -1172,12 +1455,17 @@ ui <- dashboardPage(
                     width: 54px;
                     line-height: 44px;
                     outline: none;
-                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.18), 0 1px 5px 0 rgba(0,0,0,.15);
+                    box-shadow: none;
                     border-radius: 50%;
                     border-color: transparent;}"))),
         
-        actionButton("download1",
-                     label = icon("download")),
+        bsTooltip("dropdownbutton3", "Load previously saved bookmarks.",
+                  "left", options = list(container = "body")
+        ),
+        bsTooltip("dropdownbutton4", "Bookmark global filters.",
+                  "left", options = list(container = "body")
+        ),
+        
         
         bsTooltip("download1", "Download (PNG) current tab.",
                   "right", options = list(container = "body")
