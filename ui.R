@@ -1153,7 +1153,15 @@ ui <- dashboardPage(
                               
                               
                        )
-        )
+        ),
+        
+        tabItem(tabName = "treat_util",
+                  div("Treatment Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                  textOutput("practiceName_utilization_treatment"),
+                  tags$head(tags$style("#practiceName_utilization{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11,
+                       )
+                )
         
         # Slot Usage Tab ---------------------------------------------------------------------------------------------------------
         
@@ -1213,7 +1221,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util'",
         
         dropdown(
           br(),
@@ -1280,7 +1288,7 @@ ui <- dashboardPage(
             ),
           ),
           conditionalPanel(
-              condition = "input.sbm == 'utilization'",
+              condition = "input.sbm == 'utilization' | input.sbm == 'treat_util'",
               box(
                 title = "Select Provider:",
                 width = 12,
@@ -1331,7 +1339,7 @@ ui <- dashboardPage(
           ),
           
           conditionalPanel(
-            condition = "input.sbm=='utilization'",
+            condition = "input.sbm=='utilization' | input.sbm == 'treat_util'",
             box(
               title = "Select Date Range:",
               width = 12, 

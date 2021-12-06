@@ -219,6 +219,11 @@ server <- function(input, output, session) {
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
   })
   
+  output$practiceName_utilization_treatment <- renderText({
+    paste0("Based on data from ", input$dateRangeUtil[1]," to ", input$dateRangeUtil[2], 
+           " for ", paste(sort(input$selectedCampus), collapse = ', '))
+  })
+  
   # Observe Events ------------------------------------------------------------------------------------------------------    
   observeEvent(input$download1, {
     screenshot(filename = "Oncology Dashboard")
