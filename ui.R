@@ -219,7 +219,10 @@ ui <- dashboardPage(
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
-                menuItem("Utilization", tabName = "utilization", icon = icon("percent")
+                menuItem("Utilization", tabName = "util", icon = icon("percent"),
+                         menuItem("Exam Utilization", tabName = "utilization"),
+                         menuItem("Provider Utilization", tabName = "prov_util"),
+                         menuItem("Treatment Utilization", tabName = "treat_util")
                 )
                 
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
