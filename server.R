@@ -230,7 +230,7 @@ server <- function(input, output, session) {
   })
   
   # Observe Events ------------------------------------------------------------------------------------------------------    
-  observeEvent(input$download1, {
+  observeEvent(input$download10, {
     screenshot(filename = "Oncology Dashboard")
   })
   
@@ -901,6 +901,17 @@ server <- function(input, output, session) {
     data <- data %>% filter(AssociationListA == "Treatment")
   }) 
   
+  dataUtilization_Treatment_download <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    data <- groupByFilters_util_treatment(historical.data,
+                                          input$selectedCampus, input$selectedDepartment, #input$selectedProviderUtil,
+                                          input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays)
+    data <- data %>% filter(Appt.Status == "Arrived")
+    data <- data %>% filter(AssociationListA == "Treatment")
+  }) 
   
   dataUtilization_provider <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
     validate(
@@ -5045,4 +5056,56 @@ server <- function(input, output, session) {
     contentType = "text/csv"
   )
   
+  # Data Download--------------------------------------------------------------------------------------------
+  output$volume_data_tbl = renderDT(
+    dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
+      rename(New.PT = New.PT3,
+             Campus = SITE) %>%
+      relocate(Campus, .before = Department),
+    #callback = JS("$('div.dwnld').append($('#download1'));"),
+    callback = callback,
+    #filter = "top",
+    server = TRUE,
+    #extensions = 'Buttons',
+    options = list(
+      dom = 'B<"dwnld">frtip',
+      #buttons = c('csv','excel'),
+      scrollX = TRUE,
+      autowidth = TRUE,
+      columnDefs = list(list(width = '2000px', targets = c(2))),
+      rownames = FALSE
+    )
+  )
+  
+  
+  # output$utilization_data_tbl = renderDT(
+  #   dataUtilization_Treatment_download(), #%>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
+  #     #rename(New.PT = New.PT3,
+  #            #Campus = SITE) %>%
+  #     #relocate(Campus, .before = Department),
+  #   filter = "top",
+  #   server = TRUE,
+  #   extensions = 'Buttons',
+  #   options = list(
+  #     dom = 'Bfrtip',
+  #     #buttons = c('csv','excel'),
+  #     scrollX = TRUE
+  #   )
+  # )
+  
+  
+  output$download1 <- downloadHandler(
+    data <- dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
+      rename(New.PT = New.PT3,
+             Campus = SITE) %>%
+      relocate(Campus, .before = Department),
+
+    filename = function(){
+      paste("oncology-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(data,file)
+    }
+  )
+
 } # Close Server

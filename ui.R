@@ -76,7 +76,7 @@ dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateY
 header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             disable = FALSE,
                             titleWidth = 400,
-                            tags$li(class = "dropdown", actionButton("download1",
+                            tags$li(class = "dropdown", actionButton("download10",
                                                                      label = icon("download")
                             )
                             ),
@@ -224,7 +224,8 @@ ui <- dashboardPage(
                          menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
-                )
+                ),
+                menuItem("Data Download", tabName = "download", icon = icon("download"))
                 
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
@@ -302,6 +303,24 @@ ui <- dashboardPage(
       tags$head(tags$style(".top-align { vertical-align: top;}  ")),
       
       tabItems(
+        tabItem(tabName = "download",
+                div("Data Download", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                column (11,
+                  boxPlus(
+                    title = "Volume and Utilization Data", width = 12, status = "primary",
+                    solidHeader = TRUE,
+                    downloadButton("download1",""),
+                    DTOutput("volume_data_tbl") %>% 
+                      withSpinner(type = 5, color = "#d80b8c")
+                  )#,
+                  # boxPlus(
+                  #   title = "Utilization Data", width = 12, status = "primary",
+                  #   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                  #   DTOutput("utilization_data_tbl") %>% 
+                  #     withSpinner(type = 5, color = "#d80b8c")
+                  # )
+                )
+              ),
         # HomePage ------------------------------------------------------------------------------------------------------------------
         tabItem(tabName = "homepage",
                 column(12,
@@ -1348,7 +1367,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
         
         dropdown(
           br(),
@@ -1394,7 +1413,7 @@ ui <- dashboardPage(
           conditionalPanel(
             condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                           input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueAll'| input.sbm == 'systemuniqueTreatment' |
-                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam'",
+                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
             box(
               title = "Select Diagnosis Grouper:",
               width = 12,
@@ -1439,7 +1458,7 @@ ui <- dashboardPage(
             condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
         input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
-        input.sbm == 'zipCode'" ,
+        input.sbm == 'zipCode' | input.sbm == 'download'" ,
               box(
                 title = "Select Date Range:", 
                 width = 12, 
@@ -1597,7 +1616,7 @@ ui <- dashboardPage(
         
         tags$head(
           tags$style(HTML("
-                  #download1 {
+                  #download10 {
                     background: #212070;
                     color: #fff;
                     padding: 8px 15px;
@@ -1619,7 +1638,7 @@ ui <- dashboardPage(
         ),
         
         
-        bsTooltip("download1", "Download (PNG) current tab.",
+        bsTooltip("download10", "Download (PNG) current tab.",
                   "right", options = list(container = "body")
         )
         
