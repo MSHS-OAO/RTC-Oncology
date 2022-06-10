@@ -708,6 +708,19 @@ server <- function(input, output, session) {
   })
   
   
+  
+  dataArrivedTrend_download <- reactive({
+    
+    input$update_filters
+    
+    isolate({
+      data <- dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
+        rename(New.PT = New.PT3,
+               Campus = SITE) %>%
+        relocate(Campus, .before = Department)
+    })
+  })
+  
   # Unique Patients  data ============================================================================================================
   dataUniqueExam_system <- eventReactive(list(input$update_filters),{
     validate(
@@ -5095,16 +5108,11 @@ server <- function(input, output, session) {
   
   
   output$download1 <- downloadHandler(
-    data <- dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
-      rename(New.PT = New.PT3,
-             Campus = SITE) %>%
-      relocate(Campus, .before = Department),
-
     filename = function(){
-      paste("oncology-", Sys.Date(), ".csv", sep = "")
+      paste0("oncology-", Sys.Date(), ".csv")
     },
     content = function(file) {
-      write.csv(data,file)
+      write.csv(dataArrivedTrend_download(),file, row.names = F)
     }
   )
 
