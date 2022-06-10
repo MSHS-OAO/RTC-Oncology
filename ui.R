@@ -15,7 +15,7 @@ campus_choices <- sort(unique(historical.data$SITE))
 
 default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
 default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                      historical.data$Department %in% default_departments, "Dx.Grouper"])) 
+                                                      historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
 
 default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"])) 
 
@@ -54,7 +54,8 @@ default_provider_utilization <- data.frame(Provider = sort(unique(historical.dat
 default_provider_utilization <- as.character(t(inner_join(default_provider_utilization, all_provider)))
 
 
-util_date_start = min(utilization.data$Appt.DateYear)
+util_date_start <- as.Date(paste0(year(Sys.Date()),"-01-01"), format = "%Y-%d-%m")
+util_date_min <- min(utilization.data$Appt.DateYear)
 util_date_end = max(utilization.data$Appt.DateYear)
 
 
@@ -67,7 +68,7 @@ dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 #today <- Sys.Date()
 
-dateRangetrend_min <- as.Date("2021-01-01")
+dateRangetrend_min <- as.Date("2019-01-01")
 
 dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
@@ -221,7 +222,7 @@ ui <- dashboardPage(
                 ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          menuItem("Exam Utilization", tabName = "utilization"),
-                         menuItem("Provider Utilization", tabName = "prov_util"),
+                         #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
                 )
                 
@@ -1155,13 +1156,138 @@ ui <- dashboardPage(
                        )
         ),
         
+        tabItem(tabName = "prov_util",
+                  div("Provider Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                  textOutput("practiceName_utilization_provider"),
+                  tags$head(tags$style("#practiceName_utilization_provider{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                  column(11,
+                         boxPlus(
+                           title = "Utilization Overview", width = 12, status = "primary",
+                           solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                           br(),
+                           column(12,
+                                  column(3,
+                                         #util_choices <- list("SCHEDULED time and duration" = "scheduled", "ACTUAL time and duration" = "arrived"),
+                                         box(title = NULL, width = 12, solidHeader = FALSE,
+                                         radioGroupButtons(
+                                           inputId = "utilType1",
+                                           label = h4("Analysis based on:"),
+                                           size = "lg",
+                                           choices = list("SCHEDULED time and duration" = "scheduled", "ACTUAL time and duration" = "actual"),
+                                           # choices = util_choices,
+                                           # selected = util_choices[1],
+                                           checkIcon = list(
+                                             yes = tags$i(class = "fa fa-check-square", style = "color: steelblue"),
+                                             no = tags$i(class = "fa fa-square-o", style = "color: steelblue"))),
+                                         hr(),
+                                         h5("SCHEDULED: Utilization of all arrived appointments based on scheduled appointment start and end time."),
+                                         h5("ACTUAL: Utilization of all arrived appointments based on actual appointment start and end time."),
+                                         ),
+                                  ),
+                                  column(3,
+                                         box(title = NULL, width = 12, solidHeader = FALSE,
+                                             sliderInput("setHours_provider", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8))),
+                                  column(6,
+                                         # valueBoxOutput("roomStat1", width=12) %>%
+                                         #   withSpinner(type = 5, color = "#d80b8c"),
+                                         valueBoxOutput("avgUtilization_provider", width=12),
+                                         valueBoxOutput("maxUtilization_provider", width=12),
+                                         # valueBoxOutput("maxRoomsRequired", width=12))
+                                  )
+                           
+                           )
+                         )
+                         )
+                ),
+        
         tabItem(tabName = "treat_util",
                   div("Treatment Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                   textOutput("practiceName_utilization_treatment"),
                   tags$head(tags$style("#practiceName_utilization_treatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
+                       boxPlus(
+                         title = "Utilization Overview", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                       column(3,
+                              box(title = NULL, width = 12, solidHeader = FALSE,
+                                sliderInput("setRooms_treatment", label = h4("Treatment Spaces Available:"), min = 1, max = 65, value = 30),
+                                #sliderInput("setNurse", label = h4("Treatment Spaces per Nurse:"), min = 1, max = 10, value = 5),
+                                sliderInput("setHours_treatment", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8, step = 0.5),
+                               # selectInput("daysOfWeek_treatment",label = NULL,
+                               #             choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
+                               #             multiple=TRUE, selectize=TRUE),
+                               pickerInput("operating_hours_start", label = NULL, 
+                                           choices = operating_hours_choices),
+                               pickerInput("operating_hours_end", label = NULL, 
+                                           choices = operating_hours_choices,
+                                           selected = "6:00PM")
+                              )
+                       ),
+                       column(2,
+                              rHandsontableOutput("treatment_input_table")
+                              ),
+                       column(7,
+                              box(
+                                title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "300px", status = "warning", solidHeader = TRUE,
+                                p(strong("Step 1."),"Please select the treatment spaces available and the number of open daily hours", style = "font-size:22px"),
+                                p(strong("Step 2."), "Set the open and close times", style = "font-size:22px"),
+                                p(strong("Step 3."), "Enter the number of nurses available for each hour in the table", style = "font-size:22px"),
+                                p(strong("Step 4."), "Use the filters on the right to enter the campus, department, and time frame the data should reflect, then click on the Click to Update button", style = "font-size:22px")
+                              ))
+                       ),
+                       boxPlus(
+                         title = "Treatment Space Utilization", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment", style = "font-size:22px")
+                                )),
+                         column(6,
+                            tableOutput("treatment_space_util_month")
+                         ),
+                         column(6,
+                                tableOutput("treatment_space_util_dayofweek")
+                         )
+                       ),
+                       boxPlus(
+                         title = "Treatment Nurse Capacity Utilization", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "175px", status = "warning", solidHeader = TRUE,
+                                  p("Total Duration of arrived Tx volume in minutes over Nurse Capacity (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated", style = "font-size:22px")
+                                )),
+                         column(6,
+                                tableOutput("treatment_nurse_util_month")
+                         ),
+                         column(6,
+                                tableOutput("treatment_nurse_util_dayofweek")
+                         )
+                       ),
+                       boxPlus(
+                         title = "Effective Infusion Capacity Utilization", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "200px", status = "warning", solidHeader = TRUE,
+                                  p("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily count, then x # of days in month patients were treated for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.", style = "font-size:22px")
+                                )),
+                         column(6,
+                                tableOutput("infusion_util_month")
+                         ),
+                         column(6,
+                                tableOutput("infusion_util_dayofweek")
+                         )
                        )
-                )
+                     )
+                       
+              )
+        
         
         # Slot Usage Tab ---------------------------------------------------------------------------------------------------------
         
@@ -1174,6 +1300,7 @@ ui <- dashboardPage(
       tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownUnique {color: #d80b8c;}"))),
+      tags$head(tags$style(HTML("#dropdown_treatment_utilization {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#dropdownUnique1 {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#dropdownZipCode {color: #d80b8c;}"))),
       tags$head(tags$style(HTML("#update_filters {background-color: #d80b8c;
@@ -1221,7 +1348,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util'",
         
         dropdown(
           br(),
@@ -1288,7 +1415,7 @@ ui <- dashboardPage(
             ),
           ),
           conditionalPanel(
-              condition = "input.sbm == 'utilization' | input.sbm == 'treat_util'",
+              condition = "input.sbm == 'utilization' | input.sbm == 'prov_util'",
               box(
                 title = "Select Provider:",
                 width = 12,
@@ -1339,14 +1466,28 @@ ui <- dashboardPage(
           ),
           
           conditionalPanel(
-            condition = "input.sbm=='utilization' | input.sbm == 'treat_util'",
+            condition = "input.sbm == 'treat_util'",
+            box(
+              title = "Select Date Range:",
+              width = 12, 
+              height = "100px",
+              solidHeader = FALSE, 
+              dateRangeInput("dateRangetreat_util", label = NULL,
+                             start = as.Date(paste0("01-01-",year(Sys.Date())), "%m-%d-%Y"), end = util_date_end,
+                             min = as.Date(min(historical.data$Appt.DateYear)), max = as.Date(max(historical.data$Appt.DateYear))
+              )
+            )
+          ),
+          
+          conditionalPanel(
+            condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
             box(
               title = "Select Date Range:",
               width = 12, 
               solidHeader = FALSE, 
               dateRangeInput("dateRangeUtil", label = NULL,
                              start = util_date_start, end = util_date_end,
-                             min = util_date_start, max = util_date_end)),
+                             min = util_date_min, max = util_date_end)),
           ),
           
           conditionalPanel(
@@ -1552,12 +1693,46 @@ ui <- dashboardPage(
           icon = icon("info"), width = "850px",
           
           tooltip = tooltipOptions(title = "Click for zip code mapping info."),
-          inputId = "dropdownZipCode"
+          inputId = "Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month pateints were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes."
           
         ) # Close Drop Down Button
+      ), # Close Conditional Panel
+      
+      conditionalPanel(
+        condition = "input.sbm == 'treat_util'",
+        br(),
+        dropdown(
+          box(
+            title = NULL,
+            width = 20,
+            height = "600px",
+            solidHeader = FALSE,
+            h3("Treatment Space Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment"),
+            h3("Nurse Capacity Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Nurse Capacity  (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated"),
+            h3("Effective Infusion Capacity Utilization:"),h4("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month patients were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.")),
+          
+          style = "material-circle", size = "lg", right = TRUE, status = "default",
+          icon = icon("info"), width = "600px",
+          
+          tooltip = tooltipOptions(title = "Click for additional info on the utilization analysis."),
+          inputId = "dropdown_treatment_utilization"
+          
+        ) # Close Drop Down Button
+      ), # Close Conditional Panel
+      conditionalPanel(
+        condition = "input.sbm == 'volumetrend'",
+        br(),
+        #download_btn_ui("volumetrend_download")
+        uiOutput("volumetrend_download"),
+        # downloadButton("volumetrend_download1")
+      ), # Close Conditional Panel
+      conditionalPanel(
+        condition = "input.sbm == 'treat_util'",
+        br(),
+        #download_btn_ui("volumetrend_download")
+        uiOutput("treat_util_download"),
+        # downloadButton("volumetrend_download1")
       ) # Close Conditional Panel
-      
-      
       
     ) #Close Fluid
   ) # Close Dashboard Body

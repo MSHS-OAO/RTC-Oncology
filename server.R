@@ -220,6 +220,11 @@ server <- function(input, output, session) {
   })
   
   output$practiceName_utilization_treatment <- renderText({
+    paste0("Based on data from ", input$dateRangetreat_util[1]," to ", input$dateRangetreat_util[2], 
+           " for ", paste(sort(input$selectedCampus), collapse = ', '))
+  })
+  
+  output$practiceName_utilization_provider <- renderText({
     paste0("Based on data from ", input$dateRangeUtil[1]," to ", input$dateRangeUtil[2], 
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
   })
@@ -545,8 +550,9 @@ server <- function(input, output, session) {
     )
     groupByFilters_Trend(historical.data[arrived.data.rows,],
                    input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
-                   input$diag_grouper)
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays#,
+                   #input$diag_grouper
+                   )
   })
   
   # Canceled data ============================================================================================================
@@ -670,15 +676,35 @@ server <- function(input, output, session) {
   })
   
   # Trend  data ============================================================================================================
-  dataArrivedTrend <- eventReactive(list(input$update_filters),{
+  # dataArrivedTrend <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_Trend(historical.data[arrived.data.rows.trend,],
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays#,
+  #                  #input$diag_grouper
+  #                  )
+  # })
+  
+  
+  
+  dataArrivedTrend <- reactive({
+    
+    input$update_filters
+    
+    isolate({
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
     groupByFilters_Trend(historical.data[arrived.data.rows.trend,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays,
-                   input$diag_grouper)
+                         input$selectedCampus, input$selectedDepartment,
+                         input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays#,
+                         #input$diag_grouper
+    )
+    })
   })
   
   
@@ -862,12 +888,36 @@ server <- function(input, output, session) {
                      input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType)
   }) 
   
+  
+  dataUtilization_Treatment <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    data <- groupByFilters_util_treatment(historical.data,
+                                  input$selectedCampus, input$selectedDepartment, #input$selectedProviderUtil,
+                                  input$dateRangetreat_util[1], input$dateRangetreat_util[2], input$daysOfWeek, input$excludeHolidays)
+    data <- data %>% filter(Appt.Status == "Arrived")
+    data <- data %>% filter(AssociationListA == "Treatment")
+  }) 
+  
+  
+  dataUtilization_provider <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_util(utilization.data,
+                        input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
+                        input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType1)
+  }) 
+  
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlot({
     
     data <- dataArrivedTrend()
-    # data <- historical.data[arrived.data.rows,]
+    # data <- historical.data[arrived.data.rows.trend,]
     
     min_date <- min(data$Appt.DateYear)
     max_date <- max(data$Appt.DateYear)
@@ -1928,8 +1978,8 @@ server <- function(input, output, session) {
     months_sorted <- sort(colnames(final_df)[4:(length(final_df)-1)])
     col_order <- c(colnames(final_df)[1:3], months_sorted, colnames(final_df)[length(final_df)])
     final_df <- final_df[, col_order]
-    # final_df$Disease = ifelse(duplicated(final_df$Disease),"",final_df$Disease)
-    # final_df$Provider = ifelse(duplicated(final_df$Provider),"",final_df$Provider)
+    final_df$Disease = ifelse(duplicated(final_df$Disease),"",final_df$Disease)
+    final_df$Provider = ifelse(duplicated(final_df$Provider),"",final_df$Provider)
     
     final_df %>%
       mutate(`Appointment Type` = cell_spec(`Appointment Type`, italic = ifelse(row_number() %in% indent_rows, T, F), 
@@ -4281,6 +4331,32 @@ server <- function(input, output, session) {
     )
   })
   
+  
+  output$avgUtilization_provider <- renderValueBox({
+    
+    valueBox(NULL,
+             subtitle = tags$p(paste0("Avg utilization per day: ",
+                                      paste0(round((sum((dataUtilization_provider() %>% filter(comparison == 0))$sum))/
+                                                     (length(unique(dataUtilization_provider()$Appt.DateYear))*(60*input$setHours_provider))*100),"%")), 
+                               style = "font-size: 180%; font-weight: bold; text-align: center;"), icon = NULL, color = "fuchsia"
+    )
+  })
+  
+  output$maxUtilization_provider <- renderValueBox({
+    
+    valueBox(NULL,
+             subtitle = tags$p(paste0("Peak utilization during the day: ",
+                                      max((dataUtilization_provider() %>%
+                                             filter(comparison == 0) %>%
+                                             select(Appt.DateYear, timeOptionsHr_filter) %>%
+                                             gather(Time, sum, 2:15) %>%
+                                             group_by(Time) %>%
+                                             summarise(avg = round((sum(sum)/ 
+                                                                      (length(unique(dataUtilization_provider()$Appt.DateYear))*(60)))*100)))$avg),"%"), 
+                               style = "font-size: 180%; font-weight: bold; text-align: center;"), icon = NULL, color = "fuchsia"
+    )
+  })
+  
   # # Scheduled and Avg Utilization --------------------------------------------------------------------------------------------------------
   # output$avgScheduledUtilization <- renderValueBox({
   #   
@@ -4588,12 +4664,385 @@ server <- function(input, output, session) {
   })
   
   
+  treatment_space_util_month_data <- reactive({
+    num_rooms <- input$setRooms_treatment
+    num_hours <- input$setHours_treatment
+    
+    # num_rooms <- 3
+    # num_hours <- 9
+
+    data <- dataUtilization_Treatment() %>%
+              #historical.data %>%
+              #filter(is.na(holiday)) %>%
+              group_by(Appt.MonthYear) %>%
+              summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                        `Time Available (hr)` = round(length(unique(Appt.DateYear))*num_rooms*num_hours,0),
+                        `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+              #arrange(match(Appt.Month, month.abb)) %>%
+              rename(Month = Appt.MonthYear) #%>%
+              #select(Appt.MonthYear,`Total Duration (hr)`,`Time Available (hr)`, `Utilization %`)
+    
+    data_total <- data.frame(t(colSums(data[,c(2,3)])))
+    col_names <- colnames(data[,c(2,3)])
+    colnames(data_total) <- col_names
+    
+    data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+    
+    data$Month <- paste0(data$Month, "-01")
+    data$Month <- format(as.Date(data$Month), "%Y-%b")
+    data_total$Month <- "Total"
+    
+    data <- bind_rows(data,data_total)
+    
+    data
+  })
+  
+
+  output$treatment_space_util_month <- function(){
+    kable(treatment_space_util_month_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(treatment_space_util_month_data()), background = "#d80b8c", color = "white", bold = T) 
+  }
+  
+  
+  
+  treatment_space_util_dayofweek_data <- reactive({
+    data <- dataUtilization_Treatment() %>%
+      #historical.data %>%
+      # filter(is.na(holiday)) %>%
+      group_by(Appt.Day) %>%
+      summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                `Time Available (hr)` = round(length(unique(Appt.DateYear))*input$setRooms_treatment*input$setHours_treatment,0),
+                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+      rename(DayofWeek = Appt.Day) 
+    
+    data$DayofWeek <- factor(data$DayofWeek, levels= c("Sun", "Mon", 
+                                                     "Tue", "Wed", "Thu", "Fri", "Sat"))
+    
+    data <-  data[order(data$DayofWeek), ]
+    
+    data_total <- data.frame(t(colSums(data[,c(2,3)])))
+    col_names <- colnames(data[,c(2,3)])
+    colnames(data_total) <- col_names
+    
+    data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+    data_total$DayofWeek <- "Total"
+    
+    data <- bind_rows(data,data_total)
+    
+      
+    
+    data
+  })
+  
+  
+  output$treatment_space_util_dayofweek <- function(){
+    kable(treatment_space_util_dayofweek_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(treatment_space_util_dayofweek_data()), background = "#d80b8c", color = "white", bold = T) 
+    
+  }
+  
+  treatment_input_table_data <- reactive({
+    remainder <- as.data.frame(round(input$setHours_treatment,0))
+    operating_hours_start <- input$operating_hours_start
+    operating_hours_end <- input$operating_hours_end
+    set_rooms <- input$setRooms_treatment
+    
+    # operating_hours_start <- "7:00AM"
+    # operating_hours_end <- "6:00PM"
+    # set_rooms <- "16"
+    
+    if(remainder/input$setHours_treatment != 1){
+      start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+      end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      start_time_hour <- start_time + 1800
+      
+      time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+      time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
+      time_df <- as.data.frame(time_df)
+      time_df <- rename(time_df, Time = time_df)
+      time_df$Time <- format(time_df$Time, format = "%H:%M")
+      
+      start_time <- format(start_time, format = "%H:%M")
+      
+      time_df <- rbind(start_time, time_df)
+    }else{
+      start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+      end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      start_time_hour <- start_time
+      
+      time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+      time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
+      time_df <- as.data.frame(time_df)
+      time_df <- rename(time_df, Time = time_df)
+      time_df$Time <- format(time_df$Time, format = "%H:%M")
+      
+      start_time <- format(start_time, format = "%H:%M")
+      
+      time_df <- rbind(start_time, time_df)
+      
+      time_df <- time_df %>% distinct()
+    }
+    
+    time_df <- time_df %>%
+                add_column(`# of Nurses` = as.character(NA))
+    #time_df$`Space Capacity` <- set_rooms
+    
+    time_df
+  })
+  
+  
+  output$treatment_input_table <- renderRHandsontable({
+    rhandsontable(treatment_input_table_data(), overflow= 'visible', rowHeaders = FALSE)
+  })
+  
+  
+
+  treatment_nurse_util_month_data <- reactive({
+
+    nurse_total <- hot_to_r(input$treatment_input_table) 
+    
+    nurse_total <- nurse_total %>%
+                       summarise(sum(as.numeric(`# of Nurses`)))
+    
+    data <- dataUtilization_Treatment() %>%
+      #historical.data %>%
+      # filter(is.na(holiday)) %>%
+      group_by(Appt.MonthYear) %>%
+      summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                `Time Available (hr)` = length(unique(Appt.DateYear))*3*as.numeric(nurse_total),
+                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+      #arrange(match(Appt.Month, month.abb)) %>%
+      rename(Month = Appt.MonthYear)
+    
+    data_total <- data.frame(t(colSums(data[,c(2,3)])))
+    col_names <- colnames(data[,c(2,3)])
+    colnames(data_total) <- col_names
+    
+    data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+    
+    data$Month <- paste0(data$Month, "-01")
+    data$Month <- format(as.Date(data$Month), "%Y-%b")
+    
+    data_total$Month <- "Total"
+    
+    data <- bind_rows(data,data_total)
+
+    data
+  })
+
+
+  output$treatment_nurse_util_month <- function(){
+    kable(treatment_nurse_util_month_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(treatment_nurse_util_month_data()), background = "#d80b8c", color = "white", bold = T) 
+  }
+
+
+
+  treatment_nurse_util_dayofweek_data <- reactive({
+    
+    nurse_total <- hot_to_r(input$treatment_input_table) 
+    
+    nurse_total <- nurse_total %>%
+      summarise(sum(as.numeric(`# of Nurses`)))
+    
+    data <- dataUtilization_Treatment() %>%
+      #historical.data %>%
+      # filter(is.na(holiday)) %>%
+      group_by(Appt.Day) %>%
+      summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                `Time Available (hr)` = length(unique(Appt.DateYear))*3*as.numeric(nurse_total),
+                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+      rename(DayofWeek = Appt.Day)
+      
+    data$DayofWeek <- factor(data$DayofWeek, levels= c("Sun", "Mon", 
+                                             "Tue", "Wed", "Thu", "Fri", "Sat"))
+    
+   data <-  data[order(data$DayofWeek), ]
+   
+   data_total <- data.frame(t(colSums(data[,c(2,3)])))
+   col_names <- colnames(data[,c(2,3)])
+   colnames(data_total) <- col_names
+   
+   data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+   data_total$DayofWeek <- "Total"
+   
+   data <- bind_rows(data,data_total)
+
+
+    data
+  })
+
+
+  output$treatment_nurse_util_dayofweek <- function(){
+    options(knitr.kable.NA = '-')
+    kable(treatment_nurse_util_dayofweek_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(treatment_nurse_util_dayofweek_data()), background = "#d80b8c", color = "white", bold = T)
+    
+  }
+
+  
+  infusion_util_month_data <- reactive({
+    rooms_set <- input$setRooms_treatment
+    #rooms_set <- "16"
+    
+    effective_capacity <<- hot_to_r(input$treatment_input_table) 
+    
+    effective_capacity <- effective_capacity %>% 
+                                              mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
+    
+    room_set_df <- data.frame(Time = effective_capacity$Time)
+    room_set_df$rooms <- as.character(rooms_set)
+    
+    effective_capacity <- merge(effective_capacity,room_set_df)
+    effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
+    effective_capacity$`Nursing Capacity` <- as.numeric(effective_capacity$`Nursing Capacity`)
+    
+    effective_capacity <- data.frame(Effective.Capacity = pmin(effective_capacity$`Nursing Capacity`,effective_capacity$rooms))
+    
+
+    effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
+    
+    data <- dataUtilization_Treatment() %>%
+      #historical.data %>%
+      # filter(is.na(holiday)) %>%
+      group_by(Appt.MonthYear) %>%
+      summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                `Time Available (hr)` = length(unique(Appt.DateYear))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+      #arrange(match(Appt.Month, month.abb)) %>%
+      rename(Month = Appt.MonthYear)
+    
+    data_total <- data.frame(t(colSums(data[,c(2,3)])))
+    col_names <- colnames(data[,c(2,3)])
+    colnames(data_total) <- col_names
+    
+    data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+    
+    data$Month <- paste0(data$Month, "-01")
+    data$Month <- format(as.Date(data$Month), "%Y-%b")
+    
+    data_total$Month <- "Total"
+    
+    data <- bind_rows(data,data_total)
+
+    data
+  })
+  
+  
+  output$infusion_util_month <- function(){
+    kable(infusion_util_month_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(infusion_util_month_data()), background = "#d80b8c", color = "white", bold = T) 
+    
+  }
+  
+  
+  infusion_util_dayofweek_data <- reactive({
+    effective_capacity <- hot_to_r(input$treatment_input_table) 
+    
+    effective_capacity <- effective_capacity %>% 
+      mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
+    
+    effective_capacity <- transform(effective_capacity, `Effective Capacity` = pmin(`Nursing Capacity`, input$setRooms_treatment))
+    
+    effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
+    
+    data <- dataUtilization_Treatment() %>%
+      #historical.data %>%
+      filter(is.na(holiday)) %>%
+      group_by(Appt.Day) %>%
+      summarise(`Total Duration (hr)` = round(sum(Appt.Dur)/60,0),
+                `Time Available (hr)` = length(unique(Appt.DateYear))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+      rename(DayofWeek = Appt.Day)
+    
+    data$DayofWeek <- factor(data$DayofWeek, levels= c("Sun", "Mon", 
+                                                     "Tue", "Wed", "Thu", "Fri", "Sat"))
+    
+    data <-  data[order(data$DayofWeek), ]
+    
+    data_total <- data.frame(t(colSums(data[,c(2,3)])))
+    col_names <- colnames(data[,c(2,3)])
+    colnames(data_total) <- col_names
+    
+    data_total$`Utilization %` <- round((data_total[1,1]/data_total[1,2])*100,0)
+    data_total$DayofWeek <- "Total"
+    
+    data <- bind_rows(data,data_total)
+    
+    
+    data
+  })
+  
+  
+  output$infusion_util_dayofweek <- function(){
+    kable(infusion_util_dayofweek_data(),booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      row_spec(nrow(infusion_util_dayofweek_data()), background = "#d80b8c", color = "white", bold = T) 
+    
+    
+  }
+  
+  #download_btn_server("volumetrend_download")
+  output$volumetrend_download <- renderUI({
+    #ns <- session$ns
+    
+    if(is.null(session$user) || !(session$user %in% c("nevink01"))) return()
+    downloadButton("volumetrend_download1")
+  })
+  
+  # observeEvent(input$volumetrend_download, {
+  #   downloadHandler(
+  #     filename = "filename.csv",
+  #     content = write.csv(dataArrivedTrend(), "filename.csv")
+  #   )
+  # })
+  
+  output$volumetrend_download1 <- downloadHandler(
+    filename = function() {
+      paste("data", "csv", sep = ".")
+    },
+    content = function(file) {
+      write.csv(dataArrivedTrend(), file)
+      },
+    contentType = "text/csv"
+  )
   
   
   
   
+  output$treat_util_download <- renderUI({
+    #ns <- session$ns
+    
+    if(is.null(session$user) || !(session$user %in% c("nevink01"))) return()
+    downloadButton("treat_util_download1")
+  })
   
+  # observeEvent(input$volumetrend_download, {
+  #   downloadHandler(
+  #     filename = "filename.csv",
+  #     content = write.csv(dataArrivedTrend(), "filename.csv")
+  #   )
+  # })
   
-  
+  output$treat_util_download1 <- downloadHandler(
+    filename = function() {
+      paste("data", "csv", sep = ".")
+    },
+    content = function(file) {
+      write.csv(dataUtilization_Treatment(), file)
+    },
+    contentType = "text/csv"
+  )
   
 } # Close Server

@@ -122,6 +122,7 @@ suppressMessages({
   library(zipcodeR)
   library(feather)
   library(reactable)
+  library(rhandsontable)
 })
 
 
@@ -144,10 +145,11 @@ groupByFilters_unique <- function(dt, campus, department, mindateRange, maxdateR
   return(result)
 }
 
-groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, dx){
+groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
   result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays,
-                          Dx.Grouper %in% dx)
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays#,
+                          #Dx.Grouper %in% dx
+                          )
   return(result)
 }
 
@@ -183,6 +185,12 @@ groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange,
 groupByFilters_util <- function(dt, campus, department, provider, mindateRange, maxdateRange, daysofweek, holidays, type){
   result <- dt %>% filter(SITE %in% campus, Department %in% department, Provider %in% provider,
                           mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, util.type %in% type)
+  return(result)
+}
+
+groupByFilters_util_treatment <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
+  result <- dt %>% filter(SITE %in% campus, Department %in% department, #Provider %in% provider,
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
   return(result)
 }
 ## Unique Patients Functions  -----------------------------------------------------------------
@@ -592,9 +600,9 @@ setwd(wdpath)
 
 
 # #### Local Data Directories
-historical.data <- readRDS("Data/historical_data_grouped.rds")
+historical.data <- readRDS("Data/historical_data.rds")
 population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-utilization.data <- readRDS("Data/utilization_data_grouped.rds")
+utilization.data <- readRDS("Data/utilization_data.rds")
 # historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
 # population.data_filtered <- as.data.frame(read_feather("Data/population_data_filtered.feather"))
 holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
@@ -733,6 +741,8 @@ historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[a
 all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
 all_provider <- all_provider[,1]
 
+
+operating_hours_choices <- c("7:00AM", "7:30AM",  "8:00AM", "8:30AM", "9:00AM", "9:30AM", "10:00AM", "10:30AM", "11:00AM", "11:30AM", "12:00PM", "12:30PM", "1:00PM", "1:30PM", "2:00PM", "2:30PM", "3:00PM", "3:30PM", "4:00PM", "4:30PM", "5:00PM", "5:30PM", "6:00PM", "6:30PM")
 
 # dept_mapping <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Department Consolidaton-Filter") %>%
 #                   select(-`EPIC  Department`, -SITE, -ACTIVE) %>%
