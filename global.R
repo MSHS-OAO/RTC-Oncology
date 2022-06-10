@@ -591,23 +591,24 @@ setwd(wdpath)
 
 
 ##Data on Rconnect
-# historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
-# population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-# holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-# utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
-# filter_path <- "/data/Oncology/Filters"
+if(file.exists("J:/")){
+  #### Local Data Directories
+  historical.data <- readRDS("Data/historical_data.rds")
+  population.data_filtered <- readRDS("Data/population_data_grouped.rds")
+  utilization.data <- readRDS("Data/utilization_data.rds")
+  holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+  filter_path <- paste0(wdpath, "/Filters")
+}else{
+  historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
+  population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
+  holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
+  utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
+  filter_path <- "/data/Oncology/Filters"
+}
 
 
 
-# #### Local Data Directories
-historical.data <- readRDS("Data/historical_data.rds")
-population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-utilization.data <- readRDS("Data/utilization_data.rds")
-# historical.data <- as.data.frame(read_feather("Data/historical_data.feather"))
-# population.data_filtered <- as.data.frame(read_feather("Data/population_data_filtered.feather"))
-holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
-# utilization.data <- read_rds(here::here("Data/utilization_data.rds"))
-filter_path <- paste0(wdpath, "/Filters")
+
 
 max_date <- max(historical.data$Appt.DateYear)
 
