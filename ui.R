@@ -130,6 +130,19 @@ ui <- dashboardPage(
   
   # Sidebar ------------------------------------------------------------------------------------------------------
   dashboardSidebar(
+    tags$head(tags$style(HTML(".dt-button{
+  border: none;
+  color: black;
+  padding: 2px 10px;
+  text-align: center;
+  margin: 4px 2px;
+  border: 1px solid black;
+  background-color: white;
+}"))),
+    
+    
+    
+    
     tags$head(tags$style(HTML("#save_filters {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;

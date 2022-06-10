@@ -714,7 +714,7 @@ server <- function(input, output, session) {
     input$update_filters
     
     isolate({
-      data <- dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
+      data <- dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
         rename(New.PT = New.PT3,
                Campus = SITE) %>%
         relocate(Campus, .before = Department)
@@ -5071,7 +5071,7 @@ server <- function(input, output, session) {
   
   # Data Download--------------------------------------------------------------------------------------------
   output$volume_data_tbl = renderDT(
-    dataArrivedTrend() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
+    dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
       rename(New.PT = New.PT3,
              Campus = SITE) %>%
       relocate(Campus, .before = Department),
