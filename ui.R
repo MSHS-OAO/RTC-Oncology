@@ -237,8 +237,8 @@ ui <- dashboardPage(
                          menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
-                ),
-                menuItem("Data Download", tabName = "download", icon = icon("download"))
+                )#,
+                #menuItem("Data Download", tabName = "download", icon = icon("download"))
                 
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
