@@ -938,7 +938,7 @@ server <- function(input, output, session) {
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
-  output$trend_totalvisitsgraph <- renderPlot({
+  output$trend_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- historical.data[arrived.data.rows.trend,]
@@ -972,7 +972,8 @@ server <- function(input, output, session) {
     } else{
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
-
+  
+    #plotly_table <- plot_ly(type = 'table', cells = total_visits$total)
 
     g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
       scale_color_MountSinai('dark' )+
@@ -986,12 +987,14 @@ server <- function(input, output, session) {
       table_theme()
     
     library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    test <- g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    plotly_function(g1, c("total"))
     
-  }, height = function(x) input$plotHeight)
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_examvisitsgraph <- renderPlot({
+  output$trend_examvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- arrived.data
@@ -1036,12 +1039,13 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    plotly_function(g1, c("total"))    
     
-    
-  }, height = function(x) input$plotHeight)
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_treatmentvisitsgraph <- renderPlot({
+  output$trend_treatmentvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- arrived.data
@@ -1089,10 +1093,12 @@ server <- function(input, output, session) {
     library(patchwork)
     g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
     
-  }, height = function(x) input$plotHeight)
+    plotly_function(g1, c("total"))
+    }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_labvisitsgraph <- renderPlot({
+  output$trend_labvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- arrived.data
@@ -1137,8 +1143,9 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    
-  }, height = function(x) input$plotHeight)
+    plotly_function(g1, c("total"))    
+  }#, height = function(x) input$plotHeight
+  )
   
   
   output$trend_visitstable <- function(){

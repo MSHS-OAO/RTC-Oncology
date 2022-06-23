@@ -410,25 +410,25 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_totalvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_examvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Lab Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_labvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_labvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
