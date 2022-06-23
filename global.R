@@ -119,7 +119,7 @@ suppressMessages({
   library(ggtext)
   library(janitor)
   library(viridis) # Load color brewer palettes
-  library(zipcodeR)
+  #library(zipcodeR)
   library(feather)
   library(reactable)
   library(rhandsontable)
@@ -756,6 +756,11 @@ callback <- callback <- JS(
   "$('#download1').hide();"
 )
 
+
+plotly_function <- function(plot, tooltip_data){
+  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+  
+}
 # dept_mapping <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Department Consolidaton-Filter") %>%
 #                   select(-`EPIC  Department`, -SITE, -ACTIVE) %>%
 #                   rename(Dept_Mapping = `Display in Filter as`,
