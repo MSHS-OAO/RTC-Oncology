@@ -758,7 +758,9 @@ callback <- callback <- JS(
 
 
 plotly_function <- function(plot, tooltip_data){
-  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
+                                                                  )
+                                                    )
   
 }
 # dept_mapping <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Department Consolidaton-Filter") %>%

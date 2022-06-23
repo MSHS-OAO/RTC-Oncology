@@ -964,7 +964,8 @@ server <- function(input, output, session) {
                  subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
                  y = NULL, x = NULL, fill = NULL)+
             theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3)) +
+      theme(legend.position = 'top')
     
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
@@ -1327,7 +1328,7 @@ server <- function(input, output, session) {
   }
   
   # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
-  output$break_totalvisitsgraph <- renderPlot({
+  output$break_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
@@ -1353,11 +1354,11 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            x = NULL, y = "Patient Volume\n", fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+      theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+      # geom_text(aes(label=total), color="white", 
+      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+      #              size=5, fontface="bold.italic")
     
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
@@ -1387,11 +1388,14 @@ server <- function(input, output, session) {
     library(patchwork)
     g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
     
+    plotly_function(g1, c("total"))
     
-  }, height = function(x) input$plotHeight)
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$break_examvisitsgraph <- renderPlot({
+  output$break_examvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
@@ -1418,11 +1422,11 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+      # geom_text(aes(label=total), color="white", 
+      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+      #              size=5, fontface="bold.italic")
     
     
     Total <- total_visits_break %>% 
@@ -1455,11 +1459,14 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
+    plotly_function(g3, c("total"))
     
-  }, height = function(x) input$plotHeight)
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$break_treatmentvisitsgraph <- renderPlot({
+  output$break_treatmentvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     
@@ -1496,11 +1503,11 @@ server <- function(input, output, session) {
            subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = "Patient Volume\n", x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+      # geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
+      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+      # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+      #              size=5, fontface="bold.italic")
     
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
@@ -1536,8 +1543,11 @@ server <- function(input, output, session) {
     
     library(patchwork)
     g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
+    plotly_function(g5, c("total"))
     
-  }, height = function(x) input$plotHeight)
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
   # Volume Comparison Tab ------------------------------------------------------------------------------------------------------

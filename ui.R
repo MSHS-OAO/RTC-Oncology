@@ -466,19 +466,19 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_totalvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_examvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        )
                        
