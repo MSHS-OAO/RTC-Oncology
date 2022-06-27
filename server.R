@@ -1061,7 +1061,7 @@ server <- function(input, output, session) {
             y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
             colors = c("#212070", "#d80b8c", "#00aeef")
     ) %>%
-      layout(title = paste0(site," ","Annual All Visits"),
+      layout(title = paste0(site," ","Annual Exam Visits"),
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero")
@@ -1129,7 +1129,7 @@ server <- function(input, output, session) {
             y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
             colors = c("#212070", "#d80b8c", "#00aeef")
     ) %>%
-      layout(title = paste0(site," ","Annual All Visits"),
+      layout(title = paste0(site," ","Annual Treatment Visits"),
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero")
@@ -1193,7 +1193,7 @@ server <- function(input, output, session) {
             y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
             colors = c("#212070", "#d80b8c", "#00aeef")
     ) %>%
-      layout(title = paste0(site," ","Annual All Visits"),
+      layout(title = paste0(site," ","Annual Lab Visits"),
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero")
