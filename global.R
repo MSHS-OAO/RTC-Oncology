@@ -496,6 +496,10 @@ scale_fill_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FA
 # loadfonts(device = "win")
 # windowsFonts()
 
+plotly_font <- list(
+  family = "Calibri",
+  size = 14,
+  color = "bold")
 
 graph_theme <- function(legend_pos) {
   theme(
