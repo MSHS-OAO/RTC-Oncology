@@ -996,20 +996,21 @@ server <- function(input, output, session) {
     
     plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
             y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-            colors = c("#212070", "#d80b8c", "#00aeef"),
+            colors = c("#212070", "#d80b8c", "#00aeef")#,
             #   MountSinai_cols("dark purple","dark grey",
             # "yellow","med pink","dark pink","dark blue",
             # "med purple","med grey","med blue"),
             # marker = list(
             #   colorscale = scale_color_MountSinai('dark')
             # ),
-            transforms = list(
-              list(
-                type = 'groupby',
-                groups = total_visits$Appt.Year
-                
-              )
-            )) %>%
+            # transforms = list(
+            #   list(
+            #     type = 'groupby',
+            #     groups = total_visits$Appt.Year
+            #     
+            #   )
+            #)
+            ) %>%
       layout(title = paste0(site," ","Annual All Visits"),
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
