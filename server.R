@@ -966,6 +966,7 @@ server <- function(input, output, session) {
     
     total_visits_pivot$Appt.Month <- factor(total_visits_pivot$Appt.Month, levels = month.abb)
     
+    #total_visits <- total_visits_pivot
     
     g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
             geom_line(aes(color=Appt.Year), size=1.1)+
@@ -1018,38 +1019,54 @@ server <- function(input, output, session) {
    # initiate a line shape object
    line <- list(
      type = "line",
-     line = list(color = "black"),
-     xref = "x",
-     yref = "y",
+     line = list(color = "black", width = 0.5),
+     xref = "paper",
+     yref = "paper",
      x0 = 0,
      x1 = 1
    )
-   
    
    
    lines <- list()
    num_of_years <- length(unique(total_visits$Appt.Year)) - 1
    
    if(num_of_years != 0){
-     for (i in 1:num_of_years){
-       line[["y0"]] <- (i - 1) + 0.5
-       line[["y1"]] <- (i - 1) + 0.5
+     for (i in num_of_years){
+       line[["y0"]] <- (i - 1) + 0.25
+       line[["y1"]] <- (i - 1) + 0.25
        lines <- c(lines, list(line))
      }
   }
    
+   m <- list(
+     l = 0,
+     r = 0,
+     b = 50,
+     t = 50
+     #pad = 4
+   )
+   
+   margin_default <- list(l = 80,
+                          r = 80,
+                          b = 80,
+                          t = 100
+                          )
    p2  <- plot_ly(total_visits, x=~Appt.Month, 
-                  y=~Appt.Year, type = 'scatter', mode = 'text', text = ~total, textposition = 'middle'
+                  y=~Appt.Year, type = 'scatter', mode = 'text', text = ~total, textposition = 'bottom'
                   
    ) %>%
-     layout(shapes = lines,
-          xaxis = list(showticklabels=FALSE),
+     layout(xaxis = list(showticklabels=FALSE),
           yaxis = list(autorange = F,
-                       range = c(-0.5,0.5),
+                       range = c(-0.05,0.05),
                        tick0=0,
-                       dtick=0.5
-                      )
-     )
+                       dtick=0.05
+                      ),
+          shapes = lines,
+          autosize = F#,
+          #width = 500, height = 500,
+          #margin = m
+     ) %>%
+     style(hoverinfo = 'none')
      
     
     
@@ -1058,19 +1075,41 @@ server <- function(input, output, session) {
     #p1 %>%
       layout(title = paste0(site," ","Annual All Visits"),
              legend = list(x = 100, y = 0.5),
-             yaxis = list(domain = c(0.5,1)),
-             yaxis2 = list(domain = c(0,0.4)#,
-                           #autorange = F
-                           )
-             # xaxis = list(rangemode = "tozero"#,
-             #              #domain=c(0.5,1.0)
-             #              ), 
-             # yaxis = list(rangemode = "tozero", 
-             #              domain = c(-1,0)
-             #              ),
-             # yaxis2 = list(domain = c(0,1)
-             #               ),
-             # xaxis2 <- list(domain=c(0,0.5))
+             yaxis = list(domain = c(0.5,1),
+                          autosize = T,
+                          showLine = T,
+                          linewidth = 1,
+                          linecolor = 'black',
+                          mirror = T),
+             yaxis2 = list(domain = c(0.18,0.43),
+                           autosize = T,
+                           showLine = T,
+                           linewidth = 1,
+                           linecolor = 'black',
+                           mirror = T
+                           ),
+             xaxis = list(showLine = T,
+                          linewidth = 1,
+                          linecolor = 'black',
+                          mirror = T),
+             xaxis2 = list(showline = T,
+                           linewidth = 1,
+                           linecolor = 'black',
+                           mirror = T)#,
+             #margin = margin_default
+             
+             
+             
+      )
+    
+    plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+            y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
+            colors = c("#212070", "#d80b8c", "#00aeef")
+    ) %>%
+      layout(title = paste0(site," ","Annual All Visits"),
+             legend = list(x = 100, y = 0.5),
+             xaxis = list(rangemode = "tozero"), 
+             yaxis = list(rangemode = "tozero")
       )
     
   }#, height = function(x) input$plotHeight
@@ -5213,7 +5252,9 @@ server <- function(input, output, session) {
   output$volume_data_tbl = renderDT(
     dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
       rename(New.PT = New.PT3,
-             Campus = SITE) %>%
+             Campus = SITE,
+             Department.Id = DEPARTMENT_ID,
+             Epic.Provider.Id = EPIC_Provider_ID) %>%
       relocate(Campus, .before = Department),
     #callback = JS("$('div.dwnld').append($('#download1'));"),
     callback = callback,
