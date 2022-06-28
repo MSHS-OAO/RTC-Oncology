@@ -1031,7 +1031,7 @@ server <- function(input, output, session) {
    num_of_years <- length(unique(total_visits$Appt.Year)) - 1
    
    if(num_of_years != 0){
-     for (i in num_of_years){
+     for (i in 1:num_of_years){
        line[["y0"]] <- (i - 1) + 0.5
        line[["y1"]] <- (i - 1) + 0.5
        lines <- c(lines, list(line))
