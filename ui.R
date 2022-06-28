@@ -293,9 +293,9 @@ ui <- dashboardPage(
     )),
     
     
-    tags$head(tags$style(
-      HTML('.nsewdrag.drag {outline:1px solid black;}')
-    )),
+    # tags$head(tags$style(
+    #   HTML('.nsewdrag.drag {outline:1px solid black;}')
+    # )),
     
     fluidPage(
       # box "status" color for Mount Sinai Purple
