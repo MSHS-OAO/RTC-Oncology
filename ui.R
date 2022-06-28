@@ -287,6 +287,16 @@ ui <- dashboardPage(
     tags$head(tags$style(
       HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
     )),
+    
+    tags$head(tags$style(
+      HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
+    )),
+    
+    
+    tags$head(tags$style(
+      HTML('.nsewdrag.drag {outline:1px solid black;}')
+    )),
+    
     fluidPage(
       # box "status" color for Mount Sinai Purple
       tags$style(HTML("

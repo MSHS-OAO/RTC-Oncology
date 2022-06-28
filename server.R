@@ -956,6 +956,17 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
+    
+    
+    total_visits_pivot <- total_visits %>% mutate(value = 0)
+    
+    total_visits_pivot_2020 <- total_visits_pivot %>% mutate(total = total - 10000,
+                                                             Appt.Year = "2020")
+    total_visits_pivot <- bind_rows(total_visits_pivot, total_visits_pivot_2020)
+    
+    total_visits_pivot$Appt.Month <- factor(total_visits_pivot$Appt.Month, levels = month.abb)
+    
+    
     g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
             geom_line(aes(color=Appt.Year), size=1.1)+
             geom_point(aes(color=Appt.Year), size=3)+
@@ -994,15 +1005,74 @@ server <- function(input, output, session) {
     total_visits <- total_visits %>% 
       arrange(factor(Appt.Month, levels = month.abb))
     
-    plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-            y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-            colors = c("#212070", "#d80b8c", "#00aeef")
-            ) %>%
+    
+    
+   p1 <- plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+                  y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year,
+                 domain = list(x=c(x = c(0,1), y = c(0.5,1))),
+                  colors = c("#212070", "#d80b8c", "#00aeef")
+                ) 
+  
+   
+   
+   # initiate a line shape object
+   line <- list(
+     type = "line",
+     line = list(color = "black"),
+     xref = "x",
+     yref = "y",
+     x0 = 0,
+     x1 = 1
+   )
+   
+   
+   
+   lines <- list()
+   num_of_years <- length(unique(total_visits$Appt.Year)) - 1
+   
+   if(num_of_years != 0){
+     for (i in num_of_years){
+       line[["y0"]] <- (i - 1) + 0.5
+       line[["y1"]] <- (i - 1) + 0.5
+       lines <- c(lines, list(line))
+     }
+  }
+   
+   p2  <- plot_ly(total_visits, x=~Appt.Month, 
+                  y=~Appt.Year, type = 'scatter', mode = 'text', text = ~total, textposition = 'middle'
+                  
+   ) %>%
+     layout(shapes = lines,
+          xaxis = list(showticklabels=FALSE),
+          yaxis = list(autorange = F,
+                       range = c(-0.5,0.5),
+                       tick0=0,
+                       dtick=0.5
+                      )
+     )
+     
+    
+    
+    
+    subplot(p1, p2, nrows = 2) %>%
+    #p1 %>%
       layout(title = paste0(site," ","Annual All Visits"),
              legend = list(x = 100, y = 0.5),
-             xaxis = list(rangemode = "tozero"), 
-             yaxis = list(rangemode = "tozero")
+             yaxis = list(domain = c(0.5,1)),
+             yaxis2 = list(domain = c(0,0.4)#,
+                           #autorange = F
+                           )
+             # xaxis = list(rangemode = "tozero"#,
+             #              #domain=c(0.5,1.0)
+             #              ), 
+             # yaxis = list(rangemode = "tozero", 
+             #              domain = c(-1,0)
+             #              ),
+             # yaxis2 = list(domain = c(0,1)
+             #               ),
+             # xaxis2 <- list(domain=c(0,0.5))
       )
+    
   }#, height = function(x) input$plotHeight
   )
   
