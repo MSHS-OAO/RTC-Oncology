@@ -587,9 +587,9 @@ ui <- dashboardPage(
                                selected = "Monthly",
                                status = "info"))
                          ),
-                         plotOutput("volumeCompTotal_grh", height = "auto") %>%
+                         plotlyOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         plotOutput("volumeCompTrend_grh", height = "auto") %>%
+                         plotlyOutput("volumeCompTrend_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"))
                 ) #Close column
         ), # Close volume Comparison

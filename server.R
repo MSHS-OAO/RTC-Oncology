@@ -1718,7 +1718,7 @@ server <- function(input, output, session) {
   
   # Volume Comparison Tab ------------------------------------------------------------------------------------------------------
   #Volume Comparison Tab - Total Breakdown
-  output$volumeCompTotal_grh <- renderPlot({
+  output$volumeCompTotal_grh <- renderPlotly({
     
     data <- dataArrived_filtered()
     # data <- historical.data[arrived.data.rows,]
@@ -1755,7 +1755,7 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total))+
           geom_bar(stat="identity", width=0.7, fill="#212070")+
           scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
-          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
+          #geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
           theme_new_line()+
           theme(axis.text.x = element_text(angle = 0, hjust=0.5))+
           labs(title = paste0(site, " Monthly ",visitType, " Volume Breakdown by ",input$comp_choices),
@@ -1770,7 +1770,7 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_all, aes(x=Appt.Week, y=total))+
           geom_bar(stat="identity", fill="#212070")+
           scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
-          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
+          #geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
           scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))+
           theme_new_line()+
           theme(axis.text.x = element_text(angle = 0, hjust=0.5))+
@@ -1802,15 +1802,15 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
           geom_bar(position="stack", stat="identity", width=0.7)+
           scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                       size=5, fontface="bold.italic")+
+          # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+          #              size=5, fontface="bold.italic")+
           theme_new_line()+
           labs(title = paste0(site, " Monthly ",visitType, " Volume Breakdown by ",input$comp_choices),
                subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
                #caption = paste0("\n*Includes ",apptType),
-               y = NULL, x = NULL, fill = NULL)+
-          geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white", 
-                    size=5, fontface="bold", position = position_stack(vjust = 0.5))
+               y = NULL, x = NULL, fill = NULL)#+
+          #geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white", 
+                    #size=5, fontface="bold", position = position_stack(vjust = 0.5))
         
     
         
@@ -1855,16 +1855,16 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_site, aes(x=Appt.Week, y=total, group=SITE, fill=SITE))+
           geom_bar(position="stack", stat="identity")+
           scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
-                       size=5, fontface="bold.italic")+
+          # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
+          #              size=5, fontface="bold.italic")+
           scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))+
            theme_new_line()+
           labs(title = paste0(site, " Weekly ",visitType, " Volume Breakdown by ",input$comp_choices),
                subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
                #caption = paste0("\n*Includes ",apptType),
                y = NULL, x = NULL, fill = NULL)+
-          geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white",
-                    size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+          # geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white",
+          #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
           theme(axis.text.x = element_text(size = 16, angle=50, hjust=1))
         
         
@@ -1902,17 +1902,18 @@ server <- function(input, output, session) {
     
     if(flag == 0){
       library(patchwork)
-      g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      ggplotly(g1) # + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
     }else{
-        g1
+        ggplotly(g1)
     }
       
     
-  }, height = function(x) input$plotHeight)
+  }#, height = function(x) input$plotHeight
+  )
   
   
   # Volume Comparison Tab - Trend Graphs
-  output$volumeCompTrend_grh <- renderPlot({
+  output$volumeCompTrend_grh <- renderPlotly({
     
     data <- dataArrived_filtered()
     # data <- historical.data[arrived.data.rows,]
@@ -2109,15 +2110,16 @@ server <- function(input, output, session) {
 
     if(flag == 1){
       library(patchwork)
-      g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      ggplotly(g1)# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
       }else if(flag == 0){
         library(patchwork)
-        g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
+        ggplotly(g1)# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
       }else{
-        g1
+        ggplotly(g1)
         }
     
-  }, height = function(x) input$plotHeight)
+  } #, height = function(x) input$plotHeight
+  )
   
   
   # Provider Volume Tab ------------------------------------------------------------------------------------------------------
