@@ -1024,7 +1024,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
 
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
                                                                                )
     
   }#, height = function(x) input$plotHeight
@@ -1144,7 +1144,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
     
   }#, height = function(x) input$plotHeight
@@ -1265,7 +1265,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
     
     }#, height = function(x) input$plotHeight
@@ -1384,7 +1384,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
   }#, height = function(x) input$plotHeight
   )
@@ -1920,7 +1920,7 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
       ) +
-      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=4, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
