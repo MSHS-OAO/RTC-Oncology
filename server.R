@@ -974,7 +974,7 @@ server <- function(input, output, session) {
             scale_color_MountSinai('dark')+
             labs(title = paste0(site," ","Annual All Visits"),
                  subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
+                 y = "Patient Volume", x = NULL, fill = NULL)+
             scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3)) +
       theme(legend.position = 'top',
             legend.title=element_blank(),
@@ -982,7 +982,7 @@ server <- function(input, output, session) {
             axis.title = element_text(size="12"),
             axis.text = element_text(size="12"),
             axis.title.x = element_blank(),
-            axis.title.y = element_blank(),
+            axis.title.y = element_text(size = "12"),
             axis.line = element_line(size = 0.3, colour = "black")
             )
     
@@ -1020,11 +1020,11 @@ server <- function(input, output, session) {
       table_theme()
     
 
-    g1 <- ggplotly(g1, tooltip = c("total"))
+    g1 <- ggplotly(g1, tooltip = c("total")) 
     g2 <- ggplotly(g2, tooltip = NULL)
     
 
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(orientation = "h", x = 0.5, y = 1.0)
                                                                                )
     
   }#, height = function(x) input$plotHeight
@@ -1144,7 +1144,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
     )
     
   }#, height = function(x) input$plotHeight
@@ -1265,7 +1265,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
     )
     
     }#, height = function(x) input$plotHeight
@@ -1384,7 +1384,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
     )
   }#, height = function(x) input$plotHeight
   )
