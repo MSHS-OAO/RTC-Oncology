@@ -975,9 +975,16 @@ server <- function(input, output, session) {
             labs(title = paste0(site," ","Annual All Visits"),
                  subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
                  y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
             scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3)) +
-      theme(legend.position = 'top')
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black")
+            )
     
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
@@ -986,28 +993,12 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
   
-    #plotly_table <- plot_ly(type = 'table', cells = total_visits$total)
 
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
-      table_theme()
     
     
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year#, label=total
-                                   )
+    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year)
                  ) +
     labs(x=NULL, y=NULL)+
-      #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
-      #coord_flip()+
-      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
-      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
             legend.position = "top",
@@ -1022,49 +1013,19 @@ server <- function(input, output, session) {
             panel.background = element_blank(),
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
-            #plot.margin = margin(10,30,30,30)
       ) +
       geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black') +
-      table_theme() #+
-      #scale_y_discrete(expand = c(0,0)) +
-    #scale_x_discrete(expand = c(0,0))
+      table_theme()
     
-   #  library(patchwork)
-   #  test <- g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-   #  plotly_function(g1, c("total"))
-   #  
-   #  total_visits <- total_visits %>% 
-   #    arrange(factor(Appt.Month, levels = month.abb))
-   #  
-   #  
-   #  
-   # p1 <- plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-   #                y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year,
-   #               domain = list(x=c(x = c(0,1), y = c(0.5,1))),
-   #                colors = c("#212070", "#d80b8c", "#00aeef")
-   #              ) 
-   # 
-   # 
-   # 
-   # 
-   #  
-   #  plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-   #          y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-   #          colors = c("#212070", "#d80b8c", "#00aeef")
-   #  ) %>%
-   #    layout(title = paste0(site," ","Annual All Visits"),
-   #           legend = list(x = 100, y = 0.5),
-   #           xaxis = list(rangemode = "tozero"), 
-   #           yaxis = list(rangemode = "tozero",
-   #                        title  = "Patient Volume",
-   #                        tickformat = "~s")
-   #    )
+
+    g1 <- ggplotly(g1, tooltip = c("total"))
+    g2 <- ggplotly(g2, tooltip = NULL)
     
-    g1 <- ggplotly(g1)
-    g2 <- ggplotly(g2)
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4))
+
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+                                                                               )
     
   }#, height = function(x) input$plotHeight
   )
@@ -1084,15 +1045,34 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
+    # g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+    #         geom_line(aes(color=Appt.Year), size=1.1)+
+    #         geom_point(aes(color=Appt.Year), size=3)+
+    #         scale_color_MountSinai('dark')+
+    #         labs(title = paste0(site," ","Annual Exam Visits"), 
+    #              subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+    #              y = NULL, x = NULL, fill = NULL)+
+    #         theme_new_line()+
+    #         scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+    
     g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual Exam Visits"), 
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Exam Visits"),
+                        subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+                        y = "Patient Volume", x = NULL, fill = NULL)+
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3)) +
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+
+      )
     
     
     n <- length(unique(total_visits$Appt.Year)) - 1
@@ -1102,35 +1082,70 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
+    # g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
+    #   scale_color_MountSinai('dark' )+
+    #   #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL, fill = "Appt.Year")+
+    #   theme_minimal() +
+    #   table_theme()
+    
+    
+    
     g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    plotly_function(g1, c("total"))
     
-    total_visits <- total_visits %>% 
-      arrange(factor(Appt.Month, levels = month.abb))
+    # library(patchwork)
+    # g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    # plotly_function(g1, c("total"))
+    # 
+    # total_visits <- total_visits %>% 
+    #   arrange(factor(Appt.Month, levels = month.abb))
+    # 
+    # plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+    #         y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
+    #         colors = c("#212070", "#d80b8c", "#00aeef")
+    # ) %>%
+    #   layout(title = paste0(site," ","Annual Exam Visits"),
+    #          legend = list(x = 100, y = 0.5),
+    #          xaxis = list(rangemode = "tozero"), 
+    #          yaxis = list(rangemode = "tozero",
+    #                       title  = "Patient Volume",
+    #                       tickformat = "~s")
+    #   )
+    # 
+    # 
     
-    plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-            y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-            colors = c("#212070", "#d80b8c", "#00aeef")
-    ) %>%
-      layout(title = paste0(site," ","Annual Exam Visits"),
-             legend = list(x = 100, y = 0.5),
-             xaxis = list(rangemode = "tozero"), 
-             yaxis = list(rangemode = "tozero",
-                          title  = "Patient Volume",
-                          tickformat = "~s")
-      )
+    
+    g1 <- ggplotly(g1, tooltip = c("total")) 
+    g2 <- ggplotly(g2, tooltip = NULL)
+    
+    
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    )
     
   }#, height = function(x) input$plotHeight
   )
@@ -1150,17 +1165,37 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
+    # g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+    #         geom_line(aes(color=Appt.Year), size=1.1)+
+    #         geom_point(aes(color=Appt.Year), size=3)+
+    #         scale_color_MountSinai('dark')+
+    #         labs(title = paste0(site," ","Annual Treatment Visits"), 
+    #              subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+    #              y = NULL, x = NULL, fill = NULL)+
+    #         theme_new_line()+
+    #         scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+    # 
+    
+    
+    
     g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual Treatment Visits"), 
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
-    
-    
+      geom_line(aes(color=Appt.Year), size=1.1)+
+      geom_point(aes(color=Appt.Year), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = paste0(site," ","Annual Treatment Visits"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+           y = "Patient Volume", x = NULL, fill = NULL)+
+      scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3)) +
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
@@ -1170,37 +1205,69 @@ server <- function(input, output, session) {
     }
     
     
+    # g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
+    #   scale_color_MountSinai('dark' )+
+    #   #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL, fill = "Appt.Year")+
+    #   theme_minimal() +
+    #   table_theme()
+    
+    
     g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    # library(patchwork)
+    # g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+    # 
+    # plotly_function(g1, c("total"))
+    # 
+    # 
+    # total_visits <- total_visits %>% 
+    #   arrange(factor(Appt.Month, levels = month.abb))
+    # 
+    # plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+    #         y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
+    #         colors = c("#212070", "#d80b8c", "#00aeef")
+    # ) %>%
+    #   layout(title = paste0(site," ","Annual Treatment Visits"),
+    #          legend = list(x = 100, y = 0.5),
+    #          xaxis = list(rangemode = "tozero"), 
+    #          yaxis = list(rangemode = "tozero",
+    #                       title  = "Patient Volume",
+    #                       tickformat = "~s")
+    #   )
     
-    plotly_function(g1, c("total"))
+    
+    g1 <- ggplotly(g1, tooltip = c("total")) 
+    g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    total_visits <- total_visits %>% 
-      arrange(factor(Appt.Month, levels = month.abb))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    )
     
-    plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-            y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-            colors = c("#212070", "#d80b8c", "#00aeef")
-    ) %>%
-      layout(title = paste0(site," ","Annual Treatment Visits"),
-             legend = list(x = 100, y = 0.5),
-             xaxis = list(rangemode = "tozero"), 
-             yaxis = list(rangemode = "tozero",
-                          title  = "Patient Volume",
-                          tickformat = "~s")
-      )
     }#, height = function(x) input$plotHeight
   )
   

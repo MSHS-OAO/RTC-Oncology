@@ -768,6 +768,36 @@ plotly_function <- function(plot, tooltip_data, title){
                                                     )
   
 }
+
+
+plotly_function_volume <- function(plot, tooltip_data, title){
+  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
+  )
+  )
+  
+}
+
+
+ggplotly_graph_theme <- function(data, title){
+  geom_line(aes(color=Appt.Year), size=1.1)+
+              geom_point(aes(color=Appt.Year), size=3)+
+              scale_color_MountSinai('dark')+
+              labs(title = title, 
+                   subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+                   y = "Patient Volume", x = NULL, fill = NULL)+
+              scale_y_continuous(limits=c(0,(max(data$total))*1.3)) +
+              theme(legend.position = 'top',
+                    legend.title=element_blank(),
+                    plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+                    axis.title = element_text(size="12"),
+                    axis.text = element_text(size="12"),
+                    axis.title.x = element_blank(),
+                    axis.line = element_line(size = 0.3, colour = "black"),
+                    axis.title.y = element_text(size = 12, angle = 90)
+                    
+              )
+  
+}
 # dept_mapping <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Department Consolidaton-Filter") %>%
 #                   select(-`EPIC  Department`, -SITE, -ACTIVE) %>%
 #                   rename(Dept_Mapping = `Display in Filter as`,
