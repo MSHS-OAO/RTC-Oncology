@@ -1176,7 +1176,7 @@ ui <- dashboardPage(
                                   title = NULL,
                                   id = "tabset1", width = "100%", height = "1000px",
                                   tabPanel("Average",
-                                           plotOutput("spaceUtil", height = "900px") %>% 
+                                           plotlyOutput("spaceUtil", height = "900px") %>% 
                                              withSpinner(type = 5, color = "#d80b8c")),
                                   tabPanel("Percentiles",
                                            plotOutput("spaceUtilPerc", height = "900px") %>% 

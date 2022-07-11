@@ -555,7 +555,8 @@ table_theme <- function(){
     plot.title = element_blank(),
     panel.border = element_rect(colour = "black", fill = NA, size=0.5),
     axis.line.x = element_line(colour = "black", size=0.5),
-    plot.margin=unit(c(-0.5,1,1,1), "cm"))
+    plot.margin=unit(c(1,1,1,1), "cm")
+    )
 }
 
 ### (2) Import Data ----------------------------------------------------------------------------------
@@ -599,7 +600,7 @@ if(file.exists("J:/")){
   #### Local Data Directories
   historical.data <- readRDS("Data/historical_data.rds")
   population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-  utilization.data <- readRDS("Data/utilization_data.rds")
+  utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
   filter_path <- paste0(wdpath, "/Filters")
 }else{
@@ -761,7 +762,7 @@ callback <- callback <- JS(
 )
 
 
-plotly_function <- function(plot, tooltip_data){
+plotly_function <- function(plot, tooltip_data, title){
   ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
                                                                   )
                                                     )

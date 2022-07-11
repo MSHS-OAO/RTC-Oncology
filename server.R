@@ -999,119 +999,72 @@ server <- function(input, output, session) {
       theme_minimal() +
       table_theme()
     
-    library(patchwork)
-    test <- g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    plotly_function(g1, c("total"))
     
-    total_visits <- total_visits %>% 
-      arrange(factor(Appt.Month, levels = month.abb))
+    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year#, label=total
+                                   )
+                 ) +
+    labs(x=NULL, y=NULL)+
+      #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
+      #coord_flip()+
+      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
+      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            #plot.margin = margin(10,30,30,30)
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+      geom_hline(yintercept = hline_y, colour='black')+
+      geom_vline(xintercept = 0, colour = 'black') +
+      table_theme() #+
+      #scale_y_discrete(expand = c(0,0)) +
+    #scale_x_discrete(expand = c(0,0))
     
+   #  library(patchwork)
+   #  test <- g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+   #  plotly_function(g1, c("total"))
+   #  
+   #  total_visits <- total_visits %>% 
+   #    arrange(factor(Appt.Month, levels = month.abb))
+   #  
+   #  
+   #  
+   # p1 <- plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+   #                y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year,
+   #               domain = list(x=c(x = c(0,1), y = c(0.5,1))),
+   #                colors = c("#212070", "#d80b8c", "#00aeef")
+   #              ) 
+   # 
+   # 
+   # 
+   # 
+   #  
+   #  plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
+   #          y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
+   #          colors = c("#212070", "#d80b8c", "#00aeef")
+   #  ) %>%
+   #    layout(title = paste0(site," ","Annual All Visits"),
+   #           legend = list(x = 100, y = 0.5),
+   #           xaxis = list(rangemode = "tozero"), 
+   #           yaxis = list(rangemode = "tozero",
+   #                        title  = "Patient Volume",
+   #                        tickformat = "~s")
+   #    )
     
-    
-   p1 <- plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-                  y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year,
-                 domain = list(x=c(x = c(0,1), y = c(0.5,1))),
-                  colors = c("#212070", "#d80b8c", "#00aeef")
-                ) 
-  
-   
-   
-   # initiate a line shape object
-  #  line <- list(
-  #    type = "line",
-  #    line = list(color = "black", width = 0.5),
-  #    xref = "paper",
-  #    yref = "paper",
-  #    x0 = 0,
-  #    x1 = 1
-  #  )
-  #  
-  #  
-  #  lines <- list()
-  #  num_of_years <- length(unique(total_visits$Appt.Year)) - 1
-  #  
-  #  if(num_of_years != 0){
-  #    for (i in num_of_years){
-  #      line[["y0"]] <- (i - 1) + 0.25
-  #      line[["y1"]] <- (i - 1) + 0.25
-  #      lines <- c(lines, list(line))
-  #    }
-  # }
-  #  
-  #  m <- list(
-  #    l = 0,
-  #    r = 0,
-  #    b = 50,
-  #    t = 50
-  #    #pad = 4
-  #  )
-  #  
-  #  margin_default <- list(l = 80,
-  #                         r = 80,
-  #                         b = 80,
-  #                         t = 100
-  #                         )
-  #  p2  <- plot_ly(total_visits, x=~Appt.Month, 
-  #                 y=~Appt.Year, type = 'scatter', mode = 'text', text = ~total, textposition = 'bottom'
-  #                 
-  #  ) %>%
-  #    layout(xaxis = list(showticklabels=FALSE),
-  #         yaxis = list(autorange = F,
-  #                      range = c(-0.05,0.05),
-  #                      tick0=0,
-  #                      dtick=0.05
-  #                     ),
-  #         shapes = lines,
-  #         autosize = F#,
-  #         #width = 500, height = 500,
-  #         #margin = m
-  #    ) %>%
-  #    style(hoverinfo = 'none')
-  #    
-  #   
-  #   
-  #   
-  #   subplot(p1, p2, nrows = 2) %>%
-  #   #p1 %>%
-  #     layout(title = paste0(site," ","Annual All Visits"),
-  #            legend = list(x = 100, y = 0.5),
-  #            yaxis = list(domain = c(0.5,1),
-  #                         autosize = T,
-  #                         showLine = T,
-  #                         linewidth = 1,
-  #                         linecolor = 'black',
-  #                         mirror = T),
-  #            yaxis2 = list(domain = c(0.18,0.43),
-  #                          autosize = T,
-  #                          showLine = T,
-  #                          linewidth = 1,
-  #                          linecolor = 'black',
-  #                          mirror = T
-  #                          ),
-  #            xaxis = list(showLine = T,
-  #                         linewidth = 1,
-  #                         linecolor = 'black',
-  #                         mirror = T),
-  #            xaxis2 = list(showline = T,
-  #                          linewidth = 1,
-  #                          linecolor = 'black',
-  #                          mirror = T)#,
-  #            #margin = margin_default
-  #            
-  #            
-  #            
-  #     )
-    
-    plot_ly(total_visits, x=factor(total_visits$Appt.Month, levels = month.abb), 
-            y=~total, type = 'scatter', mode = 'lines+markers', color = ~Appt.Year, 
-            colors = c("#212070", "#d80b8c", "#00aeef")
-    ) %>%
-      layout(title = paste0(site," ","Annual All Visits"),
-             legend = list(x = 100, y = 0.5),
-             xaxis = list(rangemode = "tozero"), 
-             yaxis = list(rangemode = "tozero",
-                          title  = "")
-      )
+    g1 <- ggplotly(g1)
+    g2 <- ggplotly(g2)
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4))
     
   }#, height = function(x) input$plotHeight
   )
@@ -1175,7 +1128,8 @@ server <- function(input, output, session) {
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero",
-                          title  = "")
+                          title  = "Patient Volume",
+                          tickformat = "~s")
       )
     
   }#, height = function(x) input$plotHeight
@@ -1244,7 +1198,8 @@ server <- function(input, output, session) {
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero",
-                          title  = "")
+                          title  = "Patient Volume",
+                          tickformat = "~s")
       )
     }#, height = function(x) input$plotHeight
   )
@@ -1309,7 +1264,8 @@ server <- function(input, output, session) {
              legend = list(x = 100, y = 0.5),
              xaxis = list(rangemode = "tozero"), 
              yaxis = list(rangemode = "tozero",
-                          title  = "")
+                          title  = "Patient Volume",
+                          tickformat = "~s")
       )
   }#, height = function(x) input$plotHeight
   )
@@ -4656,9 +4612,9 @@ server <- function(input, output, session) {
   })
   
   # Average Utilization by Time of Day
-  output$spaceUtil <- renderPlot({
+  output$spaceUtil <- renderPlotly({
     data <- dataUtilization() %>% filter(comparison == 0)
-    # data <- utilization.data[arrived.utilization.data.rows,]
+    # data <- utilization.data %>% filter(Appt.Status == "Arrived")
     
     # Days of Week Table
     daysOfWeek.Table <- 
@@ -4695,7 +4651,8 @@ server <- function(input, output, session) {
       geom_line(size=1.2)+
       labs(x=NULL, y="Utilization (%)", 
            title = "Average Space Utilization (%) by Time of Day and Day of Week",
-           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
+           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2]))
+           )+
       scale_color_MountSinai("main")+
       #geom_hline(yintercept = .8, color = "red", linetype="dashed")+
       geom_hline(aes(yintercept = .8), color = "red", linetype="dashed")+
@@ -4710,9 +4667,9 @@ server <- function(input, output, session) {
     
     table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
       labs(x=NULL, y=NULL)+
-      geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
+      #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
       coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
+      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
       #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
@@ -4728,11 +4685,18 @@ server <- function(input, output, session) {
             panel.background = element_blank(),
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
-            plot.margin = margin(10,30,30,30))+
+            #plot.margin = margin(10,30,30,30)
+            )+
       geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util,2),"%"))), color="black", size=5, fontface="bold")
     #geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util*100,2)*100,"%"))), color="black", size=5, fontface="bold")
     
-    grid.arrange(graph, table, ncol = 1, heights = c(5,3))
+    
+    p1 <- ggplotly(graph)
+    p2 <- ggplotly(table)
+    
+    subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4))
+    
+    #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
   })
   
