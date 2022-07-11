@@ -1024,7 +1024,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
 
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
                                                                                )
     
   }#, height = function(x) input$plotHeight
@@ -1144,7 +1144,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
     
   }#, height = function(x) input$plotHeight
@@ -1265,7 +1265,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
     
     }#, height = function(x) input$plotHeight
@@ -1384,7 +1384,7 @@ server <- function(input, output, session) {
     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T, legend = list(title = list(text = "Year"))
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.7, 0.3)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
     )
   }#, height = function(x) input$plotHeight
   )
@@ -1587,19 +1587,38 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
-      geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","All Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           x = NULL, y = "Patient Volume\n", fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+    # g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   labs(title = paste0(site," ","All Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
+    #        x = NULL, y = "Patient Volume\n", fill = NULL)+
+    #   theme_new_line()+
+    #   theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
       # geom_text(aes(label=total), color="white", 
       #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
       # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
       #              size=5, fontface="bold.italic")
+    
+    
+    g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
+      geom_bar(position="stack",stat="identity", width=0.7)+
+      scale_fill_MountSinai('dark')+
+      labs(title = paste0(site," ","All Visit Volume Composition"),
+           subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+           y = "Patient Volume", x = NULL, fill = NULL)+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
@@ -1616,21 +1635,50 @@ server <- function(input, output, session) {
     
     total_visits_break$AssociationListA <- factor(total_visits_break$AssociationListA, levels = c("Total","Exam","Treatment","Labs"))
     
+    # g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
+    #   #scale_color_MountSinai('dark' )+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL, fill = "AssociationListA")+
+    #   theme_minimal() +
+    #   table_theme()
+    
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
-      #scale_color_MountSinai('dark' )+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "AssociationListA")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
+    # library(patchwork)
+    # g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
+    # 
+    # plotly_function(g1, c("total"))
+    # 
     
-    plotly_function(g1, c("total"))
+    g1 <- ggplotly(g1, tooltip = c("total")) 
+    g2 <- ggplotly(g2, tooltip = NULL)
     
+    
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
+    )
     
   }#, height = function(x) input$plotHeight
   )
@@ -1655,19 +1703,38 @@ server <- function(input, output, session) {
     
     total_visits_break <- total_visits_break %>% filter(!is.na(AssociationListB))
     
+    # g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   labs(title = paste0(site," ","Exam Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
+    #        y = "Patient Volume\n", x = NULL, fill = NULL)+
+    #   theme_new_line()+
+    #   theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+    #   # geom_text(aes(label=total), color="white", 
+    #   #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+    #   # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+    #   #              size=5, fontface="bold.italic")
+    
+    
     g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","Exam Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
-      # geom_text(aes(label=total), color="white", 
-      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-      #              size=5, fontface="bold.italic")
+           subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+           y = "Patient Volume", x = NULL, fill = NULL)+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     
     
     Total <- total_visits_break %>% 
@@ -1688,19 +1755,49 @@ server <- function(input, output, session) {
     total_in_list <- length(unique(total_visits_break$AssociationListB))-1
     colors <- all_pallete[total_in_list:1]
     
-    g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
-      #scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    # g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
+    #   #scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs( y = NULL, x = NULL, fill = "AssociationListB")+
+    #   theme_minimal() +
+    #   table_theme()
+    
+  g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
+    labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs( y = NULL, x = NULL, fill = "AssociationListB")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
-    plotly_function(g3, c("total"))
+    # library(patchwork)
+    # g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
+    # plotly_function(g3, c("total"))
+  
+  g3 <- ggplotly(g3, tooltip = c("total")) 
+  g4 <- ggplotly(g4, tooltip = NULL)
+  
+  
+  subplot(g3, g4, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
+  )
+  
     
     
   }#, height = function(x) input$plotHeight
@@ -1736,20 +1833,42 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
+    # g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   labs(title = paste0(site," ","Treatment Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
+    #        y = "Patient Volume\n", x = NULL, fill = NULL)+
+    #   theme_new_line()+
+    #   theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+    #   # geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
+    #   #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+    #   # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+    #   #              size=5, fontface="bold.italic")
+    # 
+    
+    
+    
     g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
       geom_bar(position="stack",stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
       labs(title = paste0(site," ","Treatment Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
-      # geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
-      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-      #              size=5, fontface="bold.italic")
+           subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+           y = "Patient Volume", x = NULL, fill = NULL)+
+      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     
+      
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
       summarise(total = sum(total))
@@ -1772,19 +1891,52 @@ server <- function(input, output, session) {
     list_length <- length(unique(total_visits_break$AssociationListT))
     
     
+    # g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total)) +
+    #   #scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = 'bold')+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs( y = NULL, x = NULL, fill = "AssociationListT")+
+    #   theme_minimal() +
+    #   table_theme()
+    # 
+    
+    
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total)) +
-      #scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = 'bold')+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs( y = NULL, x = NULL, fill = "AssociationListT")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
-    plotly_function(g5, c("total"))
+    
+    # library(patchwork)
+    # g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
+    # plotly_function(g5, c("total"))
+    
+    
+    g5 <- ggplotly(g5, tooltip = c("total")) 
+    g6 <- ggplotly(g6, tooltip = NULL)
+    
+    
+    subplot(g5, g6, nrows = 2, margin = 0.1, heights = c(0.4, 0.6)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    )
     
     
   }#, height = function(x) input$plotHeight
