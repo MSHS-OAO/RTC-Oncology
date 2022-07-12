@@ -973,8 +973,7 @@ server <- function(input, output, session) {
     g2 <- ggplot_table(total_visits, hline_y)
     
 
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(orientation = "h", x = 0.5, y = 1.0)
-                                                                               )
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
     
   }#, height = function(x) input$plotHeight
   )
@@ -4524,7 +4523,7 @@ server <- function(input, output, session) {
   })
   
   # Average Utilization by Time of Day
-  output$spaceUtil <- renderPlotly({
+  output$spaceUtil <- renderPlot({
     data <- dataUtilization() %>% filter(comparison == 0)
     # data <- utilization.data %>% filter(Appt.Status == "Arrived")
     
@@ -4579,9 +4578,9 @@ server <- function(input, output, session) {
     
     table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
       labs(x=NULL, y=NULL)+
-      #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
+      geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
       coord_flip()+
-      #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
+      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
       #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
@@ -4603,12 +4602,12 @@ server <- function(input, output, session) {
     #geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util*100,2)*100,"%"))), color="black", size=5, fontface="bold")
     
     
-    p1 <- ggplotly(graph)
-    p2 <- ggplotly(table)
+    # p1 <- ggplotly(graph)
+    # p2 <- ggplotly(table)
+    # 
+    # subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4))
     
-    subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4))
-    
-    #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
+    grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
   })
   
