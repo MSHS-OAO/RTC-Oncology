@@ -864,7 +864,7 @@ ggplot_bar_graph <- function(df, title, x_data, y_data, group, max) {
                   legend.title=element_blank(),
                   plot.title = element_text(hjust=0.5, face = "bold", size = 16),
                   axis.title = element_text(size="12"),
-                  axis.text = element_text(size="12"),
+                  axis.text = element_text(size="11"),
                   axis.title.x = element_blank(),
                   axis.line = element_line(size = 0.3, colour = "black"),
                   axis.title.y = element_text(size = 12, angle = 90)

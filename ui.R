@@ -1173,25 +1173,29 @@ ui <- dashboardPage(
                                 title = "Space Utilization", width = 12, status = "primary",
                                 solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                                 tabBox(
-                                  title = NULL,
-                                  id = "tabset1", width = "100%", height = "1000px",
-                                  tabPanel("Average",
-                                           plotOutput("spaceUtil", height = "900px") %>% 
-                                             withSpinner(type = 5, color = "#d80b8c")),
+                                title = NULL,
+                                id = "tabset1", width = "100%", height = "auto",
+                                tabPanel("Average",
+                                           plotlyOutput("spaceUtil", height = "auto") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c")
+                                  ),
                                   tabPanel("Percentiles",
-                                           plotOutput("spaceUtilPerc", height = "900px") %>% 
-                                             withSpinner(type = 5, color = "#d80b8c")))),
+                                  plotlyOutput("spaceUtilPerc", height = "auto") %>%
+                                    withSpinner(type = 5, color = "#d80b8c")
+                                  )
+                                  )
+                                ),
                               boxPlus(
                                 title = "Space Required", width = 12, status = "primary",
                                 solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                                 tabBox(
                                   title = NULL,
-                                  id = "tabset2", width = "100%", height = "1000px",
+                                  id = "tabset2", width = "100%", height = "auto",
                                   tabPanel("Average",
-                                           plotOutput("spaceUsed", height = "900px") %>% 
+                                           plotlyOutput("spaceUsed", height = "auto") %>% 
                                              withSpinner(type = 5, color = "#d80b8c")),
                                   tabPanel("Percentiles",
-                                           plotOutput("spaceUsedPerc", height = "900px") %>% 
+                                           plotlyOutput("spaceUsedPerc", height = "auto") %>% 
                                              withSpinner(type = 5, color = "#d80b8c"))))
                               
                               
