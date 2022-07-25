@@ -4488,8 +4488,8 @@ server <- function(input, output, session) {
     #space.hour.day$target <- 80
     space.hour.day$target <- 0.8
     
-    
-    graph <- ggplot(space.hour.day, aes(x=Time, col=factor(Day,level = daysOfWeek.options), y=Average_Util, group=Day))+
+    space.hour.day <- space.hour.day %>% rename(`Average Utilization` = Average_Util)
+    graph <- ggplot(space.hour.day, aes(x=Time, col=factor(Day,level = daysOfWeek.options), y=`Average Utilization`, group=Day))+
       geom_line(size=1.2)+
       labs(x=NULL, y="Utilization (%)", 
            title = "Average Space Utilization (%) by Time of Day and Day of Week",
@@ -4498,15 +4498,7 @@ server <- function(input, output, session) {
       scale_color_MountSinai("main")+
       #geom_hline(yintercept = .8, color = "red", linetype="dashed")+
       geom_hline(aes(yintercept = .8), color = "red", linetype="dashed")+
-      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour.day$Average_Util)*1.2))+
-      #theme_new_line()+
-      #theme_bw()+
-      #graph_theme("top")+
-      # theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"),
-      #       axis.text.x = element_text(size = 14, angle=0, hjust=1),
-      #       plot.title = element_text(hjust=0.5, face = "bold", size = 16, vjust = -0.5)
-      #       )#+
-      #guides(colour = guide_legend(nrow = 1))
+      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour.day$`Average Utilization`)*1.2))+
       theme(legend.position = 'top',
             legend.title=element_blank(),
             plot.title = element_text(hjust=0.5, face = "bold", size = 16),
@@ -4518,30 +4510,15 @@ server <- function(input, output, session) {
             
       )
     
-    space.hour.day$Average_Util <- space.hour.day$Average_Util*100
+    space.hour.day$Average_Util <- space.hour.day$`Average Utilization`*100
     
     table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
       labs(x=NULL, y=NULL)+
       #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
       coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
+      scale_fill_gradient2(midpoint = median(unique(space.hour.day$`Average Utilization`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
       #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
       scale_x_discrete(position = "bottom")+
-      # theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-      #       legend.position = "top",
-      #       legend.direction = "horizontal",
-      #       legend.key.size = unit(.8,"cm"),
-      #       legend.text = element_text(size="10"),
-      #       axis.title.x = element_blank(),
-      #       axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-      #       axis.text.x = element_blank(),
-      #       axis.text.y = element_text(color= "black", margin = margin(r=15)),
-      #       axis.text = element_text(size="14"),
-      #       panel.background = element_blank(),
-      #       panel.grid.minor = element_blank(),
-      #       panel.grid.major = element_blank(),
-      #       #plot.margin = margin(10,30,30,30)
-      #       )+
     theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
           legend.position = "top",
           legend.direction = "horizontal",
@@ -4556,17 +4533,17 @@ server <- function(input, output, session) {
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
     ) +
-      geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util,2),"%"))), color="black", size=4, fontface="bold")
+      geom_text(aes(label= ifelse(is.na(`Average Utilization`),"",paste0(round(`Average Utilization`,2),"%"))), color="black", size=4, fontface="bold")
     #geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util*100,2)*100,"%"))), color="black", size=5, fontface="bold")
     
     
-    p1 <- ggplotly(graph, tooltip = c("Average_Util")
+    p1 <- ggplotly(graph, tooltip = c("Average Utilization")
              ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
     
     #p1 <- ggplotly(graph)
     p2 <- ggplotly(table, tooltip = NULL)
 
-    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Utilization (%)"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
     
     #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
@@ -4579,8 +4556,6 @@ server <- function(input, output, session) {
     
     c.start <- which(colnames(data)=="07:00")
     c.end <- which(colnames(data)=="20:00")
-    
-    print("1")
     
     space.hour <- aggregate(data[c(c.start:c.end)], list(data$Appt.DateYear),FUN = sum)
     space.hour <- reshape2::melt(space.hour, id=c("Group.1"))
@@ -4605,9 +4580,10 @@ server <- function(input, output, session) {
     
     space.hour <- space.hour %>% filter(Time %in% timeOptionsHr_filter)
     
-    graph <- ggplot(space.hour, aes(x=Time, y=value, col=variable, group=variable))+
+    space.hour <- space.hour %>% rename(Utilization = value)
+    graph <- ggplot(space.hour, aes(x=Time, y=Utilization, col=variable, group=variable))+
       geom_line(size=1.2)+
-      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour$value)*1.2))+
+      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour$Utilization)*1.2))+
       labs(x=NULL, y="Number of Rooms\n", 
            title = "Space Utilization (%) by Percentile by Time of Day",
            #subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2]))
@@ -4628,7 +4604,7 @@ server <- function(input, output, session) {
       )
     guides(colour = guide_legend(nrow = 1))
     
-    space.hour$value <- space.hour$value*100
+    space.hour$value <- space.hour$Utilization*100
     
     table <- ggplot(space.hour, aes(x=variable, y=Time))+
       labs(x=NULL, y=NULL)+
@@ -4651,18 +4627,18 @@ server <- function(input, output, session) {
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
     ) +
-      geom_text(aes(label= ifelse(is.na(value),"",paste0(round(value,1),"%"))), color="black", size=4, fontface="bold")
+      geom_text(aes(label= ifelse(is.na(Utilization),"",paste0(round(Utilization,1),"%"))), color="black", size=4, fontface="bold")
     
     
     #grid.arrange(graph, table, ncol = 1, heights = c(5,2))
     
-    p1 <- ggplotly(graph, tooltip = c("value")
+    p1 <- ggplotly(graph, tooltip = c("Utilization")
     ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
     
     #p1 <- ggplotly(graph)
     p2 <- ggplotly(table, tooltip = NULL)
     
-    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Utilization (%)"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
     
     
   })
@@ -4698,7 +4674,9 @@ server <- function(input, output, session) {
     
     space.hour.day <- space.hour.day %>% filter(Time %in% timeOptionsHr_filter)
     
-    graph <- ggplot(space.hour.day, aes(x=Time, y=Average_Req, col=factor(Day,level = daysOfWeek.options), group=Day))+
+    space.hour.day <- space.hour.day %>% rename(`Average Space Requiered` = Average_Req)
+    
+    graph <- ggplot(space.hour.day, aes(x=Time, y=`Average Space Requiered`, col=factor(Day,level = daysOfWeek.options), group=Day))+
       geom_line(size=1.2)+
       labs(x=NULL, y="Number of Rooms\n",
            title = "Average Space Required by Time of Day and Day of Week",
@@ -4723,7 +4701,7 @@ server <- function(input, output, session) {
       labs(x=NULL, y=NULL)+
       #geom_tile(aes(fill=Average_Req), colour = "black", size=0.5)+
       coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Req)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
+      scale_fill_gradient2(midpoint = median(unique(space.hour.day$`Average Space Requiered`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
             legend.position = "top",
@@ -4739,17 +4717,17 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
       ) +
-      geom_text(aes(label= ifelse(is.na(Average_Req),"", round(Average_Req))), color="black", size=4, fontface="bold")
+      geom_text(aes(label= ifelse(is.na(`Average Space Requiered`),"", round(`Average Space Requiered`))), color="black", size=4, fontface="bold")
     
     #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
-    p1 <- ggplotly(graph, tooltip = c("Average_Req")
+    p1 <- ggplotly(graph, tooltip = c("Average Space Requiered")
     ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
     
     #p1 <- ggplotly(graph)
     p2 <- ggplotly(table, tooltip = NULL)
     
-    subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4)) %>% layout(showlegend = T, margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Number of Rooms"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
     
   })
   # Rooms Required by Percentile 
@@ -4775,9 +4753,10 @@ server <- function(input, output, session) {
     
     space.hour <- space.hour %>% filter(Time %in% timeOptionsHr_filter)
     
-    graph <- ggplot(space.hour, aes(x=Time, y=value, col=variable, group=variable))+
+    space.hour <- space.hour %>% rename(`Space Required` = value)
+    graph <- ggplot(space.hour, aes(x=Time, y=`Space Required`, col=variable, group=variable))+
       geom_line(size=1.2)+
-      scale_y_continuous(limits=c(0, max(space.hour$value)*1.2))+
+      scale_y_continuous(limits=c(0, max(space.hour$`Space Required`)*1.2))+
       labs(x=NULL, y="Number of Rooms\n",
            title = "Space Required by Percentile by Time of Day",
            subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
@@ -4801,7 +4780,7 @@ server <- function(input, output, session) {
       labs(x=NULL, y=NULL)+
       #geom_tile(aes(fill=value), colour = "black", size=0.5)+
       coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour$value)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
+      scale_fill_gradient2(midpoint = median(unique(space.hour$`Space Required`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
       #scale_y_discrete(limits = unique(sort(space.hour$Time)), position = "bottom")+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
@@ -4818,16 +4797,16 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
       ) +
-      geom_text(aes(label= ifelse(is.na(value),"", round(value,1))), color="black", size=4, fontface="bold")
+      geom_text(aes(label= ifelse(is.na(`Space Required`),"", round(`Space Required`,1))), color="black", size=4, fontface="bold")
     
     
-    p1 <- ggplotly(graph, tooltip = c("value")
+    p1 <- ggplotly(graph, tooltip = c("Space Required")
     ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
     
     #p1 <- ggplotly(graph)
-    p2 <- ggplotly(table)
+    p2 <- ggplotly(table, tooltip = NULL)
     
-    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Number of Rooms"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
     
     
     
