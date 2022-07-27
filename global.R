@@ -567,31 +567,6 @@ monthly_slot <- here::here("Data/Slot/Monthly")
 singleday_access <- here::here("Data/Access/SingleDay")
 singleday_slot <- here::here("Data/Slot/SingleDay")
 
-
-# Set Working Directory (PILOT)
-#wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-#wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-# wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
-
-
-wdpath <- here::here()
-
-setwd(wdpath)
-
-
-#master.data.new_new <- data_all
-
-
-# ## Utilization Data
-# data.hour.scheduled <- read_csv("Data/Utilization/data.hour.scheduled.pilotV1.csv")
-# data.hour.arrived <- read_csv("Data/Utilization/data.hour.arrived.pilotV1.csv")
-
-
-# process_data function includes reading in the mapping file creating an renaming slot and access columns
-# the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
-
-
-
 ### (6) Data Subset -----------------------------------------------------------------------------------------------------
 
 
