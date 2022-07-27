@@ -2,14 +2,13 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
-
-# # Remove Provider ID from Provider Name column
-# amb_df_groupings_unique$PROV_NAME_WID <- trimws(gsub("\\[.*?\\]", "", amb_df_groupings_unique$PROV_NAME_WID))
-
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
 #default_campus <- "DBC"
-default_campus <- unique(historical.data$SITE)
+#default_campus <- unique(historical.data$SITE)
+default_campus <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
+                        collect()
+default_campus <- sort(default_campus_test$SITE, na.last = T)
 
 campus_choices <- sort(unique(historical.data$SITE))
 

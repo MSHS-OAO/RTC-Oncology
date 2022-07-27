@@ -72,6 +72,7 @@ suppressMessages({
 source("global_functions")
 
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
+oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
@@ -105,13 +106,6 @@ if(file.exists("J:/")){
 
 
 max_date <- max(historical.data$Appt.DateYear)
-
-
-# 
-# ####Unique Patient Processing 
-# 
-# historical.data <- uniquePts_df_system(historical.data, c("Exam"))
-
 
 
 setDT(historical.data)
