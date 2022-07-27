@@ -125,7 +125,7 @@ suppressMessages({
   library(rhandsontable)
 })
 
-
+con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 
 
 # (7) Data Reactive functions ---------------------------------------------------------------------------------
