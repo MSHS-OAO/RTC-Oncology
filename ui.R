@@ -8,13 +8,24 @@ library(shinyscreenshot)
 #default_campus <- unique(historical.data$SITE)
 default_campus <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                         collect()
-default_campus <- sort(default_campus_test$SITE, na.last = T)
+default_campus <- sort(default_campus$SITE, na.last = T)
+campus_choices <- default_campus
 
-campus_choices <- sort(unique(historical.data$SITE))
 
-default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
-default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                      historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
+#default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
+default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% select(DEPARTMENT_NAME) %>% 
+                                            mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
+                                            collect()
+default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
+
+
+# default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                       historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
+
+default_diag_grouper <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
+                                              select(DX_GROUPER) %>% mutate(DX_GROUPER = unique(DX_GROUPER)) %>%
+                                                                            collect()
+default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
 
 default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"])) 
 
