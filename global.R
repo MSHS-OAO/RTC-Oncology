@@ -67,9 +67,10 @@ suppressMessages({
   library(feather)
   library(reactable)
   library(rhandsontable)
+  library(glue)
 })
 
-source("global_functions")
+source("global_functions.R")
 
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
@@ -92,7 +93,7 @@ if(file.exists("J:/")){
   population.data_filtered <- readRDS("Data/population_data_grouped.rds")
   utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
-  filter_path <- paste0(wdpath, "/Filters")
+  filter_path <- here::here("Filters")
 }else{
   historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
@@ -104,69 +105,6 @@ if(file.exists("J:/")){
 
 
 
-
-max_date <- max(historical.data$Appt.DateYear)
-
-
-setDT(historical.data)
-
-min_date <- "2019-01-01"
-
-## Other datasets
-
-all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
-
-arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                    Appt.Status %in% c("Arrived"), which = TRUE]
-
-canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                                        Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
-
-canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                     Appt.Status %in% c("Canceled"), which = TRUE]
-
-bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                   Appt.Status %in% c("Bumped"), which = TRUE]
-
-rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                        Appt.Status %in% c("Rescheduled"), which = TRUE]
-
-sameDay.rows <- historical.data[Appt.DTTM >= min_date &
-                               Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
-                               Lead.Days == 0, which = TRUE]
-
-noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                   Appt.Status %in% c("No Show"),
-                                 which = TRUE
-                                ]
-
-noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
-
-arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
-
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                              Appt.Status %in% c("Arrived") &
-                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
-
-
-####TREND 
-
-arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                       Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-##### Unique
-arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
-                                             Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-
-
-historical.data <- as.data.frame(historical.data)
-unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
-unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 
 ### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
@@ -201,32 +139,6 @@ Time <- rep(timeOptionsHr, 7)
 Day <- rep(daysOfWeek.options, each = 24)
 byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
 
-
-
-
-default_campus <- unique(historical.data$SITE)
-arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
-
-
-
-### Uniqie Patietns
-historical.data.unique.exam <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.unique.exam.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.unique.all <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.unique.all.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.unique.treatment <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
-historical.data.unique.treatment.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
-
-
-historical.data.site.exam.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.site.exam <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.site.all.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
-historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
-
-
-
 all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
 all_provider <- all_provider[,1]
 
@@ -244,5 +156,111 @@ callback <- callback <- JS(
   "$('#download1').hide();"
 )
 
+max_date <- max(historical.data$Appt.DateYear)
 
 
+setDT(historical.data)
+
+min_date <- "2019-01-01"
+
+## Other datasets
+
+all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
+
+arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                       Appt.Status %in% c("Arrived"), which = TRUE]
+
+canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                                           Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
+
+canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                        Appt.Status %in% c("Canceled"), which = TRUE]
+
+bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                      Appt.Status %in% c("Bumped"), which = TRUE]
+
+rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                           Appt.Status %in% c("Rescheduled"), which = TRUE]
+
+sameDay.rows <- historical.data[Appt.DTTM >= min_date &
+                                  Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
+                                  Lead.Days == 0, which = TRUE]
+
+noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                      Appt.Status %in% c("No Show"),
+                                    which = TRUE
+]
+
+noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
+
+arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
+
+arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                              Appt.Status %in% c("Arrived") &
+                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
+
+
+####TREND 
+
+arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                             Appt.Status %in% c("Arrived"), which = TRUE]
+
+
+
+##### Unique
+arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
+                                              Appt.Status %in% c("Arrived"), which = TRUE]
+
+
+
+
+
+historical.data <- as.data.frame(historical.data)
+unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+
+
+arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
+
+groupByFilters_Trend <- function(dt, campus, department
+                                 , mindateRange, maxdateRange
+                                 , daysofweek, holidays
+                                 ){
+  format <- "YYYY-MM-DD HH24:MI:SS"
+  daysofweek <- toupper(daysofweek)
+  
+  
+  result <- dt %>% filter(SITE %in% campus, 
+                          DEPARTMENT_NAME %in% department, 
+                          TO_DATE(mindateRange, format) <= APPT_DTTM, 
+                          TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                          APPT_DAY %in% daysofweek#, 
+                          #!HOLIDAY %in% holidays
+  ) #%>% collect()
+  #return(result)
+}
+
+
+all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
+all_provider <- all_provider[,1]
+
+
+default_campus <- unique(historical.data$SITE)
+arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
+
+
+### Uniqie Patietns
+historical.data.unique.exam <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.exam.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.all <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.all.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.treatment <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
+historical.data.unique.treatment.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
+
+
+historical.data.site.exam.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.exam <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.all.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
+historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))

@@ -15,13 +15,13 @@ groupByFilters_unique <- function(dt, campus, department, mindateRange, maxdateR
   return(result)
 }
 
-groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays#,
-                          #Dx.Grouper %in% dx
-  )
-  return(result)
-}
+# groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
+#   result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+#                           mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays#,
+#                           #Dx.Grouper %in% dx
+#   )
+#   return(result)
+# }
 
 
 groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider, dx){
@@ -469,9 +469,9 @@ ggplotly_graph_theme <- function(data, title){
 
 ggplot_line_graph <- function(df, title) {
   
-  graph <- ggplot(df, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-    geom_line(aes(color=Appt.Year), size=1.1)+
-    geom_point(aes(color=Appt.Year), size=3)+
+  graph <- ggplot(df, aes(x=factor(APPT_MONTH, levels = monthOptions), y=total, group=APPT_YEAR))+
+    geom_line(aes(color=APPT_YEAR), size=1.1)+
+    geom_point(aes(color=APPT_YEAR), size=3)+
     scale_color_MountSinai('dark')+
     labs(title = title,
          y = NULL, x = NULL, fill = NULL)+
@@ -495,7 +495,7 @@ ggplot_line_graph <- function(df, title) {
 
 
 ggplot_table <- function(df, hline_y) {
-  graph <- ggplot(df, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year))+
+  graph <- ggplot(df, aes(x= factor(APPT_MONTH, levels = monthOptions), y= APPT_YEAR))+
     labs(x=NULL, y=NULL)+
     scale_x_discrete(position = "bottom")+
     theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
