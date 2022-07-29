@@ -145,10 +145,10 @@ groupByFilters_unique <- function(dt, campus, department, mindateRange, maxdateR
   return(result)
 }
 
-groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
+groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, dx){
   result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays#,
-                          #Dx.Grouper %in% dx
+                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek,
+                          Dx.Grouper %in% dx, !holiday %in% holidays
                           )
   return(result)
 }

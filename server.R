@@ -548,11 +548,22 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters_Trend(historical.data[arrived.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays#,
-                   #input$diag_grouper
-                   )
+    data <- groupByFilters_Trend(historical.data[arrived.data.rows,],
+                               input$selectedCampus, input$selectedDepartment,
+                               input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+                               input$diag_grouper
+                               )
+    
+    
+    if("NA" %in% input$diag_grouper){
+      data_1 <- groupByFilters_3(dataArrived(),
+                                 input$selectedDisease, input$selectedProvider, NA)
+      
+      data <- bind_rows(data,data_1)
+    }
+    data
+    
+    
   })
   
   # Canceled data ============================================================================================================
@@ -587,6 +598,17 @@ server <- function(input, output, session) {
     )
     groupByFilters_2(dataArrived(),
                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+    
+    
+    if("NA" %in% input$diag_grouper){
+      data_1 <-  groupByFilters_2(dataArrived(),
+                                  input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+      
+      data <- bind_rows(data,data_1)
+    }
+    data
+    
+    
   })
   
   
@@ -597,8 +619,16 @@ server <- function(input, output, session) {
       need(input$selectedDisease != "", "Please select a provider group"),
       need(input$selectedProvider != "", "Please select a provider")
     )
-    groupByFilters_3(dataArrived(),
-                     input$selectedDisease, input$selectedProvider, input$diag_grouper)
+    data <- groupByFilters_3(dataArrived(),
+                        input$selectedDisease, input$selectedProvider, input$diag_grouper)
+    
+    if("NA" %in% input$diag_grouper){
+      data_1 <- groupByFilters_3(dataArrived(),
+                                 input$selectedDisease, input$selectedProvider, NA)
+      
+      data <- bind_rows(data,data_1)
+    }
+    data
   })
   
   dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2),{
@@ -699,11 +729,29 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters_Trend(historical.data[arrived.data.rows.trend,],
-                         input$selectedCampus, input$selectedDepartment,
-                         input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays#,
-                         #input$diag_grouper
-    )
+      
+      campus_select <<- input$selectedCampus
+      dept_select <<- input$selectedDepartment
+      range_min <<- input$dateRangetrend[1]
+      range_max <<- input$dateRangetrend[2]
+      days_test <<- input$daysOfWeek
+      holid <<- input$excludeHolidays
+      giag <<- input$diag_grouper
+    data <- groupByFilters_Trend(historical.data[arrived.data.rows.trend,],
+                                 input$selectedCampus, input$selectedDepartment,
+                                 input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays,
+                                 input$diag_grouper
+                                 )
+    if("NA" %in% input$diag_grouper){
+      data_1 <- groupByFilters_Trend(historical.data[arrived.data.rows.trend,],
+                                   input$selectedCampus, input$selectedDepartment,
+                                   input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays,
+                                   NA
+      )
+      data <- bind_rows(data,data_1)
+    }
+    data
+    
     })
   })
   
@@ -941,6 +989,7 @@ server <- function(input, output, session) {
   output$trend_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
+    data_test <<- data
     # data <- historical.data[arrived.data.rows.trend,]
     
     min_date <- min(data$Appt.DateYear)
