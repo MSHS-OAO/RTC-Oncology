@@ -596,8 +596,8 @@ server <- function(input, output, session) {
       need(input$selectedApptType != "", "Please select a visit type detail"),
       need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
-    groupByFilters_2(dataArrived(),
-                     input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+    data <- groupByFilters_2(dataArrived(),
+                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
     
     
     if("NA" %in% input$diag_grouper){
