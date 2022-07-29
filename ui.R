@@ -229,9 +229,9 @@ ui <- dashboardPage(
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
                                   menuSubItem("Breakdown", tabName = "volumebreakdown"),
-                                  menuSubItem("Comparison", tabName = "volumecomparison"))#,
-                         # menuItem("By Provider", tabName = "providerVolume",
-                         #          menuSubItem("Breakdown", tabName = "provvolbreakdown"))
+                                  menuSubItem("Comparison", tabName = "volumecomparison")),
+                         menuItem("By Provider", tabName = "providerVolume",
+                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          menuItem("Exam Utilization", tabName = "utilization"),
