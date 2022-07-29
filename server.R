@@ -260,12 +260,15 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$selectedCampus,{
+    select_campus <- input$selectedCampus
+    #select_campus <- "MSW"
     # department_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Department"]))
     
-    department_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus) %>% select(DEPARTMENT_NAME) %>% 
+    department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% select(DEPARTMENT_NAME) %>% 
                           mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                           collect()
     department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
+    
     
     updatePickerInput(session,
                       inputId = "selectedDepartment",
@@ -273,10 +276,11 @@ server <- function(input, output, session) {
                       selected = department_choices
     )
     
+    print("1")
     # visit_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
     #                                                     historical.data$Department %in% department_choices, "AssociationListA"]))
     
-    visit_type_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices) %>%
+    visit_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
                           select(ASSOCIATIONLISTA) %>%
                           mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
                           collect()
@@ -288,12 +292,13 @@ server <- function(input, output, session) {
                       selected = visit_type_choices
     )
     
+    print("2")
     
     # appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
     #                                                    historical.data$Department %in% department_choices &
     #                                                    historical.data$AssociationListA %in% visit_type_choices, "AssociationListB"]))
     
-    appt_type_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices &
+    appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                   ASSOCIATIONLISTA %in%  visit_type_choices) %>%
                                           select(ASSOCIATIONLISTB) %>% 
                                           mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
@@ -313,7 +318,7 @@ server <- function(input, output, session) {
     #                                                    historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
     
     
-    treatment_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices &
+    treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                        ASSOCIATIONLISTA %in% visit_type_choices &
                                                        ASSOCIATIONLISTB %in% appt_type_choices) %>%
                                                         select(ASSOCIATIONLISTT) %>% 
@@ -329,7 +334,7 @@ server <- function(input, output, session) {
     
     
     # department_choices_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus, "Department"]))
-    department_choices_disease <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived")) %>%
+    department_choices_disease <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
                                     select(DEPARTMENT_NAME) %>%
                                     mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                     collect()
@@ -338,7 +343,7 @@ server <- function(input, output, session) {
     # disease_choices <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
     #                                                      arrivedDisease.data$Department %in% department_choices_disease, "Disease_Group"]))
     
-    disease_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
+    disease_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                        DEPARTMENT_NAME %in% department_choices_disease) %>%
                                           select(DISEASE_GROUP) %>%
                                           mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
@@ -361,7 +366,7 @@ server <- function(input, output, session) {
     #                                                       arrivedDisease.data$Disease_Group %in% disease_choices, "Provider"]))
     
     
-    provider_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
+    provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                   DEPARTMENT_NAME %in% department_choices_disease & 
                                                   DISEASE_GROUP %in% disease_choices) %>%
                                                 select(PROVIDER) %>%
@@ -387,9 +392,11 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$selectedDepartment,{
+    
+    select_campus <- input$selectedCampus
     # visit_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
     #                                                     historical.data$Department %in% input$selectedDepartment, "AssociationListA"]))
-    visit_type_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices) %>%
+    visit_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
                                             select(ASSOCIATIONLISTA) %>%
                                             mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
                                             collect()
@@ -405,7 +412,7 @@ server <- function(input, output, session) {
     #                                                    historical.data$AssociationListA %in% visit_type_choices, "AssociationListB"]))
     
     
-    appt_type_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices &
+    appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                    ASSOCIATIONLISTA %in%  visit_type_choices) %>%
                                                 select(ASSOCIATIONLISTB) %>% 
                                                 mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
@@ -421,7 +428,7 @@ server <- function(input, output, session) {
     #                                                    historical.data$AssociationListA %in% visit_type_choices &
     #                                                    historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
     
-    treatment_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% department_choices &
+    treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                    ASSOCIATIONLISTA %in% visit_type_choices &
                                                    ASSOCIATIONLISTB %in% appt_type_choices) %>%
                                                   select(ASSOCIATIONLISTT) %>% 
@@ -436,7 +443,7 @@ server <- function(input, output, session) {
     )
     # department_choices_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus, "Department"]))  
     
-    department_choices_disease <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived")) %>%
+    department_choices_disease <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
                                                           select(DEPARTMENT_NAME) %>%
                                                           mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                                           collect()
@@ -445,7 +452,7 @@ server <- function(input, output, session) {
     # disease_choices <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
     #                                                      arrivedDisease.data$Department %in% department_choices_disease, "Disease_Group"]))
     
-    disease_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
+    disease_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                  DEPARTMENT_NAME %in% department_choices_disease) %>%
                                               select(DISEASE_GROUP) %>%
                                               mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
@@ -469,7 +476,7 @@ server <- function(input, output, session) {
     #                                                       arrivedDisease.data$Department %in% department_choices_disease &
     #                                                       arrivedDisease.data$Disease_Group %in% disease_choices, "Provider"]))
     
-    provider_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
+    provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                   DEPARTMENT_NAME %in% department_choices_disease & 
                                                   DISEASE_GROUP %in% disease_choices) %>%
                                                   select(PROVIDER) %>%
@@ -509,12 +516,15 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$selectedVisitType,{
+    select_campus <- input$selectedCampus
+    select_dept <- input$selectedDepartment
+    select_visit_type <- input$selectedVisitType
     # appt_type_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
     #                                                    historical.data$Department %in% input$selectedDepartment &
     #                                                    historical.data$AssociationListA %in% input$selectedVisitType, "AssociationListB"]))
     
-    appt_type_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% input$selectedDepartment &
-                                                   ASSOCIATIONLISTA %in%  input$selectedVisitType) %>%
+    appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+                                                   ASSOCIATIONLISTA %in%  select_visit_type) %>%
                                                 select(ASSOCIATIONLISTB) %>% 
                                                 mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
                                                 collect()
@@ -532,8 +542,8 @@ server <- function(input, output, session) {
     #                                                    historical.data$AssociationListA %in% input$selectedVisitType &
     #                                                    historical.data$AssociationListB %in% appt_type_choices, "AssociationListT"]))
     
-    treatment_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% input$selectedDepartment &
-                                                   ASSOCIATIONLISTA %in% input$selectedVisitType &
+    treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+                                                   ASSOCIATIONLISTA %in% select_visit_type &
                                                    ASSOCIATIONLISTB %in% appt_type_choices) %>%
       select(ASSOCIATIONLISTT) %>% 
       mutate(ASSOCIATIONLISTT = unique(ASSOCIATIONLISTT)) %>% 
@@ -551,14 +561,18 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$selectedApptType,{
+    select_campus <- input$selectedCampus
+    select_dept <- input$selectedDepartment
+    select_visit_type <- input$selectedVisitType
+    select_appt_type <- input$selectedApptType
     # treatment_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
     #                                                    historical.data$Department %in% input$selectedDepartment &
     #                                                    historical.data$AssociationListA %in% input$selectedVisitType &
     #                                                    historical.data$AssociationListB %in% input$selectedApptType, "AssociationListT"]))
     
-    treatment_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & DEPARTMENT_NAME %in% input$selectedDepartment &
-                                                   ASSOCIATIONLISTA %in% input$selectedVisitType &
-                                                   ASSOCIATIONLISTB %in% input$selectedApptType) %>%
+    treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+                                                   ASSOCIATIONLISTA %in% select_visit_type &
+                                                   ASSOCIATIONLISTB %in% select_appt_type) %>%
                                                 select(ASSOCIATIONLISTT) %>% 
                                                 mutate(ASSOCIATIONLISTT = unique(ASSOCIATIONLISTT)) %>% 
                                                 collect()
@@ -575,13 +589,17 @@ server <- function(input, output, session) {
   
   
   observeEvent(c(input$selectedDisease),{
+    
+    select_campus <- input$selectedCampus
+    select_dept <- input$selectedDepartment
+    select_disease <- input$selectedDisease
     # provider_choices <-  sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
     #                                                        arrivedDisease.data$Department %in% input$selectedDepartment &
     #                                                        arrivedDisease.data$Disease_Group %in% input$selectedDisease, "Provider"]))
     
-    provider_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
-                                                  DEPARTMENT_NAME %in% input$selectedDepartment & 
-                                                  DISEASE_GROUP %in% input$selectedDisease) %>%
+    provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                  DEPARTMENT_NAME %in% select_dept & 
+                                                  DISEASE_GROUP %in% select_disease) %>%
                                                 select(PROVIDER) %>%
                                                 mutate(PROVIDER = unique(PROVIDER)) %>%
                                                 collect()
@@ -598,13 +616,18 @@ server <- function(input, output, session) {
   
   
   observeEvent(c(input$selectedDisease2),{
+    
+    select_campus <- input$selectedCampus
+    select_dept <- input$selectedDepartment
+    select_disease <- input$selectedDisease2
+    
     # provider_choices <-  sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% input$selectedCampus &
     #                                                        arrivedDisease.data$Department %in% input$selectedDepartment &
     #                                                        arrivedDisease.data$Disease_Group %in% input$selectedDisease2, "Provider"]))
     
-    provider_choices <- oncology_tbl %>% filter(SITE %in% input$selectedCampus & APPT_STATUS %in% c("Arrived") &
-                                                  DEPARTMENT_NAME %in% input$selectedDepartment & 
-                                                  DISEASE_GROUP %in% input$selectedDisease2) %>%
+    provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                  DEPARTMENT_NAME %in% select_dept & 
+                                                  DISEASE_GROUP %in% select_disease) %>%
                                                   select(PROVIDER) %>%
                                                   mutate(PROVIDER = unique(PROVIDER)) %>%
                                                   collect()
