@@ -119,7 +119,7 @@ suppressMessages({
   library(ggtext)
   library(janitor)
   library(viridis) # Load color brewer palettes
-  library(zipcodeR)
+  #library(zipcodeR)
   library(feather)
   library(reactable)
   library(rhandsontable)
@@ -496,6 +496,10 @@ scale_fill_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FA
 # loadfonts(device = "win")
 # windowsFonts()
 
+plotly_font <- list(
+  family = "Calibri",
+  size = 14,
+  color = "bold")
 
 graph_theme <- function(legend_pos) {
   theme(
@@ -551,7 +555,8 @@ table_theme <- function(){
     plot.title = element_blank(),
     panel.border = element_rect(colour = "black", fill = NA, size=0.5),
     axis.line.x = element_line(colour = "black", size=0.5),
-    plot.margin=unit(c(-0.5,1,1,1), "cm"))
+    plot.margin=unit(c(1,1,1,1), "cm")
+    )
 }
 
 ### (2) Import Data ----------------------------------------------------------------------------------
@@ -595,7 +600,7 @@ if(file.exists("J:/")){
   #### Local Data Directories
   historical.data <- readRDS("Data/historical_data.rds")
   population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-  utilization.data <- readRDS("Data/utilization_data.rds")
+  utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
   filter_path <- paste0(wdpath, "/Filters")
 }else{
@@ -756,15 +761,143 @@ callback <- callback <- JS(
   "$('#download1').hide();"
 )
 
-# dept_mapping <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Department Consolidaton-Filter") %>%
-#                   select(-`EPIC  Department`, -SITE, -ACTIVE) %>%
-#                   rename(Dept_Mapping = `Display in Filter as`,
-#                          DEPARTMENT_ID = `EPIC Department ID`)
-# 
-# historical.data <- full_join(historical.data, dept_mapping)
-# 
-# historical.data <- historical.data %>% select(-Department)
-# 
-# historical.data <- historical.data %>% rename(Department = Dept_Mapping)
-# 
-# historical.data <- historical.data %>% filter(!is.na(Appt.DateYear))
+
+plotly_function <- function(plot, tooltip_data, title){
+  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
+                                                                  )
+                                                    )
+  
+}
+
+
+plotly_function_volume <- function(plot, tooltip_data, title){
+  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
+  )
+  )
+  
+}
+
+
+ggplotly_graph_theme <- function(data, title){
+  geom_line(aes(color=Appt.Year), size=1.1)+
+              geom_point(aes(color=Appt.Year), size=3)+
+              scale_color_MountSinai('dark')+
+              labs(title = title, 
+                   subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+                   y = "Patient Volume", x = NULL, fill = NULL)+
+              scale_y_continuous(limits=c(0,(max(data$total))*1.3)) +
+              theme(legend.position = 'top',
+                    legend.title=element_blank(),
+                    plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+                    axis.title = element_text(size="12"),
+                    axis.text = element_text(size="12"),
+                    axis.title.x = element_blank(),
+                    axis.line = element_line(size = 0.3, colour = "black"),
+                    axis.title.y = element_text(size = 12, angle = 90)
+                    
+              )
+  
+}
+
+ggplot_line_graph <- function(df, title) {
+  
+  graph <- ggplot(df, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
+            geom_line(aes(color=Appt.Year), size=1.1)+
+            geom_point(aes(color=Appt.Year), size=3)+
+            scale_color_MountSinai('dark')+
+            labs(title = title,
+                 y = NULL, x = NULL, fill = NULL)+
+            scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
+            theme(legend.position = 'top',
+                  legend.title=element_blank(),
+                  plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+                  axis.title = element_text(size="12"),
+                  axis.text = element_text(size="12"),
+                  axis.title.x = element_blank(),
+                  axis.line = element_line(size = 0.3, colour = "black"),
+                  axis.title.y = element_text(size = 12, angle = 90)
+                  
+            )
+  
+  
+  ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+  
+}
+
+
+
+ggplot_table <- function(df, hline_y) {
+  graph <- ggplot(df, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year))+
+            labs(x=NULL, y=NULL)+
+            scale_x_discrete(position = "bottom")+
+            theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+                  legend.position = "top",
+                  legend.direction = "horizontal",
+                  legend.key.size = unit(.8,"cm"),
+                  legend.text = element_text(size="10"),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+                  axis.text.x = element_blank(),
+                  axis.text.y = element_text(color= "black", margin = margin(r=15)),
+                  axis.text = element_text(size="14"),
+                  panel.background = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.grid.major = element_blank(),
+            ) +
+            geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+            geom_hline(yintercept = hline_y, colour='black')+
+            geom_vline(xintercept = 0, colour = 'black') +
+            table_theme()
+  
+  ggplotly(graph, tooltip = NULL)
+}
+
+
+ggplot_bar_graph <- function(df, title, x_data, y_data, group, max) {
+  graph <- ggplot(df, aes(x = x_data, y = y_data, group = group, fill = group))+
+            geom_bar(position="stack",stat="identity", width=0.7)+
+            scale_fill_MountSinai('dark')+
+            labs(title = title,
+                 y = "Patient Volume", x = NULL, fill = NULL)+
+            scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+            theme(legend.position = 'top',
+                  legend.title=element_blank(),
+                  plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+                  axis.title = element_text(size="12"),
+                  axis.text = element_text(size="11"),
+                  axis.title.x = element_blank(),
+                  axis.line = element_line(size = 0.3, colour = "black"),
+                  axis.title.y = element_text(size = 12, angle = 90)
+                  
+            )
+  ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+}
+
+
+
+ggplot_bar_table <- function(df, x_data, y_data, label, hline_y) {
+  table <- ggplot(df, aes(x = x_data, y= y_data, label = label)) +
+            labs(x=NULL, y=NULL)+
+            scale_x_discrete(position = "bottom")+
+            theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+                  legend.position = "top",
+                  legend.direction = "horizontal",
+                  legend.key.size = unit(.8,"cm"),
+                  legend.text = element_text(size="10"),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+                  axis.text.x = element_blank(),
+                  axis.text.y = element_text(color= "black", margin = margin(r=15)),
+                  axis.text = element_text(size="14"),
+                  panel.background = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.grid.major = element_blank(),
+            ) +
+            geom_text(aes(label= ifelse(is.na(df$total),"",df$total)), color="black", size=5, fontface="bold") +
+            geom_hline(yintercept = hline_y, colour='black')+
+            geom_vline(xintercept = 0, colour = 'black') +
+            table_theme()
+  
+  ggplotly(table, tooltip = NULL)
+  
+}

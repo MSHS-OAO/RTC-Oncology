@@ -287,6 +287,16 @@ ui <- dashboardPage(
     tags$head(tags$style(
       HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
     )),
+    
+    tags$head(tags$style(
+      HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
+    )),
+    
+    
+    # tags$head(tags$style(
+    #   HTML('.nsewdrag.drag {outline:1px solid black;}')
+    # )),
+    
     fluidPage(
       # box "status" color for Mount Sinai Purple
       tags$style(HTML("
@@ -410,25 +420,25 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_totalvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_examvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Lab Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("trend_labvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("trend_labvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
@@ -466,19 +476,19 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "All Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_totalvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_totalvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Exam Visits", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_examvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_examvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        boxPlus(
                          title = "Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("break_treatmentvisitsgraph", height = "auto") %>% 
+                         plotlyOutput("break_treatmentvisitsgraph", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        )
                        
@@ -577,9 +587,9 @@ ui <- dashboardPage(
                                selected = "Monthly",
                                status = "info"))
                          ),
-                         plotOutput("volumeCompTotal_grh", height = "auto") %>%
+                         plotlyOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         plotOutput("volumeCompTrend_grh", height = "auto") %>%
+                         plotlyOutput("volumeCompTrend_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"))
                 ) #Close column
         ), # Close volume Comparison
@@ -1163,25 +1173,29 @@ ui <- dashboardPage(
                                 title = "Space Utilization", width = 12, status = "primary",
                                 solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                                 tabBox(
-                                  title = NULL,
-                                  id = "tabset1", width = "100%", height = "1000px",
-                                  tabPanel("Average",
-                                           plotOutput("spaceUtil", height = "900px") %>% 
-                                             withSpinner(type = 5, color = "#d80b8c")),
+                                title = NULL,
+                                id = "tabset1", width = "100%", height = "auto",
+                                tabPanel("Average",
+                                           plotlyOutput("spaceUtil", height = "auto") %>% 
+                                             withSpinner(type = 5, color = "#d80b8c")
+                                  ),
                                   tabPanel("Percentiles",
-                                           plotOutput("spaceUtilPerc", height = "900px") %>% 
-                                             withSpinner(type = 5, color = "#d80b8c")))),
+                                  plotlyOutput("spaceUtilPerc", height = "auto") %>%
+                                    withSpinner(type = 5, color = "#d80b8c")
+                                  )
+                                  )
+                                ),
                               boxPlus(
                                 title = "Space Required", width = 12, status = "primary",
                                 solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                                 tabBox(
                                   title = NULL,
-                                  id = "tabset2", width = "100%", height = "1000px",
+                                  id = "tabset2", width = "100%", height = "auto",
                                   tabPanel("Average",
-                                           plotOutput("spaceUsed", height = "900px") %>% 
+                                           plotlyOutput("spaceUsed", height = "auto") %>% 
                                              withSpinner(type = 5, color = "#d80b8c")),
                                   tabPanel("Percentiles",
-                                           plotOutput("spaceUsedPerc", height = "900px") %>% 
+                                           plotlyOutput("spaceUsedPerc", height = "auto") %>% 
                                              withSpinner(type = 5, color = "#d80b8c"))))
                               
                               

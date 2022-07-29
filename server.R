@@ -938,7 +938,7 @@ server <- function(input, output, session) {
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
-  output$trend_totalvisitsgraph <- renderPlot({
+  output$trend_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- historical.data[arrived.data.rows.trend,]
@@ -955,46 +955,34 @@ server <- function(input, output, session) {
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
+
     
-    g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual All Visits"),
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
+    title <- paste0(site," ","Annual All Visits")
+  
     
-    n <- length(unique(total_visits$Appt.Year)) - 1
+    
+      n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
       hline_y <- 0
     } else{
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
+  
 
+    g1 <- ggplot_line_graph(total_visits, title)
+    g2 <- ggplot_table(total_visits, hline_y)
+    
 
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
-      table_theme()
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    
-  }, height = function(x) input$plotHeight)
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_examvisitsgraph <- renderPlot({
+  output$trend_examvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
-    # data <- arrived.data
+    # data <- historical.data[arrived.data.rows.trend,]
     
     total_visits <- data %>% filter(AssociationListA == "Exam") %>% 
       group_by(Appt.Year, Appt.Month) %>% summarise(total = n())
@@ -1004,44 +992,29 @@ server <- function(input, output, session) {
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
-    
-    g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual Exam Visits"), 
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
-    
-    
+
+    title <- paste0(site," ","Annual Exam Visits")
+  
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
       hline_y <- 0
     } else{
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
-    
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
-      table_theme()
-    
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
+
+
+    g1 <- ggplot_line_graph(total_visits, title)
+    g2 <- ggplot_table(total_visits, hline_y)
     
     
-  }, height = function(x) input$plotHeight)
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
+    )
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_treatmentvisitsgraph <- renderPlot({
+  output$trend_treatmentvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- arrived.data
@@ -1054,18 +1027,8 @@ server <- function(input, output, session) {
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
-    
-    g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual Treatment Visits"), 
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
-    
-    
+
+    title <- paste0(site," ","Annual Treatment Visits")
     
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
@@ -1073,26 +1036,19 @@ server <- function(input, output, session) {
     } else{
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
+  
+    g1 <- ggplot_line_graph(total_visits, title) 
+    g2 <- ggplot_table(total_visits, hline_y)
     
     
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
-      table_theme()
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
+    )
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    
-  }, height = function(x) input$plotHeight)
+    }#, height = function(x) input$plotHeight
+  )
   
   
-  output$trend_labvisitsgraph <- renderPlot({
+  output$trend_labvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
     # data <- arrived.data
@@ -1104,17 +1060,8 @@ server <- function(input, output, session) {
     } else{
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
-    
-    g1 <- ggplot(total_visits, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = paste0(site," ","Annual Lab Visits"), 
-                 subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                 y = NULL, x = NULL, fill = NULL)+
-            theme_new_line()+
-            scale_y_continuous(limits=c(0,(max(total_visits$total))*1.3))
-    
+
+    title <- paste0(site," ","Annual Lab Visits")
     
     n <- length(unique(total_visits$Appt.Year)) - 1
     if(n==0){
@@ -1122,23 +1069,16 @@ server <- function(input, output, session) {
     } else{
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
+  
+    
+    g1 <- ggplot_line_graph(total_visits, title)
+    g2 <- ggplot_table(total_visits, hline_y)
     
     
-    g2 <- ggplot(total_visits, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total)) +
-      scale_color_MountSinai('dark' )+
-      #scale_color_manual(values = c("#000000","#5cd3ff", "#d80b8c","#212070"))+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
-      geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "Appt.Year")+
-      theme_minimal() +
-      table_theme()
-    
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits$Appt.Year))))
-    
-  }, height = function(x) input$plotHeight)
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits")#, legend = list(title = list(text = "Year"))
+    )
+  }#, height = function(x) input$plotHeight
+  )
   
   
   output$trend_visitstable <- function(){
@@ -1320,7 +1260,7 @@ server <- function(input, output, session) {
   }
   
   # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------       
-  output$break_totalvisitsgraph <- renderPlot({
+  output$break_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
@@ -1338,20 +1278,10 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    g1 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListA, fill=AssociationListA))+
-      geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","All Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           x = NULL, y = "Patient Volume\n", fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90),  plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+    title <- paste0(site," ","All Visit Volume Composition")
     
+    g1 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$Appt.MonthYear, total_visits_break$total, total_visits_break$AssociationListA, max)
+
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
       summarise(total = sum(total))
@@ -1367,24 +1297,52 @@ server <- function(input, output, session) {
     
     total_visits_break$AssociationListA <- factor(total_visits_break$AssociationListA, levels = c("Total","Exam","Treatment","Labs"))
     
+    # g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
+    #   #scale_color_MountSinai('dark' )+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL, fill = "AssociationListA")+
+    #   theme_minimal() +
+    #   table_theme()
+    
+    #g2 <- ggplot_bar_table(total_visits_break, total_visits_break$Appt.MonthYear, total_visits_break$AssociationListB, total_visits_break$total, hline_y)
+    
     g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
-      #scale_color_MountSinai('dark' )+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface  = "bold")+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL, fill = "AssociationListA")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListA))))
+
+     g2 <- ggplotly(g2, tooltip = NULL)
     
     
-  }, height = function(x) input$plotHeight)
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
+    )
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$break_examvisitsgraph <- renderPlot({
+  output$break_examvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
@@ -1403,20 +1361,23 @@ server <- function(input, output, session) {
     
     total_visits_break <- total_visits_break %>% filter(!is.na(AssociationListB))
     
-    g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
-      geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","Exam Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+    # g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   labs(title = paste0(site," ","Exam Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
+    #        y = "Patient Volume\n", x = NULL, fill = NULL)+
+    #   theme_new_line()+
+    #   theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+    #   # geom_text(aes(label=total), color="white", 
+    #   #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+    #   # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+    #   #              size=5, fontface="bold.italic")
     
+    title <- paste0(site," ","Exam Visit Volume Composition")
+    g3 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$Appt.MonthYear, total_visits_break$total, total_visits_break$AssociationListB, max)
+
     
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
@@ -1436,23 +1397,52 @@ server <- function(input, output, session) {
     total_in_list <- length(unique(total_visits_break$AssociationListB))-1
     colors <- all_pallete[total_in_list:1]
     
-    g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
-      #scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    # g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
+    #   #scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs( y = NULL, x = NULL, fill = "AssociationListB")+
+    #   theme_minimal() +
+    #   table_theme()
+    
+  g4 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListB, label=total)) +
+    labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs( y = NULL, x = NULL, fill = "AssociationListB")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g3 + g4 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListB))))
+  # g3 <- ggplotly(g3, tooltip = c("total")) 
+  g4 <- ggplotly(g4, tooltip = NULL)
+  
+  
+  subplot(g3, g4, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
+  )
+  
     
-  }, height = function(x) input$plotHeight)
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
-  output$break_treatmentvisitsgraph <- renderPlot({
+  output$break_treatmentvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
     
@@ -1481,20 +1471,44 @@ server <- function(input, output, session) {
       site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     }
     
-    g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
-      geom_bar(position="stack",stat="identity", width=0.7)+
-      scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-      labs(title = paste0(site," ","Treatment Visit Volume Composition"),
-           subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-           y = "Patient Volume\n", x = NULL, fill = NULL)+
-      theme_new_line()+
-      theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-      stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                   size=5, fontface="bold.italic")
+    # g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   labs(title = paste0(site," ","Treatment Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
+    #        y = "Patient Volume\n", x = NULL, fill = NULL)+
+    #   theme_new_line()+
+    #   theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+    #   # geom_text(data=subset(total_visits_break, total/sum > .05),aes(label=total), color="white", 
+    #   #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+    #   # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+    #   #              size=5, fontface="bold.italic")
+    # 
     
+    
+    
+    title <- paste0(site," ","Treatment Visit Volume Composition")
+    g5 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$Appt.MonthYear, total_visits_break$total, total_visits_break$AssociationListT, max)
+    # g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
+    #   geom_bar(position="stack",stat="identity", width=0.7)+
+    #   scale_fill_MountSinai('dark')+
+    #   labs(title = paste0(site," ","Treatment Visit Volume Composition"),
+    #        subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
+    #        y = "Patient Volume", x = NULL, fill = NULL)+
+    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
+    #   theme(legend.position = 'top',
+    #         legend.title=element_blank(),
+    #         plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+    #         axis.title = element_text(size="12"),
+    #         axis.text = element_text(size="12"),
+    #         axis.title.x = element_blank(),
+    #         axis.line = element_line(size = 0.3, colour = "black"),
+    #         axis.title.y = element_text(size = 12, angle = 90)
+    #         
+    #   )
+    
+      
     Total <- total_visits_break %>% 
       group_by(Appt.MonthYear) %>%
       summarise(total = sum(total))
@@ -1517,25 +1531,61 @@ server <- function(input, output, session) {
     list_length <- length(unique(total_visits_break$AssociationListT))
     
     
+    # g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total)) +
+    #   #scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = 'bold')+
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs( y = NULL, x = NULL, fill = "AssociationListT")+
+    #   theme_minimal() +
+    #   table_theme()
+    # 
+    
+    
     g6 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListT, label=total)) +
-      #scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = 'bold')+
+      labs(x=NULL, y=NULL)+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=4, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs( y = NULL, x = NULL, fill = "AssociationListT")+
-      theme_minimal() +
+      geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
     
-    library(patchwork)
-    g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
     
-  }, height = function(x) input$plotHeight)
+    # library(patchwork)
+    # g5 + g6 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(total_visits_break$AssociationListT))))
+    # plotly_function(g5, c("total"))
+    
+    
+    #g5 <- ggplotly(g5, tooltip = c("total")) 
+    g6 <- ggplotly(g6, tooltip = NULL)
+    
+    
+    subplot(g5, g6, nrows = 2, margin = 0.1, heights = c(0.4, 0.6)) %>% layout(showlegend = T#, legend = list(title = list(text = "Year"))
+    )
+    
+    
+  }#, height = function(x) input$plotHeight
+  )
   
   
   # Volume Comparison Tab ------------------------------------------------------------------------------------------------------
   #Volume Comparison Tab - Total Breakdown
-  output$volumeCompTotal_grh <- renderPlot({
+  output$volumeCompTotal_grh <- renderPlotly({
     
     data <- dataArrived_filtered()
     # data <- historical.data[arrived.data.rows,]
@@ -1572,7 +1622,7 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_all, aes(x=Appt.MonthYear, y=total))+
           geom_bar(stat="identity", width=0.7, fill="#212070")+
           scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
-          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
+          #geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
           theme_new_line()+
           theme(axis.text.x = element_text(angle = 0, hjust=0.5))+
           labs(title = paste0(site, " Monthly ",visitType, " Volume Breakdown by ",input$comp_choices),
@@ -1587,7 +1637,7 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_all, aes(x=Appt.Week, y=total))+
           geom_bar(stat="identity", fill="#212070")+
           scale_y_continuous(limits=c(0,(max(visit_comp_all$total))*1.2))+
-          geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
+          #geom_text(aes(label=total), vjust =-1, color="black", fontface="bold", size=5)+
           scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))+
           theme_new_line()+
           theme(axis.text.x = element_text(angle = 0, hjust=0.5))+
@@ -1619,15 +1669,15 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_site, aes(x=Appt.MonthYear, y=total, group=SITE, fill=SITE))+
           geom_bar(position="stack", stat="identity", width=0.7)+
           scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-                       size=5, fontface="bold.italic")+
+          # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
+          #              size=5, fontface="bold.italic")+
           theme_new_line()+
           labs(title = paste0(site, " Monthly ",visitType, " Volume Breakdown by ",input$comp_choices),
                subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
                #caption = paste0("\n*Includes ",apptType),
-               y = NULL, x = NULL, fill = NULL)+
-          geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white", 
-                    size=5, fontface="bold", position = position_stack(vjust = 0.5))
+               y = NULL, x = NULL, fill = NULL)#+
+          #geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white", 
+                    #size=5, fontface="bold", position = position_stack(vjust = 0.5))
         
     
         
@@ -1672,16 +1722,16 @@ server <- function(input, output, session) {
         graph <- ggplot(visit_comp_site, aes(x=Appt.Week, y=total, group=SITE, fill=SITE))+
           geom_bar(position="stack", stat="identity")+
           scale_y_continuous(limits=c(0,(max(max$total))*1.2))+
-          stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
-                       size=5, fontface="bold.italic")+
+          # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.Week), geom="text", color="black", 
+          #              size=5, fontface="bold.italic")+
           scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week", expand = c(0,0.2))+
            theme_new_line()+
           labs(title = paste0(site, " Weekly ",visitType, " Volume Breakdown by ",input$comp_choices),
                subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
                #caption = paste0("\n*Includes ",apptType),
                y = NULL, x = NULL, fill = NULL)+
-          geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white",
-                    size=5, fontface="bold", position = position_stack(vjust = 0.5))+
+          # geom_text(data=subset(visit_comp_site, total/Total > .15),aes(label=total), color="white",
+          #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
           theme(axis.text.x = element_text(size = 16, angle=50, hjust=1))
         
         
@@ -1719,17 +1769,18 @@ server <- function(input, output, session) {
     
     if(flag == 0){
       library(patchwork)
-      g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      ggplotly(g1) # + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
     }else{
-        g1
+        ggplotly(g1)
     }
       
     
-  }, height = function(x) input$plotHeight)
+  }#, height = function(x) input$plotHeight
+  )
   
   
   # Volume Comparison Tab - Trend Graphs
-  output$volumeCompTrend_grh <- renderPlot({
+  output$volumeCompTrend_grh <- renderPlotly({
     
     data <- dataArrived_filtered()
     # data <- historical.data[arrived.data.rows,]
@@ -1926,15 +1977,16 @@ server <- function(input, output, session) {
 
     if(flag == 1){
       library(patchwork)
-      g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      ggplotly(g1)# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
       }else if(flag == 0){
         library(patchwork)
-        g1 + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
+        ggplotly(g1)# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
       }else{
-        g1
+        ggplotly(g1)
         }
     
-  }, height = function(x) input$plotHeight)
+  } #, height = function(x) input$plotHeight
+  )
   
   
   # Provider Volume Tab ------------------------------------------------------------------------------------------------------
@@ -4401,79 +4453,10 @@ server <- function(input, output, session) {
   #     valueBox(
   #       subtitle = tags$p("Average Daily Filled Utilization", style = "font-size: 160%;"), icon = NULL, color = "aqua")
   # })
-  
-  # Average Number of Rooms Required -----------------------------------------------
-  output$spaceUsed <- renderPlot({
-    data <- dataUtilization() %>% filter(comparison == 0)
-    
-    # data <- as.data.frame(utilization.data[arrived.utilization.data.rows,])
-    
-    # Days of Week Table
-    daysOfWeek.Table <- 
-      data %>%
-      group_by(Appt.Day, Appt.DateYear) %>%
-      dplyr::summarise(total = n()) %>%
-      group_by(Appt.Day) %>%
-      dplyr::summarise(count = n())
-    
-    c.start <- which(colnames(data)=="07:00")
-    c.end <- which(colnames(data)=="20:00")
-    
-    space.hour.day <- aggregate(data[c(c.start:c.end)], list(data$Appt.Day),FUN = sum)
-    space.hour.day <- reshape2::melt(space.hour.day, id=c("Group.1"))
-    space.hour.day$days <- daysOfWeek.Table$count[match(daysOfWeek.Table$Appt.Day,space.hour.day$Group.1)]
-    
-    space.hour.day$average <- round(space.hour.day$value/(space.hour.day$days*60), 1)
-    names(space.hour.day) <- c("Day","Time","Total_Dur","Days","Average_Req")
-    
-    byDayTime.df <- byDayTime.df[which(byDayTime.df$Day %in% unique(space.hour.day$Day)),]
-    
-    space.hour.day <- as.data.frame(merge(byDayTime.df,space.hour.day, by.x = c("Day","Time"), by.y = c("Day","Time"), all = TRUE))
-    space.hour.day[is.na(space.hour.day)] <- 0
-    
-    space.hour.day <- space.hour.day %>% filter(Time %in% timeOptionsHr_filter)
-    
-    graph <- ggplot(space.hour.day, aes(x=Time, y=Average_Req, col=factor(Day,level = daysOfWeek.options), group=Day))+
-      geom_line(size=1.2)+
-      labs(x=NULL, y="Number of Rooms\n",
-           title = "Average Space Required by Time of Day and Day of Week",
-           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
-      scale_color_MountSinai("main")+
-      theme_new_line()+
-      theme_bw()+
-      graph_theme("top") + theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))+
-      guides(colour = guide_legend(nrow = 1))
-    
-    table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
-      labs(x=NULL, y=NULL)+
-      geom_tile(aes(fill=Average_Req), colour = "black", size=0.5)+
-      coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Req)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
-      scale_x_discrete(position = "bottom")+
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(.8,"cm"),
-            legend.text = element_text(size="10"),
-            axis.title.x = element_blank(),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_blank(),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(10,30,30,30))+
-      geom_text(aes(label= ifelse(is.na(Average_Req),"", round(Average_Req))), color="black", size=5, fontface="bold")
-    
-    grid.arrange(graph, table, ncol = 1, heights = c(5,3))
-    
-  })
-  
   # Average Utilization by Time of Day
-  output$spaceUtil <- renderPlot({
+  output$spaceUtil <- renderPlotly({
     data <- dataUtilization() %>% filter(comparison == 0)
-    # data <- utilization.data[arrived.utilization.data.rows,]
+    # data <- utilization.data %>% filter(Appt.Status == "Arrived")
     
     # Days of Week Table
     daysOfWeek.Table <- 
@@ -4505,117 +4488,69 @@ server <- function(input, output, session) {
     #space.hour.day$target <- 80
     space.hour.day$target <- 0.8
     
-    
-    graph <- ggplot(space.hour.day, aes(x=Time, y=Average_Util, col=factor(Day,level = daysOfWeek.options), group=Day))+
+    space.hour.day <- space.hour.day %>% rename(`Average Utilization` = Average_Util)
+    graph <- ggplot(space.hour.day, aes(x=Time, col=factor(Day,level = daysOfWeek.options), y=`Average Utilization`, group=Day))+
       geom_line(size=1.2)+
       labs(x=NULL, y="Utilization (%)", 
            title = "Average Space Utilization (%) by Time of Day and Day of Week",
-           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
+           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2]))
+           )+
       scale_color_MountSinai("main")+
       #geom_hline(yintercept = .8, color = "red", linetype="dashed")+
       geom_hline(aes(yintercept = .8), color = "red", linetype="dashed")+
-      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour.day$Average_Util)*1.2))+
-      theme_new_line()+
-      theme_bw()+
-      graph_theme("top")+
-      theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))+
-      guides(colour = guide_legend(nrow = 1))
+      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour.day$`Average Utilization`)*1.2))+
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     
-    space.hour.day$Average_Util <- space.hour.day$Average_Util*100
+    space.hour.day$Average_Util <- space.hour.day$`Average Utilization`*100
     
     table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
       labs(x=NULL, y=NULL)+
-      geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
+      #geom_tile(aes(fill=Average_Util), colour = "black", size=0.5)+
       coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
+      scale_fill_gradient2(midpoint = median(unique(space.hour.day$`Average Utilization`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization")+
       #scale_fill_gradient2(midpoint = median(unique(space.hour.day$Average_Util_tble)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization %", labels = scales::percent)+
       scale_x_discrete(position = "bottom")+
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(.8,"cm"),
-            legend.text = element_text(size="10"),
-            axis.title.x = element_blank(),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_blank(),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(10,30,30,30))+
-      geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util,2),"%"))), color="black", size=5, fontface="bold")
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.key.size = unit(.8,"cm"),
+          legend.text = element_text(size="10"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(color= "black", margin = margin(r=15)),
+          axis.text = element_text(size="14"),
+          panel.background = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+    ) +
+      geom_text(aes(label= ifelse(is.na(`Average Utilization`),"",paste0(round(`Average Utilization`,2),"%"))), color="black", size=4, fontface="bold")
     #geom_text(aes(label= ifelse(is.na(Average_Util),"",paste0(round(Average_Util*100,2)*100,"%"))), color="black", size=5, fontface="bold")
     
-    grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
-  })
-  
-  # Rooms Required by Percentile 
-  output$spaceUsedPerc <- renderPlot({
-    data <- dataUtilization() %>% filter(comparison == 0)
+    p1 <- ggplotly(graph, tooltip = c("Average Utilization")
+             ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
     
-    c.start <- which(colnames(data)=="07:00")
-    c.end <- which(colnames(data)=="20:00")
+    #p1 <- ggplotly(graph)
+    p2 <- ggplotly(table, tooltip = NULL)
+
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Utilization (%)"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
     
-    space.hour <- aggregate(data[c(c.start:c.end)], list(data$Appt.DateYear),FUN = sum)
-    space.hour <- reshape2::melt(space.hour, id=c("Group.1"))
-    
-    space.hour <- space.hour %>%
-      group_by(variable) %>%
-      dplyr::summarise( 
-        Median = round(quantile(value, probs=0.5)/60,1),
-        `70th Percentile`= round(quantile(value, probs=0.75)/60,1),
-        `90th Percentile`= round(quantile(value, probs=0.90)/60,1))
-    
-    colnames(space.hour)[1] <- "Time"
-    
-    space.hour <- as.data.frame(reshape2::melt(space.hour, id=c("Time")))
-    
-    space.hour <- space.hour %>% filter(Time %in% timeOptionsHr_filter)
-    
-    graph <- ggplot(space.hour, aes(x=Time, y=value, col=variable, group=variable))+
-      geom_line(size=1.2)+
-      scale_y_continuous(limits=c(0, max(space.hour$value)*1.2))+
-      labs(x=NULL, y="Number of Rooms\n",
-           title = "Space Required by Percentile by Time of Day",
-           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
-      scale_color_MountSinai("main")+
-      theme_new_line()+
-      theme_bw()+
-      graph_theme("top") + theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))
-    guides(colour = guide_legend(nrow = 1))
-    
-    table <- ggplot(space.hour, aes(x=variable, y=Time))+
-      labs(x=NULL, y=NULL)+
-      geom_tile(aes(fill=value), colour = "black", size=0.5)+
-      coord_flip()+
-      scale_fill_gradient2(midpoint = median(unique(space.hour$value)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
-      #scale_y_discrete(limits = unique(sort(space.hour$Time)), position = "bottom")+
-      scale_x_discrete(position = "bottom")+
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(.8,"cm"),
-            legend.text = element_text(size="10"),
-            axis.title.x = element_blank(),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_blank(),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(10,30,30,30))+
-      geom_text(aes(label= ifelse(is.na(value),"", round(value,1))), color="black", size=5, fontface="bold")
-    
-    
-    grid.arrange(graph, table, ncol = 1, heights = c(5,2))
+    #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
     
   })
   
   # Utilization by Percentile
-  output$spaceUtilPerc <- renderPlot({
+  output$spaceUtilPerc <- renderPlotly({
     data <- dataUtilization() %>% filter(comparison == 0)
     #data <- utilization.data %>% filter(comparison == 0)
     
@@ -4645,25 +4580,207 @@ server <- function(input, output, session) {
     
     space.hour <- space.hour %>% filter(Time %in% timeOptionsHr_filter)
     
-    graph <- ggplot(space.hour, aes(x=Time, y=value, col=variable, group=variable))+
+    space.hour <- space.hour %>% rename(Utilization = value)
+    graph <- ggplot(space.hour, aes(x=Time, y=Utilization, col=variable, group=variable))+
       geom_line(size=1.2)+
-      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour$value)*1.2))+
+      scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0,max(space.hour$Utilization)*1.2))+
       labs(x=NULL, y="Number of Rooms\n", 
            title = "Space Utilization (%) by Percentile by Time of Day",
-           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
+           #subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2]))
+      )+
       scale_color_MountSinai("main")+
-      theme_new_line()+
-      theme_bw()+
-      graph_theme("top") + theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))
+      #theme_new_line()+
+      #theme_bw()+
+      #graph_theme("top") + theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )
     guides(colour = guide_legend(nrow = 1))
     
-    space.hour$value <- space.hour$value*100
+    space.hour$value <- space.hour$Utilization*100
     
     table <- ggplot(space.hour, aes(x=variable, y=Time))+
       labs(x=NULL, y=NULL)+
-      geom_tile(aes(fill=value), colour = "black", size=0.5)+
+      #geom_tile(aes(fill=value), colour = "black", size=0.5)+
       coord_flip()+
       scale_fill_gradient2(midpoint = median(unique(space.hour$value)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Utilization ")+
+      #scale_y_discrete(limits = unique(sort(space.hour$Time)), position = "bottom")+
+      scale_x_discrete(position = "bottom")+
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.key.size = unit(.8,"cm"),
+          legend.text = element_text(size="10"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(color= "black", margin = margin(r=15)),
+          axis.text = element_text(size="14"),
+          panel.background = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+    ) +
+      geom_text(aes(label= ifelse(is.na(Utilization),"",paste0(round(Utilization,1),"%"))), color="black", size=4, fontface="bold")
+    
+    
+    #grid.arrange(graph, table, ncol = 1, heights = c(5,2))
+    
+    p1 <- ggplotly(graph, tooltip = c("Utilization")
+    ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+    
+    #p1 <- ggplotly(graph)
+    p2 <- ggplotly(table, tooltip = NULL)
+    
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Utilization (%)"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    
+    
+  })
+  
+  # Average Number of Rooms Required -----------------------------------------------
+  output$spaceUsed <- renderPlotly({
+    data <- dataUtilization() %>% filter(comparison == 0)
+    
+    # data <- as.data.frame(utilization.data[arrived.utilization.data.rows,])
+    
+    # Days of Week Table
+    daysOfWeek.Table <- 
+      data %>%
+      group_by(Appt.Day, Appt.DateYear) %>%
+      dplyr::summarise(total = n()) %>%
+      group_by(Appt.Day) %>%
+      dplyr::summarise(count = n())
+    
+    c.start <- which(colnames(data)=="07:00")
+    c.end <- which(colnames(data)=="20:00")
+    
+    space.hour.day <- aggregate(data[c(c.start:c.end)], list(data$Appt.Day),FUN = sum)
+    space.hour.day <- reshape2::melt(space.hour.day, id=c("Group.1"))
+    space.hour.day$days <- daysOfWeek.Table$count[match(daysOfWeek.Table$Appt.Day,space.hour.day$Group.1)]
+    
+    space.hour.day$average <- round(space.hour.day$value/(space.hour.day$days*60), 1)
+    names(space.hour.day) <- c("Day","Time","Total_Dur","Days","Average_Req")
+    
+    byDayTime.df <- byDayTime.df[which(byDayTime.df$Day %in% unique(space.hour.day$Day)),]
+    
+    space.hour.day <- as.data.frame(merge(byDayTime.df,space.hour.day, by.x = c("Day","Time"), by.y = c("Day","Time"), all = TRUE))
+    space.hour.day[is.na(space.hour.day)] <- 0
+    
+    space.hour.day <- space.hour.day %>% filter(Time %in% timeOptionsHr_filter)
+    
+    space.hour.day <- space.hour.day %>% rename(`Average Space Requiered` = Average_Req)
+    
+    graph <- ggplot(space.hour.day, aes(x=Time, y=`Average Space Requiered`, col=factor(Day,level = daysOfWeek.options), group=Day))+
+      geom_line(size=1.2)+
+      labs(x=NULL, y="Number of Rooms\n",
+           title = "Average Space Required by Time of Day and Day of Week",
+           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
+      scale_color_MountSinai("main")+
+      #theme_new_line()+
+      #theme_bw()+
+      #graph_theme("top") + 
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )+
+      guides(colour = guide_legend(nrow = 1))
+    
+    table <- ggplot(space.hour.day, aes(x=factor(Day, levels = rev(daysOfWeek.options)), y=Time))+
+      labs(x=NULL, y=NULL)+
+      #geom_tile(aes(fill=Average_Req), colour = "black", size=0.5)+
+      coord_flip()+
+      scale_fill_gradient2(midpoint = median(unique(space.hour.day$`Average Space Requiered`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
+      scale_x_discrete(position = "bottom")+
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(.8,"cm"),
+            legend.text = element_text(size="10"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+      ) +
+      geom_text(aes(label= ifelse(is.na(`Average Space Requiered`),"", round(`Average Space Requiered`))), color="black", size=4, fontface="bold")
+    
+    #grid.arrange(graph, table, ncol = 1, heights = c(5,3))
+    
+    p1 <- ggplotly(graph, tooltip = c("Average Space Requiered")
+    ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+    
+    #p1 <- ggplotly(graph)
+    p2 <- ggplotly(table, tooltip = NULL)
+    
+    subplot(p1, p2, nrows = 2, margin = 0.04, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Number of Rooms"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    
+  })
+  # Rooms Required by Percentile 
+  output$spaceUsedPerc <- renderPlotly({
+    data <- dataUtilization() %>% filter(comparison == 0)
+    
+    c.start <- which(colnames(data)=="07:00")
+    c.end <- which(colnames(data)=="20:00")
+    
+    space.hour <- aggregate(data[c(c.start:c.end)], list(data$Appt.DateYear),FUN = sum)
+    space.hour <- reshape2::melt(space.hour, id=c("Group.1"))
+    
+    space.hour <- space.hour %>%
+      group_by(variable) %>%
+      dplyr::summarise( 
+        Median = round(quantile(value, probs=0.5)/60,1),
+        `70th Percentile`= round(quantile(value, probs=0.75)/60,1),
+        `90th Percentile`= round(quantile(value, probs=0.90)/60,1))
+    
+    colnames(space.hour)[1] <- "Time"
+    
+    space.hour <- as.data.frame(reshape2::melt(space.hour, id=c("Time")))
+    
+    space.hour <- space.hour %>% filter(Time %in% timeOptionsHr_filter)
+    
+    space.hour <- space.hour %>% rename(`Space Required` = value)
+    graph <- ggplot(space.hour, aes(x=Time, y=`Space Required`, col=variable, group=variable))+
+      geom_line(size=1.2)+
+      scale_y_continuous(limits=c(0, max(space.hour$`Space Required`)*1.2))+
+      labs(x=NULL, y="Number of Rooms\n",
+           title = "Space Required by Percentile by Time of Day",
+           subtitle = paste0("Based on scheduled appointment time and duration from ",isolate(input$dateRangeUtil[1])," to ",isolate(input$dateRangeUtil[2])))+
+      scale_color_MountSinai("main")+
+      #theme_new_line()+
+      #theme_bw()+
+      #graph_theme("top") + theme(legend.title = element_blank(), legend.direction = "horizontal", legend.key.size = unit(1.0,"cm"))
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90)
+            
+      )+
+    guides(colour = guide_legend(nrow = 1))
+    
+    table <- ggplot(space.hour, aes(x=variable, y=Time))+
+      labs(x=NULL, y=NULL)+
+      #geom_tile(aes(fill=value), colour = "black", size=0.5)+
+      coord_flip()+
+      scale_fill_gradient2(midpoint = median(unique(space.hour$`Space Required`)), low = "#5a8ac6", mid = "white", high = "#f8696b", space = "Lab", na.value = "black", guide = "colourbar", name="Space Required ")+
       #scale_y_discrete(limits = unique(sort(space.hour$Time)), position = "bottom")+
       scale_x_discrete(position = "bottom")+
       theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
@@ -4679,15 +4796,26 @@ server <- function(input, output, session) {
             panel.background = element_blank(),
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
-            plot.margin = margin(10,30,30,30))+
-      geom_text(aes(label= ifelse(is.na(value),"",paste0(round(value,2),"%"))), color="black", size=5, fontface="bold")
+      ) +
+      geom_text(aes(label= ifelse(is.na(`Space Required`),"", round(`Space Required`,1))), color="black", size=4, fontface="bold")
     
     
-    grid.arrange(graph, table, ncol = 1, heights = c(5,2))
+    p1 <- ggplotly(graph, tooltip = c("Space Required")
+    ) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+    
+    #p1 <- ggplotly(graph)
+    p2 <- ggplotly(table, tooltip = NULL)
+    
+    subplot(p1, p2, nrows = 2, margin = 0.03, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Number of Rooms"), margin  = list(l = 80, r = 80, t = 40, b = 0, pad = 0))
+    
+    
+    
+    
+    #grid.arrange(graph, table, ncol = 1, heights = c(5,2))
     
   })
   
-  
+ 
   treatment_space_util_month_data <- reactive({
     num_rooms <- input$setRooms_treatment
     num_hours <- input$setHours_treatment
@@ -5073,7 +5201,9 @@ server <- function(input, output, session) {
   output$volume_data_tbl = renderDT(
     dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
       rename(New.PT = New.PT3,
-             Campus = SITE) %>%
+             Campus = SITE,
+             Department.Id = DEPARTMENT_ID,
+             Epic.Provider.Id = EPIC_Provider_ID) %>%
       relocate(Campus, .before = Department),
     #callback = JS("$('div.dwnld').append($('#download1'));"),
     callback = callback,
