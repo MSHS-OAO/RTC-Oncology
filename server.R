@@ -698,6 +698,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                    input$diag_grouper
                    )
+
   })
   
   # Canceled data ============================================================================================================
@@ -730,8 +731,19 @@ server <- function(input, output, session) {
       need(input$selectedApptType != "", "Please select a visit type detail"),
       need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
-    groupByFilters_2(dataArrived(),
-                     input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+    data <- groupByFilters_2(dataArrived(),
+                      input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+    
+    
+    if("NA" %in% input$diag_grouper){
+      data_1 <-  groupByFilters_2(dataArrived(),
+                                  input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
+      
+      data <- bind_rows(data,data_1)
+    }
+    data
+    
+    
   })
   
   
@@ -747,6 +759,7 @@ server <- function(input, output, session) {
                      input$selectedDisease, input$selectedProvider, input$diag_grouper
                      )
     
+
   })
   
   dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2),{
@@ -855,6 +868,7 @@ server <- function(input, output, session) {
                            input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays,
                            input$diag_grouper
       )
+
     })
   })
   
@@ -1093,8 +1107,7 @@ server <- function(input, output, session) {
   output$trend_totalvisitsgraph <- renderPlotly({
     
     data <- dataArrivedTrend()
-    #data <- data_test
-    # data <- historical.data[arrived.data.rows.trend,]
+    #data <<- data_test
     
     # min_date <- min(data$Appt.DateYear)
     # max_date <- max(data$Appt.DateYear)
