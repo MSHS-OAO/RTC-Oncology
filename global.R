@@ -1,59 +1,3 @@
-### (0) Install and Load Required Packages ============================================================
-
-# install.packages("readxl")
-# install.packages("dplyr")
-# install.packages("data.table")
-# install.packages("zoo")
-# install.packages("shiny")
-# install.packages("shinydashboard")
-# install.packages("shinydashboardPlus")
-# install.packages("leaflet")
-# install.packages("shinyWidgets")
-# install.packages("htmlwidgets")
-# install.packages(c("readxl","writexl"))
-# install.packages("anytime")
-# 
-# # install.packages("htmltools")
-# # require(htmltools)
-# # library(htmltools)
-# # update.packages("htmltools")
-#  
-# # Packages from the process mapping codes [NEED TO BE CLEANED UP]
-# install.packages('shinydashboard')
-# install.packages('dplyr')
-# install.packages('bupaR', dependencies = TRUE)
-# install.packages('shiny')
-# install.packages('DT')
-# intall.packages('DiagrammerR')
-# install.packages('shinyalert')
-# install.packages('edeaR', dependencies = TRUE)
-# install.packages('processmapR')
-# install.packages('processmonitR')
-# install.packages('processanimateR')
-# install.packages('DiagrammeR')
-# install.packages('shiny', type='binary')
-# install.packages("shinydashboardPlus")
-# install.packages("shiny")
-# install.packages("leaflet")
-# install.packages("ggforce")
-# install.packages("packcircles")
-# install.packages("treemapify")
-# install.packages("treemap")
-# install.packages("tis")
-# install.packages("vroom")
-# install.packages("lubridate")
-# install.packages("plyr")
-# install.packages("sjmisc")
-# install.packages("shinyBS")
-# install.packages("shinyscreenshot")
-# install.packages("patchwork")
-# install.packages("ggtext")
-# install.packages("janitor")
-# packageurl <- "https://cran.r-project.org/src/contrib/Archive/zipcode/zipcode_1.0.tar.gz"
-# install.packages(packageurl, repos=NULL, type="source")
-
-
-
 suppressMessages({
   library(readxl)
   library(writexl)
@@ -123,441 +67,16 @@ suppressMessages({
   library(feather)
   library(reactable)
   library(rhandsontable)
+  library(glue)
+  library(DBI)
 })
 
+source("global_functions.R")
 
 
+con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
+oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 
-# (7) Data Reactive functions ---------------------------------------------------------------------------------
-
-## Filtered Scheduling Data
-
-groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
-  return(result)
-}
-
-groupByFilters_unique <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, dx){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays,
-                          Dx.Grouper %in% dx)
-  return(result)
-}
-
-groupByFilters_Trend <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, dx){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek,
-                          Dx.Grouper %in% dx, !holiday %in% holidays
-                          )
-  return(result)
-}
-
-
-groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider, dx){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider,
-                          Dx.Grouper %in% dx)
-  return(result)
-}
-
-
-
-groupByFilters_2 <- function(dt, visitType, apptType, treatmentType, dx){
-  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType,
-                          Dx.Grouper %in% dx)
-  return(result)
-}
-
-groupByFilters_3 <- function(dt, diseaseGroup, provider, dx){
-  result <- dt %>% filter(Disease_Group != "No Disease Group") %>% filter(Disease_Group %in% diseaseGroup, Provider %in% provider) %>%
-                          filter(Dx.Grouper %in% dx)
-  return(result)
-}
-
-groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)
-  return(result)
-}
-
-
-groupByFilters_util <- function(dt, campus, department, provider, mindateRange, maxdateRange, daysofweek, holidays, type){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, Provider %in% provider,
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, util.type %in% type)
-  return(result)
-}
-
-groupByFilters_util_treatment <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, #Provider %in% provider,
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
-  return(result)
-}
-## Unique Patients Functions  -----------------------------------------------------------------
-uniquePts_df_system <- function(dt, visitType){
-
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-    # name <- ifelse(visitType == "Exam", "exam",
-    #                ifelse(visitType == "Treatment","treatment", "all"), "none")
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
-  filter(uniqueSystem == 1)
-  
-  
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSystem","Appt.Day", "holiday", "Dx.Grouper")]
-  #result <- result$uniqueId
-  return(result)
-}
-
-uniquePts_df_system_zip <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-    # name <- ifelse(visitType == "Exam", "exam",
-    #                ifelse(visitType == "Treatment","treatment", "all"), "none")
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN) %>% mutate(uniqueSystem = row_number()) %>% ungroup() %>%
-    filter(uniqueSystem == 1)
-  
-  
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSystem","Appt.Day", "holiday", 'Zip Code Layer: A', "Zip Code Layer: B", "longitude", "latitude")]
-  #result <- result$uniqueId
-  return(result)
-}
-
-uniquePts_df_systemMonth <- function(dt, visitType, name){
-
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit"))
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM) %>% group_by(MRN, Appt.MonthYear) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
-    filter(uniqueSystemMonth == 1)
-  
-
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSystemMonth","Appt.Day", "holiday", "Dx.Grouper")]
-  
-  return(result)
-}
-
-
-uniquePts_df_site <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, SITE) %>% mutate(uniqueSite = row_number()) %>% ungroup() %>%
-    filter(uniqueSite == 1) 
-  
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSite","Appt.Day", "holiday", "Dx.Grouper")]
-  
-  return(result)
-}
-
-uniquePts_df_site_zip <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, SITE) %>% mutate(uniqueSite = row_number()) %>% ungroup() %>%
-    filter(uniqueSite == 1) 
-  
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSite","Appt.Day", "holiday", 'Zip Code Layer: A', "Zip Code Layer: B", "longitude", "latitude")]
-  
-  return(result)
-}
-
-uniquePts_df_siteMonth <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, Appt.DTTM, SITE) %>% group_by(MRN, Appt.MonthYear, SITE) %>% mutate(uniqueSiteMonth = row_number()) %>% ungroup() %>%
-    filter(uniqueSiteMonth == 1) 
-  
-  result <- result[c("SITE", "Department", "Appt.DateYear", "Appt.Year", "Appt.Month", "Appt.MonthYear", "uniqueSiteMonth","Appt.Day", "holiday", "Dx.Grouper")]
-  
-  return(result)
-}
-
-uniquePts_df_siteProv <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, EPIC_Provider_ID, Appt.DTTM, SITE) %>% group_by(MRN, EPIC_Provider_ID, SITE) %>% mutate(uniqueSiteProv = row_number()) %>% ungroup() %>%
-    filter(uniqueSiteProv == 1)
-  
-  return(result)
-}
-
-uniquePts_df_siteProvMonth <- function(dt, visitType){
-  
-  if(visitType == "Treatment Visit"){
-    data <- dt %>% filter(AssociationListB %in% c("Treatment Visit")) 
-  } else{
-    data <- dt %>% filter(AssociationListA %in% visitType) 
-  }
-  
-  result <- data %>%
-    arrange(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% group_by(MRN, EPIC_Provider_ID, Appt.MonthYear, SITE) %>% 
-    mutate(uniqueSiteProvMonth = row_number()) %>% ungroup() %>% filter(uniqueSiteProvMonth== 1) 
-  
-  return(result)
-}
-
-
-### Function for Value Boxes ------------------------------------------------------------------
-valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL, 
-                          icon = NULL, color = "aqua", width = 4, href = NULL){
-  
-  shinydashboard:::validateColor(color)
-  
-  if (!is.null(icon))
-    shinydashboard:::tagAssert(icon, type = "i")
-  
-  info_icon <- tags$small(
-    tags$i(
-      class = "fa fa-info-circle fa-lg",
-      title = info,
-      `data-toggle` = "tooltip",
-      style = "color: rgba(255, 255, 255, 0.75);"
-    ),
-    # bs3 pull-right 
-    # bs4 float-right
-    class = "pull-right float-right"
-  )
-  
-  boxContent <- div(
-    class = paste0("small-box bg-", color),
-    div(
-      class = "inner",
-      h4(title),
-      if (!is.null(sparkobj)) info_icon,
-      h3(value),
-      if (!is.null(sparkobj)) sparkobj,
-      em(subtitle)
-    ),
-    # bs3 icon-large
-    # bs4 icon
-    if (!is.null(icon)) div(class = "icon-large icon", icon, style = "z-index; 0")
-  )
-  
-  if (!is.null(href)) 
-    boxContent <- a(href = href, boxContent)
-  
-  div(
-    class = if (!is.null(width)) paste0("col-sm-", width), 
-    boxContent
-  )
-}
-
-# ### (0) Maximize R Memory Size 
-memory.limit(size = 8000000)
-
-### (1) Set aesthetics theme -----------------------------------------------------------------------------
-
-# Color Functions for Graphs =====================================
-theme_set(theme_minimal())
-
-# Mount Sinai corporate colors 
-MountSinai_colors <- c(
-  `dark purple`  = "#212070",
-  `dark pink`    = "#d80b8c",
-  `dark blue`    = "#00aeef",
-  `dark grey`    = "#7f7f7f",
-  `yellow`       = "#ffc000",
-  `purple`       = "#7030a0",
-  `med purple`   = "#5753d0",
-  `med pink`     = "#f75dbe",
-  `med blue`     = "#5cd3ff",
-  `med grey`     = "#a5a7a5",
-  `light purple` = "#c7c6ef",
-  `light pink`   = "#fcc9e9",
-  `light blue`   = "#c9f0ff",
-  `light grey`   = "#dddedd"
-)
-
-# Function to extract Mount Sinai colors as hex codes
-# Use Character names of MountSinai_colors
-
-MountSinai_cols <- function(...) {
-  cols <- c(...)
-  
-  if (is.null(cols))
-    return (MountSinai_colors)
-  
-  MountSinai_colors[cols]
-}
-
-
-types_pallete <- c("#00aeef", "#7f7f7f","#3a5fcd", "#5753d0", "#d80b8c", "#e69f00", "#8b814c", "#212070")
-
-# Color Function that can be used to call all colors is "MountSinai_cols()"
-# Use in ggplot 
-
-#MountSinai_cols()       # will provide all colors and their hex codes in a table 
-#MountSinai_cols("pink") # will provide color name and the hex code for the pink color
-
-all_pallete <- c("#212070","#d80b8c","#00aeef","#7f7f7f","#5753d0","#f75dbe","#5cd3ff","#a5a7a5","#c7c6ef", "#fcc9e9","#c9f0ff","#dddedd")
-
-# Create palettes 
-MountSinai_palettes <- list(
-  `all`   = MountSinai_cols("dark purple","dark pink","dark blue","dark grey",
-                            "med purple","med pink","med blue","med grey", 
-                            "light purple","light pink","light blue","light grey"),
-  
-  `dark`  = MountSinai_cols("dark purple","dark grey",
-                            "yellow","med pink","dark pink","dark blue",
-                            "med purple","med grey","med blue"),
-  
-  `main`  = MountSinai_cols("dark purple","dark grey","dark pink","dark blue","med purple","med pink","med blue","med grey"),
-  
-  `purple`  = MountSinai_cols("dark purple","med purple","light purple"),
-  
-  `pink`  = MountSinai_cols("dark pink","med pink","light pink"),
-  
-  `blue`  = MountSinai_cols("dark blue", "med blue", "light blue"),
-  
-  `grey`  = MountSinai_cols("dark grey", "med grey", "light grey"),
-  
-  `purpleGrey` = MountSinai_cols("dark purple", "dark grey"),
-  
-  `pinkBlue` = MountSinai_cols("dark pink", "dark blue")
-  
-)
-
-# MountSinai_palettes
-# Return function to interpolate a Mount Sinai color palette
-# default value is the main palette, reverse = True will change the order
-
-MountSinai_pal <- function(palette = "all", reverse = FALSE, ...) {
-  pal <- MountSinai_palettes[[palette]]
-  
-  if (reverse) pal <- rev(pal)
-  
-  colorRampPalette(pal, ...)
-}
-
-
-# Scale Function for ggplot can be used instead of scale_color_manual
-scale_color_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FALSE, ...) {
-  pal <- MountSinai_pal(palette = palette, reverse = reverse)
-  
-  if (discrete) {
-    discrete_scale("colour", paste0("MountSinai_", palette), palette = pal, ...)
-  } else {
-    scale_color_gradientn(colours = pal(256), ...)
-  }
-}
-
-# Scale Fill for ggplot insetead of scale_fill_manual 
-scale_fill_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FALSE, ...) {
-  pal <- MountSinai_pal(palette = palette, reverse = reverse)
-  
-  if (discrete) {
-    discrete_scale("fill", paste0("MountSinai_", palette), palette = pal, ...)
-  } else {
-    scale_fill_gradientn(colours = pal(256), ...)
-  }
-}
-
-# ggplot theme function s====================================
-
-# font_import()
-# loadfonts(device = "win")
-# windowsFonts()
-
-plotly_font <- list(
-  family = "Calibri",
-  size = 14,
-  color = "bold")
-
-graph_theme <- function(legend_pos) {
-  theme(
-    plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-    plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
-    plot.caption = element_text(size = 12, face = "italic"),
-    legend.position = legend_pos,
-    legend.title = element_text(size = "14"),
-    legend.text = element_text(size = "14"),
-    strip.text = element_text(size=14),
-    axis.title = element_text(size = 16),
-    axis.text.x = element_text(size = 16, angle=50, hjust=1),
-    axis.text.y = element_text(size = 14),
-    axis.line.x = element_blank())#,
-  #plot.margin = margin(0,80,0,80))
-}
-
-theme_new_line <- function(base_size = 12,
-                           base_family = "Calibri",
-                           base_line_size = base_size / 170,
-                           base_rect_size = base_size / 170) {
-  theme_bw(
-    base_size = base_size,
-    base_family = base_family,
-    base_line_size = base_line_size
-  ) %+replace%
-    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 24),
-          plot.subtitle = element_text(hjust=0.5,vjust=-1, size = 20, face = "italic"),
-          plot.caption = element_text(hjust = 0, size = 18, face = "italic"),
-          legend.position = "top",
-          legend.text = element_text(size="18"),
-          legend.direction = "horizontal",
-          legend.key.size = unit(1.0,"cm"),
-          legend.title = element_blank(),
-          axis.title = element_text(size="18"),
-          axis.text = element_text(size="18"),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.line = element_line(size = 0.3, colour = "black"),
-          plot.margin = margin(30,30,30,30))
-}
-
-#added a theme for the tables
-table_theme <- function(){
-  theme(
-    panel.grid.minor = element_line(size = 0.3, colour = "black"),
-    panel.grid.major = element_blank(),
-    axis.title.x = element_text(size = 14, angle = 0, colour = "black", face= "bold"),
-    axis.text.x = element_blank(),
-    axis.text.y = element_text(size = 14, colour = "black", face= "bold"),
-    legend.position = "none",
-    plot.title = element_blank(),
-    panel.border = element_rect(colour = "black", fill = NA, size=0.5),
-    axis.line.x = element_line(colour = "black", size=0.5),
-    plot.margin=unit(c(1,1,1,1), "cm")
-    )
-}
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
@@ -566,31 +85,6 @@ monthly_access <- here::here("Data/Access/Monthly")
 monthly_slot <- here::here("Data/Slot/Monthly")
 singleday_access <- here::here("Data/Access/SingleDay")
 singleday_slot <- here::here("Data/Slot/SingleDay")
-
-
-# Set Working Directory (PILOT)
-#wdpath <- "J:/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-#wdpath <- "J:/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/System Operations/Ambulatory Dashboard/Pilot Application v1"
-# wdpath <- "C:/Users/kweons01/Desktop/Pilot Application v1"
-
-
-wdpath <- here::here()
-
-setwd(wdpath)
-
-
-#master.data.new_new <- data_all
-
-
-# ## Utilization Data
-# data.hour.scheduled <- read_csv("Data/Utilization/data.hour.scheduled.pilotV1.csv")
-# data.hour.arrived <- read_csv("Data/Utilization/data.hour.arrived.pilotV1.csv")
-
-
-# process_data function includes reading in the mapping file creating an renaming slot and access columns
-# the function returns a list containing slot.data.subset, data.subset.new, and holid (in the order they appear)
-
-
 
 ### (6) Data Subset -----------------------------------------------------------------------------------------------------
 
@@ -602,7 +96,7 @@ if(file.exists("J:/")){
   population.data_filtered <- readRDS("Data/population_data_grouped.rds")
   utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
-  filter_path <- paste0(wdpath, "/Filters")
+  filter_path <- here::here("Filters")
 }else{
   historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
@@ -614,76 +108,6 @@ if(file.exists("J:/")){
 
 
 
-
-max_date <- max(historical.data$Appt.DateYear)
-
-
-# 
-# ####Unique Patient Processing 
-# 
-# historical.data <- uniquePts_df_system(historical.data, c("Exam"))
-
-
-
-setDT(historical.data)
-
-min_date <- "2019-01-01"
-
-## Other datasets
-
-all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
-
-arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                    Appt.Status %in% c("Arrived"), which = TRUE]
-
-canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                                        Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
-
-canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                     Appt.Status %in% c("Canceled"), which = TRUE]
-
-bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                   Appt.Status %in% c("Bumped"), which = TRUE]
-
-rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                        Appt.Status %in% c("Rescheduled"), which = TRUE]
-
-sameDay.rows <- historical.data[Appt.DTTM >= min_date &
-                               Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
-                               Lead.Days == 0, which = TRUE]
-
-noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                   Appt.Status %in% c("No Show"),
-                                 which = TRUE
-                                ]
-
-noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
-
-arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
-
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                              Appt.Status %in% c("Arrived") &
-                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
-
-
-####TREND 
-
-arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                       Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-##### Unique
-arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
-                                             Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-
-
-historical.data <- as.data.frame(historical.data)
-unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
-unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 
 ### Zip Code Analysis --------------------------------------------------------------------------------------------------
 
@@ -718,32 +142,6 @@ Time <- rep(timeOptionsHr, 7)
 Day <- rep(daysOfWeek.options, each = 24)
 byDayTime.df <- as.data.frame(cbind(Day,Time)) ## Empty data frame for day of week by time (hour)
 
-
-
-
-default_campus <- unique(historical.data$SITE)
-arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
-
-
-
-### Uniqie Patietns
-historical.data.unique.exam <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.unique.exam.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.unique.all <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.unique.all.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.unique.treatment <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
-historical.data.unique.treatment.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
-
-
-historical.data.site.exam.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.site.exam <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam"))
-historical.data.site.all.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
-historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
-historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
-
-
-
 all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
 all_provider <- all_provider[,1]
 
@@ -761,143 +159,124 @@ callback <- callback <- JS(
   "$('#download1').hide();"
 )
 
+max_date <- max(historical.data$Appt.DateYear)
 
-plotly_function <- function(plot, tooltip_data, title){
-  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
-                                                                  )
-                                                    )
+
+setDT(historical.data)
+
+min_date <- "2019-01-01"
+
+## Other datasets
+
+all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
+
+arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                       Appt.Status %in% c("Arrived"), which = TRUE]
+
+canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+                                                           Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
+
+canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                        Appt.Status %in% c("Canceled"), which = TRUE]
+
+bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                      Appt.Status %in% c("Bumped"), which = TRUE]
+
+rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                           Appt.Status %in% c("Rescheduled"), which = TRUE]
+
+sameDay.rows <- historical.data[Appt.DTTM >= min_date &
+                                  Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
+                                  Lead.Days == 0, which = TRUE]
+
+noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
+                                      Appt.Status %in% c("No Show"),
+                                    which = TRUE
+]
+
+noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
+
+arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
+
+arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
+                                              Appt.Status %in% c("Arrived") &
+                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
+
+
+####TREND 
+
+arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
+                                             Appt.Status %in% c("Arrived"), which = TRUE]
+
+
+
+##### Unique
+arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
+                                              Appt.Status %in% c("Arrived"), which = TRUE]
+
+
+
+
+
+historical.data <- as.data.frame(historical.data)
+unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+
+
+arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
+
+groupByFilters_Trend <- function(dt, campus, department
+                                 , mindateRange, maxdateRange
+                                 , daysofweek, holidays, diag
+                                 ){
+  format <- "YYYY-MM-DD HH24:MI:SS"
+  daysofweek <- toupper(daysofweek)
+  
+  
+  result <- dt %>% filter(SITE %in% campus, 
+                          DEPARTMENT_NAME %in% department, 
+                          TO_DATE(mindateRange, format) <= APPT_DTTM, 
+                          TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                          APPT_DAY %in% daysofweek,
+                          DX_GROUPER %in% diag#, 
+                          #!HOLIDAY %in% holidays
+  ) 
+  
+  if("NA" %in% diag){
+    result_1 <- dt %>% filter(SITE %in% campus, 
+                            DEPARTMENT_NAME %in% department, 
+                            TO_DATE(mindateRange, format) <= APPT_DTTM, 
+                            TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                            APPT_DAY %in% daysofweek,
+                            is.na(DX_GROUPER))
+    
+    result <- result %>% union_all(result_1)
+  }
+  return(result)
   
 }
 
 
-plotly_function_volume <- function(plot, tooltip_data, title){
-  ggplotly(plot, tooltip = tooltip_data) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2
-  )
-  )
-  
-}
+all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
+all_provider <- all_provider[,1]
 
 
-ggplotly_graph_theme <- function(data, title){
-  geom_line(aes(color=Appt.Year), size=1.1)+
-              geom_point(aes(color=Appt.Year), size=3)+
-              scale_color_MountSinai('dark')+
-              labs(title = title, 
-                   subtitle = paste0("Based on data from ",isolate(input$dateRangetrend[1])," to ",isolate(input$dateRangetrend[2]),"\n"),
-                   y = "Patient Volume", x = NULL, fill = NULL)+
-              scale_y_continuous(limits=c(0,(max(data$total))*1.3)) +
-              theme(legend.position = 'top',
-                    legend.title=element_blank(),
-                    plot.title = element_text(hjust=0.5, face = "bold", size = 16),
-                    axis.title = element_text(size="12"),
-                    axis.text = element_text(size="12"),
-                    axis.title.x = element_blank(),
-                    axis.line = element_line(size = 0.3, colour = "black"),
-                    axis.title.y = element_text(size = 12, angle = 90)
-                    
-              )
-  
-}
-
-ggplot_line_graph <- function(df, title) {
-  
-  graph <- ggplot(df, aes(x=factor(Appt.Month, levels = monthOptions), y=total, group=Appt.Year))+
-            geom_line(aes(color=Appt.Year), size=1.1)+
-            geom_point(aes(color=Appt.Year), size=3)+
-            scale_color_MountSinai('dark')+
-            labs(title = title,
-                 y = NULL, x = NULL, fill = NULL)+
-            scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
-            theme(legend.position = 'top',
-                  legend.title=element_blank(),
-                  plot.title = element_text(hjust=0.5, face = "bold", size = 16),
-                  axis.title = element_text(size="12"),
-                  axis.text = element_text(size="12"),
-                  axis.title.x = element_blank(),
-                  axis.line = element_line(size = 0.3, colour = "black"),
-                  axis.title.y = element_text(size = 12, angle = 90)
-                  
-            )
-  
-  
-  ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
-  
-}
+default_campus <- unique(historical.data$SITE)
+arrivedDisease.data <- historical.data[arrivedDisease.data.rows,]
 
 
-
-ggplot_table <- function(df, hline_y) {
-  graph <- ggplot(df, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year))+
-            labs(x=NULL, y=NULL)+
-            scale_x_discrete(position = "bottom")+
-            theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-                  legend.position = "top",
-                  legend.direction = "horizontal",
-                  legend.key.size = unit(.8,"cm"),
-                  legend.text = element_text(size="10"),
-                  axis.title.x = element_blank(),
-                  axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-                  axis.text.x = element_blank(),
-                  axis.text.y = element_text(color= "black", margin = margin(r=15)),
-                  axis.text = element_text(size="14"),
-                  panel.background = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  panel.grid.major = element_blank(),
-            ) +
-            geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
-            geom_hline(yintercept = hline_y, colour='black')+
-            geom_vline(xintercept = 0, colour = 'black') +
-            table_theme()
-  
-  ggplotly(graph, tooltip = NULL)
-}
+### Uniqie Patietns
+historical.data.unique.exam <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.exam.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.unique.all <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.all.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.unique.treatment <- uniquePts_df_system(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
+historical.data.unique.treatment.month <- uniquePts_df_systemMonth(historical.data[arrived.data.rows.unique,], c("Treatment Visit"))
 
 
-ggplot_bar_graph <- function(df, title, x_data, y_data, group, max) {
-  graph <- ggplot(df, aes(x = x_data, y = y_data, group = group, fill = group))+
-            geom_bar(position="stack",stat="identity", width=0.7)+
-            scale_fill_MountSinai('dark')+
-            labs(title = title,
-                 y = "Patient Volume", x = NULL, fill = NULL)+
-            scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-            theme(legend.position = 'top',
-                  legend.title=element_blank(),
-                  plot.title = element_text(hjust=0.5, face = "bold", size = 16),
-                  axis.title = element_text(size="12"),
-                  axis.text = element_text(size="11"),
-                  axis.title.x = element_blank(),
-                  axis.line = element_line(size = 0.3, colour = "black"),
-                  axis.title.y = element_text(size = 12, angle = 90)
-                  
-            )
-  ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
-}
-
-
-
-ggplot_bar_table <- function(df, x_data, y_data, label, hline_y) {
-  table <- ggplot(df, aes(x = x_data, y= y_data, label = label)) +
-            labs(x=NULL, y=NULL)+
-            scale_x_discrete(position = "bottom")+
-            theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-                  legend.position = "top",
-                  legend.direction = "horizontal",
-                  legend.key.size = unit(.8,"cm"),
-                  legend.text = element_text(size="10"),
-                  axis.title.x = element_blank(),
-                  axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-                  axis.text.x = element_blank(),
-                  axis.text.y = element_text(color= "black", margin = margin(r=15)),
-                  axis.text = element_text(size="14"),
-                  panel.background = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  panel.grid.major = element_blank(),
-            ) +
-            geom_text(aes(label= ifelse(is.na(df$total),"",df$total)), color="black", size=5, fontface="bold") +
-            geom_hline(yintercept = hline_y, colour='black')+
-            geom_vline(xintercept = 0, colour = 'black') +
-            table_theme()
-  
-  ggplotly(table, tooltip = NULL)
-  
-}
+historical.data.site.exam.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.exam <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam"))
+historical.data.site.all.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
+historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
+historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
