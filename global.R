@@ -73,8 +73,10 @@ suppressMessages({
 
 source("global_functions.R")
 
+
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
+
 
 ### (2) Import Data ----------------------------------------------------------------------------------
 
