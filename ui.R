@@ -1245,8 +1245,8 @@ ui <- dashboardPage(
               height = "100px",
               solidHeader = FALSE, 
               dateRangeInput("dateRangetreat_util", label = NULL,
-                             start = as.Date(paste0("01-01-",year(Sys.Date())), "%m-%d-%Y"), end = util_date_end,
-                             min = as.Date(min(historical.data$Appt.DateYear)), max = as.Date(max(historical.data$Appt.DateYear))
+                             start = dateRangetrend_min, end = dateRange_max,
+                             min = dateRangetrend_min, max = dateRange_max
               )
             )
           ),

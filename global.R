@@ -68,6 +68,7 @@ suppressMessages({
   library(reactable)
   library(rhandsontable)
   library(glue)
+  library(DBI)
 })
 
 source("global_functions.R")
@@ -224,7 +225,7 @@ arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
 
 groupByFilters_Trend <- function(dt, campus, department
                                  , mindateRange, maxdateRange
-                                 , daysofweek, holidays
+                                 , daysofweek, holidays, diag
                                  ){
   format <- "YYYY-MM-DD HH24:MI:SS"
   daysofweek <- toupper(daysofweek)
@@ -234,10 +235,23 @@ groupByFilters_Trend <- function(dt, campus, department
                           DEPARTMENT_NAME %in% department, 
                           TO_DATE(mindateRange, format) <= APPT_DTTM, 
                           TO_DATE(maxdateRange, format) >= APPT_DTTM, 
-                          APPT_DAY %in% daysofweek#, 
+                          APPT_DAY %in% daysofweek,
+                          DX_GROUPER %in% diag#, 
                           #!HOLIDAY %in% holidays
-  ) #%>% collect()
-  #return(result)
+  ) 
+  
+  if("NA" %in% diag){
+    result_1 <- dt %>% filter(SITE %in% campus, 
+                            DEPARTMENT_NAME %in% department, 
+                            TO_DATE(mindateRange, format) <= APPT_DTTM, 
+                            TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                            APPT_DAY %in% daysofweek,
+                            is.na(DX_GROUPER))
+    
+    result <- result %>% union_all(result_1)
+  }
+  return(result)
+  
 }
 
 
