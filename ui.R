@@ -8,7 +8,7 @@ library(shinyscreenshot)
 #default_campus <- unique(historical.data$SITE)
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                         collect()
-campus_choices <- sort(campus_choices$SITE, na.last = T)
+campus_choices <<- sort(campus_choices$SITE, na.last = T)
 
 
 default_campus <- "MSW"
