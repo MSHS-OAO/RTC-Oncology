@@ -92,13 +92,13 @@ singleday_slot <- here::here("Data/Slot/SingleDay")
 ##Data on Rconnect
 if(file.exists("J:/")){
   #### Local Data Directories
-  historical.data <- readRDS("Data/historical_data.rds")
+  #historical.data <- readRDS("Data/historical_data.rds")
   population.data_filtered <- readRDS("Data/population_data_grouped.rds")
   utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
   filter_path <- here::here("Filters")
 }else{
-  historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
+  #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
   holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
   utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
