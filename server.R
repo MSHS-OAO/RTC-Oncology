@@ -485,7 +485,7 @@ server <- function(input, output, session) {
       # )
       
       depts <- input$selectedDepartment
-      default_provider_utilization <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_utlization_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% depts) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
