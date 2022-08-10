@@ -490,7 +490,7 @@ server <- function(input, output, session) {
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
-      provider_utlization_choices <- data.frame(Provider = sort(default_provider_utilization$PROVIDER, na.last = T), stringsAsFactors=FALSE)
+      provider_utlization_choices <- data.frame(Provider = sort(provider_utlization_choices$PROVIDER, na.last = T), stringsAsFactors=FALSE)
       
       
       provider_utlization_choices <- as.character(t(inner_join(provider_utlization_choices, all_provider)))
