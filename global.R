@@ -93,13 +93,13 @@ singleday_slot <- here::here("Data/Slot/SingleDay")
 if(file.exists("J:/")){
   #### Local Data Directories
   #historical.data <- readRDS("Data/historical_data.rds")
-  population.data_filtered <- readRDS("Data/population_data_grouped.rds")
+  #population.data_filtered <- readRDS("Data/population_data_grouped.rds")
   utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
   filter_path <- here::here("Filters")
 }else{
   #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
-  population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
+  #population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
   holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
   utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
   filter_path <- "/data/Oncology/Filters"
@@ -162,65 +162,65 @@ callback <- callback <- JS(
 max_date <- max(historical.data$Appt.DateYear)
 
 
-setDT(historical.data)
+#setDT(historical.data)
 
 min_date <- "2019-01-01"
 
 ## Other datasets
 
-all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
-
-arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                       Appt.Status %in% c("Arrived"), which = TRUE]
-
-canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
-                                                           Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
-
-canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                        Appt.Status %in% c("Canceled"), which = TRUE]
-
-bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                      Appt.Status %in% c("Bumped"), which = TRUE]
-
-rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                           Appt.Status %in% c("Rescheduled"), which = TRUE]
-
-sameDay.rows <- historical.data[Appt.DTTM >= min_date &
-                                  Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
-                                  Lead.Days == 0, which = TRUE]
-
-noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
-                                      Appt.Status %in% c("No Show"),
-                                    which = TRUE
-]
-
-noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
-
-arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
-
-arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
-                                              Appt.Status %in% c("Arrived") &
-                                              !(Disease_Group %in% c("No Disease Group")), which = TRUE]
-
-
-####TREND 
-
-arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
-                                             Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-##### Unique
-arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
-                                              Appt.Status %in% c("Arrived"), which = TRUE]
-
-
-
-
-
-historical.data <- as.data.frame(historical.data)
-unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
-unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+# all.data.rows <- historical.data[Appt.DTTM >= min_date, which = TRUE]
+# 
+# arrived.data.rows <- historical.data[Appt.DTTM >= min_date & 
+#                                        Appt.Status %in% c("Arrived"), which = TRUE]
+# 
+# canceled.bumped.rescheduled.data.rows <- historical.data[Appt.DTTM >= max_date - 1350 &
+#                                                            Appt.Status %in% c("Canceled","Bumped","Rescheduled"), which = TRUE]
+# 
+# canceled.data.rows <- historical.data[Appt.DTTM >= min_date & 
+#                                         Appt.Status %in% c("Canceled"), which = TRUE]
+# 
+# bumped.data.rows <- historical.data[Appt.DTTM >= min_date &
+#                                       Appt.Status %in% c("Bumped"), which = TRUE]
+# 
+# rescheduled.data.rows <- historical.data[Appt.DTTM >= min_date &
+#                                            Appt.Status %in% c("Rescheduled"), which = TRUE]
+# 
+# sameDay.rows <- historical.data[Appt.DTTM >= min_date &
+#                                   Appt.Status %in% c("Canceled","Bumped","Rescheduled") &
+#                                   Lead.Days == 0, which = TRUE]
+# 
+# noshow.data.rows <- historical.data[Appt.DTTM >= min_date &
+#                                       Appt.Status %in% c("No Show"),
+#                                     which = TRUE
+# ]
+# 
+# noshow.data.rows <- c(sameDay.rows, noshow.data.rows)
+# 
+# arrivedNoShow.data.rows <-  c(noshow.data.rows, arrived.data.rows)
+# 
+# arrivedDisease.data.rows <- historical.data[Appt.DTTM >= min_date & 
+#                                               Appt.Status %in% c("Arrived") &
+#                                               !(Disease_Group %in% c("No Disease Group")), which = TRUE]
+# 
+# 
+# ####TREND 
+# 
+# arrived.data.rows.trend <- historical.data[Appt.DTTM >= max_date - 1350 & 
+#                                              Appt.Status %in% c("Arrived"), which = TRUE]
+# 
+# 
+# 
+# ##### Unique
+# arrived.data.rows.unique <- historical.data[Appt.DTTM >= floor_date(max_date %m-% months(36), unit = "month") & 
+#                                               Appt.Status %in% c("Arrived"), which = TRUE]
+# 
+# 
+# 
+# 
+# 
+# historical.data <- as.data.frame(historical.data)
+# unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+# unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 
 
 arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
