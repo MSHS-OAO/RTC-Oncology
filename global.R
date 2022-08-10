@@ -222,6 +222,7 @@ min_date <- "2019-01-01"
 # unique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 # unique_max <- max(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
 unique_max <- "2022-01-01"
+unique_min <- "2021-01-01"
 
 
 arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
