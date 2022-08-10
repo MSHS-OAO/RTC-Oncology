@@ -77,66 +77,66 @@ server <- function(input, output, session) {
   
   
   
-  observeEvent(input$filter_list, {
-    user <- user()
-    
-    filter_path <- paste0(filter_path, "/", user, "/", input$filter_list, ".csv")
-    filter_df <- read_csv(filter_path)
-    
-    campus_selected <- unique(filter_df$Campus)
-    department_selected <- unique(filter_df$Department)
-    day_selected <- unique(filter_df$Days)
-    date_range1_trend <- unique(filter_df$Daterange_1_trend)
-    date_range2_trend <- unique(filter_df$Daterange_2_trend)
-    
-    date_range1 <- unique(filter_df$Daterange_1)
-    date_range2 <- unique(filter_df$Daterange_2)
-    
-
-    department_choices <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"]), na.last = TRUE) 
-    
-   
-    
-    
-   updateDateRangeInput(session,
-                        inputId = "dateRangetrend",
-                        start = date_range1_trend,
-                        end = date_range2_trend)
-   
-   updateDateRangeInput(session,
-                        inputId = "dateRange",
-                        start = date_range1,
-                        end = date_range2)
-   
-    updatePickerInput(session,
-                      inputId = "selectedCampus",
-                      selected = campus_selected
-    )
-    
-
-    updatePickerInput(session,
-                      inputId = "selectedDepartment",
-                      choices = department_choices,
-                      selected = department_selected
-    )
-
-    updatePickerInput(session,
-                      inputId = "daysOfWeek",
-                      choices = daysOfWeek.options,
-                      selected = day_selected
-    )
-    
-    
-  })
-  
-  observeEvent(input$update_filters0,{
-    user <- user()
-    filter_path_full <- paste0(filter_path, "/", user)
-    dir.create(file.path(filter_path, user), showWarnings = FALSE)
-    filter_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
-    updatePickerInput(session, "filter_list", choices = filter_choices)
-    
-  })
+  # observeEvent(input$filter_list, {
+  #   user <- user()
+  #   
+  #   filter_path <- paste0(filter_path, "/", user, "/", input$filter_list, ".csv")
+  #   filter_df <- read_csv(filter_path)
+  #   
+  #   campus_selected <- unique(filter_df$Campus)
+  #   department_selected <- unique(filter_df$Department)
+  #   day_selected <- unique(filter_df$Days)
+  #   date_range1_trend <- unique(filter_df$Daterange_1_trend)
+  #   date_range2_trend <- unique(filter_df$Daterange_2_trend)
+  #   
+  #   date_range1 <- unique(filter_df$Daterange_1)
+  #   date_range2 <- unique(filter_df$Daterange_2)
+  #   
+  # 
+  #   department_choices <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"]), na.last = TRUE) 
+  #   
+  #  
+  #   
+  #   
+  #  updateDateRangeInput(session,
+  #                       inputId = "dateRangetrend",
+  #                       start = date_range1_trend,
+  #                       end = date_range2_trend)
+  #  
+  #  updateDateRangeInput(session,
+  #                       inputId = "dateRange",
+  #                       start = date_range1,
+  #                       end = date_range2)
+  #  
+  #   updatePickerInput(session,
+  #                     inputId = "selectedCampus",
+  #                     selected = campus_selected
+  #   )
+  #   
+  # 
+  #   updatePickerInput(session,
+  #                     inputId = "selectedDepartment",
+  #                     choices = department_choices,
+  #                     selected = department_selected
+  #   )
+  # 
+  #   updatePickerInput(session,
+  #                     inputId = "daysOfWeek",
+  #                     choices = daysOfWeek.options,
+  #                     selected = day_selected
+  #   )
+  #   
+  #   
+  # })
+  # 
+  # observeEvent(input$update_filters0,{
+  #   user <- user()
+  #   filter_path_full <- paste0(filter_path, "/", user)
+  #   dir.create(file.path(filter_path, user), showWarnings = FALSE)
+  #   filter_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
+  #   updatePickerInput(session, "filter_list", choices = filter_choices)
+  #   
+  # })
   
   
   # Date Range Header --------------------------------------------------------------------------
@@ -479,10 +479,19 @@ server <- function(input, output, session) {
       ) 
       
       
-      provider_utlization_choices <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
-                                                                                 historical.data$Department %in% input$selectedDepartment, "Provider"])),
-                                        stringsAsFactors=FALSE
-      )
+      # provider_utlization_choices <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
+      #                                                                            historical.data$Department %in% input$selectedDepartment, "Provider"])),
+      #                                   stringsAsFactors=FALSE
+      # )
+      
+      depts <- input$selectedDepartment
+      default_provider_utilization <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                                DEPARTMENT_NAME %in% depts) %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      default_provider_utilization <- data.frame(Provider = sort(default_provider_utilization$PROVIDER, na.last = T), stringsAsFactors=FALSE)
+      
       
       provider_utlization_choices <- as.character(t(inner_join(provider_utlization_choices, all_provider)))
       
@@ -621,10 +630,22 @@ server <- function(input, output, session) {
   
   observeEvent(list(input$selectedDepartment),{
     if(!is.null(input$selectedDepartment)) {
-      prov_choices <- historical.data %>% filter(!(Disease_Group %in% c("No Disease Group"))) %>% drop_na(Disease_Group)
+      # prov_choices <- historical.data %>% filter(!(Disease_Group %in% c("No Disease Group"))) %>% drop_na(Disease_Group)
+      # 
+      # prov_choices <-  sort(unique(prov_choices[prov_choices$SITE %in% input$selectedCampus &
+      #                                             prov_choices$Department %in% input$selectedDepartment, "Provider"]))
       
-      prov_choices <-  sort(unique(prov_choices[prov_choices$SITE %in% input$selectedCampus &
-                                                  prov_choices$Department %in% input$selectedDepartment, "Provider"]))
+      
+      campus <- input$selectedCampus
+      depts <- input$selectedDepartment
+      prov_choices <- oncology_tbl %>% filter(!is.na(DISEASE_GROUP)) %>%
+        filter(SITE %in% campus & APPT_STATUS %in% c("Arrived") &
+                 DEPARTMENT_NAME %in% depts) %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      
+      prov_choices <- sort(prov_choices$PROVIDER, na.last = T)
   
       updatePickerInput(session,
                         inputId = "selectedProvider1",
@@ -654,37 +675,37 @@ server <- function(input, output, session) {
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
-  dataAll <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters(historical.data[all.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
+  # dataAll <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters(historical.data[all.data.rows,],
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  # })
   
   # [2.2] Arrived + No Show data ============================================================================================================
-  dataArrivedNoShow <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters(historical.data[arrivedNoShow.data.rows,],
-                   input$selectedCampus, input$selectedDepartment, 
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
+  # dataArrivedNoShow <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters(historical.data[arrivedNoShow.data.rows,],
+  #                  input$selectedCampus, input$selectedDepartment, 
+  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  # })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters(historical.data[arrived.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
+  # dataArrived <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters(historical.data[arrived.data.rows,],
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  # })
   
   
   dataArrived_Diag <- eventReactive(list(input$update_filters),{
@@ -702,26 +723,26 @@ server <- function(input, output, session) {
   })
   
   # Canceled data ============================================================================================================
-  dataCanceled<- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters(historical.data[canceled.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
+  # dataCanceled<- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters(historical.data[canceled.data.rows,],
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  # })
   
   # Bumped data ============================================================================================================
-  dataBumped<- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters(historical.data[bumped.data.rows,],
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  })
+  # dataBumped<- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters(historical.data[bumped.data.rows,],
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  # })
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
@@ -786,55 +807,55 @@ server <- function(input, output, session) {
   
   # Scheduling  data ============================================================================================================
   
-  dataAllsched <- eventReactive(list(input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters_4(historical.data[all.data.rows,],
-                     input$selectedCampus, input$selectedDepartment,
-                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
-  })
+  # dataAllsched <- eventReactive(list(input$update_filters, input$update_filters3, input$update_filters4, input$update_filters5),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_4(historical.data[all.data.rows,],
+  #                    input$selectedCampus, input$selectedDepartment,
+  #                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  # })
+  # 
+  # dataArrivedNoShowsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_4(historical.data[arrivedNoShow.data.rows,],
+  #                    input$selectedCampus, input$selectedDepartment, 
+  #                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  # })
   
-  dataArrivedNoShowsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters_4(historical.data[arrivedNoShow.data.rows,],
-                     input$selectedCampus, input$selectedDepartment, 
-                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
-  })
+  # dataArrivedsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_4(historical.data[arrived.data.rows,],
+  #                    input$selectedCampus, input$selectedDepartment,
+  #                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  # })
   
-  dataArrivedsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters_4(historical.data[arrived.data.rows,],
-                     input$selectedCampus, input$selectedDepartment,
-                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
-  })
+  # dataBumpedsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_4(historical.data[bumped.data.rows,],
+  #                    input$selectedCampus, input$selectedDepartment,
+  #                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  # })
   
-  dataBumpedsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters_4(historical.data[bumped.data.rows,],
-                     input$selectedCampus, input$selectedDepartment,
-                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
-  })
-  
-  dataCanceledsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    groupByFilters_4(historical.data[canceled.data.rows,],
-                     input$selectedCampus, input$selectedDepartment,
-                     input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
-  })
+  # dataCanceledsched <- eventReactive(list(input$update_filters,input$update_filters3, input$update_filters4, input$update_filters5),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   groupByFilters_4(historical.data[canceled.data.rows,],
+  #                    input$selectedCampus, input$selectedDepartment,
+  #                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider1)
+  # })
   
   # Trend  data ============================================================================================================
   # dataArrivedTrend <- reactive({
@@ -886,171 +907,171 @@ server <- function(input, output, session) {
   })
   
   # Unique Patients  data ============================================================================================================
-  dataUniqueExam_system <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.unique.exam,
-                          input$selectedCampus, input$selectedDepartment,
-                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                          input$diag_grouper)
-    
-  })
+  # dataUniqueExam_system <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.unique.exam,
+  #                         input$selectedCampus, input$selectedDepartment,
+  #                         input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                         input$diag_grouper)
+  #   
+  # })
+  # 
+  # dataUniqueExam_system_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.unique.exam.month,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  # 
+  # })
   
-  dataUniqueExam_system_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.unique.exam.month,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-
-  })
+  # dataUniqueAll_system <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.unique.all,
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                  input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueAll_system <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.unique.all,
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                   input$diag_grouper)
-    
-  })
+  # dataUniqueAll_system_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   
+  #   groupByFilters_unique(historical.data.unique.all.month,
+  #                  input$selectedCampus, input$selectedDepartment,
+  #                  input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                  input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueAll_system_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    
-    groupByFilters_unique(historical.data.unique.all.month,
-                   input$selectedCampus, input$selectedDepartment,
-                   input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                   input$diag_grouper)
-    
-  })
+  # dataUniqueTreatment_system <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.unique.treatment,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueTreatment_system <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.unique.treatment,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
-  
-  dataUniqueTreatment_system_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    
-    groupByFilters_unique(historical.data.unique.treatment.month,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
-  
-  
+  # dataUniqueTreatment_system_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   
+  #   groupByFilters_unique(historical.data.unique.treatment.month,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
   
   
-  dataUniqueExam_site <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.site.exam,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
   
-  dataUniqueExam_site_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-    
-    
-    groupByFilters_unique(historical.data.site.exam.month,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
   
-  dataUniqueAll_site <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    groupByFilters_unique(historical.data.site.all,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
+  # dataUniqueExam_site <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.site.exam,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueAll_site_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    
-    groupByFilters_unique(historical.data.site.all.month,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
+  # dataUniqueExam_site_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #   
+  #   
+  #   groupByFilters_unique(historical.data.site.exam.month,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueTreatment_site <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    
-    groupByFilters_unique(historical.data.site.treatment,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
+  # dataUniqueAll_site <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   groupByFilters_unique(historical.data.site.all,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
-  dataUniqueTreatment_site_month <- eventReactive(list(input$update_filters),{
-    validate(
-      need(input$selectedCampus != "" , "Please select a Campus"),
-      need(input$selectedDepartment != "", "Please select a Department")
-    )
-
-    
-    groupByFilters_unique(historical.data.site.treatment.month,
-                           input$selectedCampus, input$selectedDepartment,
-                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-                           input$diag_grouper)
-    
-  })
+  # dataUniqueAll_site_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   
+  #   groupByFilters_unique(historical.data.site.all.month,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
+  
+  # dataUniqueTreatment_site <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   
+  #   groupByFilters_unique(historical.data.site.treatment,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
+  # 
+  # dataUniqueTreatment_site_month <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  # 
+  #   
+  #   groupByFilters_unique(historical.data.site.treatment.month,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper)
+  #   
+  # })
   
   
   # [2.2] All pre-processed data for utilization tabs --------------------------------------------------------------------------------------

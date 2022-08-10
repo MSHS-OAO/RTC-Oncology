@@ -107,10 +107,20 @@ default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 
 
-default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                              historical.data$Department %in% default_departments, "Provider"])),
-                                           stringsAsFactors=FALSE
-                                  )
+# default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                               historical.data$Department %in% default_departments, "Provider"])),
+#                                            stringsAsFactors=FALSE
+#                                   )
+
+
+default_provider_utilization <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments) %>%
+  select(PROVIDER) %>%
+  mutate(PROVIDER = unique(PROVIDER)) %>%
+  collect()
+default_provider_utilization <- data.frame(Provider = sort(default_provider_utilization$PROVIDER, na.last = T), stringsAsFactors=FALSE)
+
+
 
 default_provider_utilization <- as.character(t(inner_join(default_provider_utilization, all_provider)))
 
