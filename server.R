@@ -7,8 +7,8 @@ server <- function(input, output, session) {
   })
   
   user <- reactive({
-    #session$user
-    "villea04"
+    session$user
+    #"villea04"
   })
   
   filter_choices <- eventReactive(input$save_filters,{
