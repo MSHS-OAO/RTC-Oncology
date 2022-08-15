@@ -675,15 +675,15 @@ server <- function(input, output, session) {
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
-  # dataAll <- eventReactive(list(input$update_filters),{
-  #   validate(
-  #     need(input$selectedCampus != "" , "Please select a Campus"),
-  #     need(input$selectedDepartment != "", "Please select a Department")
-  #   )
-  #   groupByFilters(historical.data[all.data.rows,],
-  #                  input$selectedCampus, input$selectedDepartment,
-  #                  input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-  # })
+  dataAll <- eventReactive(list(input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters(oncology_tbl,
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
   
   # [2.2] Arrived + No Show data ============================================================================================================
   # dataArrivedNoShow <- eventReactive(list(input$update_filters),{
@@ -5425,12 +5425,10 @@ server <- function(input, output, session) {
   
   # Data Download--------------------------------------------------------------------------------------------
   output$volume_data_tbl = renderDT(
-    dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>% 
-      rename(New.PT = New.PT3,
-             Campus = SITE,
-             Department.Id = DEPARTMENT_ID,
-             Epic.Provider.Id = EPIC_Provider_ID) %>%
-      relocate(Campus, .before = Department),
+    dataAll() %>% select(-DEPT_SPECIALTY_NAME, -NEW_PT) %>% 
+      rename(CAMPUS = SITE,
+             DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
+      relocate(CAMPUS, .before = DEPARTMENT),
     #callback = JS("$('div.dwnld').append($('#download1'));"),
     callback = callback,
     #filter = "top",

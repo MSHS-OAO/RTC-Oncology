@@ -3,8 +3,22 @@
 ## Filtered Scheduling Data
 
 groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays){
-  result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
+  # result <- dt %>% filter(SITE %in% campus, Department %in% department, 
+  #                         mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays)
+  
+  format <- "YYYY-MM-DD HH24:MI:SS"
+  daysofweek <- toupper(daysofweek)
+  
+  
+  result <- dt %>% filter(SITE %in% campus, 
+                          DEPARTMENT_NAME %in% department, 
+                          TO_DATE(mindateRange, format) <= APPT_DTTM, 
+                          TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                          APPT_DAY %in% daysofweek, 
+                          #!HOLIDAY %in% holidays
+  )
+                          
+                          
   return(result)
 }
 

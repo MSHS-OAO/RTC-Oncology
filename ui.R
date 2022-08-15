@@ -304,13 +304,14 @@ ui <- dashboardPage(
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
-                                  menuSubItem("Breakdown", tabName = "volumebreakdown"),
-                                  menuSubItem("Comparison", tabName = "volumecomparison")),
+                                  menuSubItem("Breakdown", tabName = "volumebreakdown")#,
+                                  #menuSubItem("Comparison", tabName = "volumecomparison")
+                                  ),
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
-                         menuItem("Exam Utilization", tabName = "utilization"),
+                         #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
                 ),
