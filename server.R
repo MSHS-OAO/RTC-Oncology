@@ -899,10 +899,11 @@ server <- function(input, output, session) {
     input$update_filters
     
     isolate({
-      data <- dataAll() %>% select(-Campus.Specialty, -Sex, -uniqueId, -New.PT2, -New.PT) %>%
-        rename(New.PT = New.PT3,
-               Campus = SITE) %>%
-        relocate(Campus, .before = Department)
+      data <- dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
+                                  ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT) %>% 
+            rename(CAMPUS = SITE,
+               DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
+        relocate(CAMPUS, .before = DEPARTMENT)
     })
   })
   
