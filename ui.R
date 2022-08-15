@@ -151,6 +151,8 @@ dateRange_max <- glue("Select max(APPT_DTTM) AS maxDate FROM ONCOLOGY_ACCESS")
 dateRange_max <- dbGetQuery(con, dateRange_max)
 dateRange_max <- as.Date(dateRange_max$MAXDATE, format="%Y-%m-%d")
 
+dateRange_download_start <- floor_date(dateRange_max, 'month') 
+
 # dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
 
@@ -1222,27 +1224,27 @@ ui <- dashboardPage(
             condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
         input.sbm == `provvolbreakdown` |
         input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
-        input.sbm == 'zipCode' | input.sbm == 'download'" ,
+        input.sbm == 'zipCode' | input.sbm == 'volumetrend'" ,
               box(
                 title = "Select Date Range:", 
                 width = 12, 
                 height = "100px",
                 solidHeader = FALSE, 
                 dateRangeInput("dateRange", label = NULL,
-                               start = dateRange_min_default, end = dateRange_max,
-                               min = min_date, max = dateRange_max
+                               start = dateRangetrend_min, end = dateRange_max,
+                               min = dateRangetrend_min, max = dateRange_max
                 )
             )
           ),
           conditionalPanel(
-            condition = "input.sbm == 'volumetrend'",
+            condition = "input.sbm == 'download'",
             box(
               title = "Select Date Range:",
-              width = 12, 
+              width = 12,
               height = "100px",
-              solidHeader = FALSE, 
-              dateRangeInput("dateRangetrend", label = NULL,
-                             start = dateRangetrend_min, end = dateRange_max,
+              solidHeader = FALSE,
+              dateRangeInput("dateRangedwnld", label = NULL,
+                             start = dateRange_download_start, end = dateRange_max,
                              min = dateRangetrend_min, max = dateRange_max
               )
             )
