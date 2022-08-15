@@ -317,7 +317,9 @@ ui <- dashboardPage(
                          #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
                 ),
-                menuItem("Data Download", tabName = "download", icon = icon("download"))
+                uiOutput("data_download")
+                #menuItem("Data Download", tabName = "download", icon = icon("download")
+                         #)
                 
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
@@ -338,7 +340,14 @@ ui <- dashboardPage(
                 
                 
                 
-    ) # Close sidebarMenu
+    ), # Close sidebarMenu
+    
+    tags$head(tags$style(HTML("
+    #data_download {
+    padding: 12px 5px 12px 15px;
+    
+    }
+                    ")))
   ), # Close Dashboard Sidebar
   dashboardBody(
     

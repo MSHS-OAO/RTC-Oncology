@@ -1,8 +1,14 @@
 server <- function(input, output, session) {
   
+  output$data_download <- renderUI({
+    if(user() %in% download_list){
+      menuItem("Data Download", tabName = "download", icon = icon("download"))
+    }
+  })
+  
   user <- reactive({
-    #session$user
-    "Armando"
+    session$user
+    #"villea04"
   })
   
   filter_choices <- eventReactive(input$save_filters,{
