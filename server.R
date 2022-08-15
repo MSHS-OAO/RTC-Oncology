@@ -141,7 +141,7 @@ server <- function(input, output, session) {
   
   # Date Range Header --------------------------------------------------------------------------
   output$practiceName_volumetrend <- renderText({
-    paste0("Based on data from ", input$dateRangetrend[1]," to ", input$dateRangetrend[2], 
+    paste0("Based on data from ", input$dateRange[1]," to ", input$dateRange[2], 
            " for ", paste(sort(input$selectedCampus), collapse = ', '))
   })
   
@@ -682,7 +682,7 @@ server <- function(input, output, session) {
     )
     groupByFilters(oncology_tbl,
                    input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+                   input$dateRangedwnld[1], input$dateRangedwnld[2], input$daysOfWeek, input$excludeHolidays)
   })
   
   # [2.2] Arrived + No Show data ============================================================================================================
@@ -886,7 +886,7 @@ server <- function(input, output, session) {
       )
       groupByFilters_Trend(arrived_data,
                            input$selectedCampus, input$selectedDepartment,
-                           input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays,
+                           input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                            input$diag_grouper
       )
 
@@ -1310,9 +1310,10 @@ server <- function(input, output, session) {
       
       
     } else {
+      filter <- input$annualVolSummary
       #get the total patients per year
       visits_tb_yearly <- data %>% 
-        filter(ASSOCIATIONLISTA %in% input$annualVolSummary) %>%
+        filter(ASSOCIATIONLISTA %in% filter) %>%
         group_by(APPT_YEAR) %>% summarise(total = n()) %>% collect() %>%
         spread(APPT_YEAR, total)
       visits_tb_yearly$APPT_MONTH <- paste0("Total ",input$annualVolSummary,"\nAnnual Comparison")
@@ -1320,7 +1321,7 @@ server <- function(input, output, session) {
       
       #get the total patients per year per month
       visits_tb <- data %>% 
-        filter(ASSOCIATIONLISTA %in% input$annualVolSummary) %>%
+        filter(ASSOCIATIONLISTA %in% filter) %>%
         group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%
         spread(APPT_YEAR, total)
     }
@@ -5425,7 +5426,8 @@ server <- function(input, output, session) {
   
   # Data Download--------------------------------------------------------------------------------------------
   output$volume_data_tbl = renderDT(
-    dataAll() %>% select(-DEPT_SPECIALTY_NAME, -NEW_PT) %>% 
+    dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
+                         ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT) %>% 
       rename(CAMPUS = SITE,
              DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
       relocate(CAMPUS, .before = DEPARTMENT),
