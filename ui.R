@@ -319,8 +319,7 @@ ui <- dashboardPage(
                 ),
                 uiOutput("data_download")
                 #menuItem("Data Download", tabName = "download", icon = icon("download")
-                         #)
-                
+                         #)                
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
                 #)
