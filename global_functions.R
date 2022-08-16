@@ -48,8 +48,19 @@ groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRang
 
 
 groupByFilters_2 <- function(dt, visitType, apptType, treatmentType, dx){
-  result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType,
-                          Dx.Grouper %in% dx)
+  # result <- dt %>% filter(AssociationListA %in% visitType, AssociationListB %in% apptType, AssociationListT %in% treatmentType,
+  #                         Dx.Grouper %in% dx)
+  # return(result)
+  
+  
+  result <- dt %>% filter(ASSOCIATIONLISTA %in% visitType, ASSOCIATIONLISTB %in% apptType, ASSOCIATIONLISTT %in% treatmentType, DX_GROUPER %in% dx)
+  
+  if("NA" %in% dx){
+    result_1 <- dt %>% filter(ASSOCIATIONLISTA %in% visitType, ASSOCIATIONLISTB %in% apptType, ASSOCIATIONLISTT %in% treatmentType, is.na(DX_GROUPER))
+    result <- result %>% union_all(result_1)
+    
+  }
+  
   return(result)
 }
 
