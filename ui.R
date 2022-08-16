@@ -162,40 +162,40 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             tags$li(class = "dropdown", actionButton("download10",
                                                                      label = icon("download")
                             )
-                            ),
+                            )#,
                             
-                            tags$li(class = "dropdown",
-                                    dropdown(
-                                      box(
-                                        title = "Name preset input:",
-                                        width = 12,
-                                        height = "100px",
-                                        solidHeader = FALSE,
-                                        textInput("filter_name", label = NULL)
-                                      ), br(), br(), br(), br(), br(),
-                                      actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
-                                      style = "material-circle", size = "lg", right = TRUE, status = "default",
-                                      icon = icon("save"), width = "300px",
-                                      inputId = "dropdownbutton4"
-                                    )
-                            ),
+                            # tags$li(class = "dropdown",
+                            #         dropdown(
+                            #           box(
+                            #             title = "Name preset input:",
+                            #             width = 12,
+                            #             height = "100px",
+                            #             solidHeader = FALSE,
+                            #             textInput("filter_name", label = NULL)
+                            #           ), br(), br(), br(), br(), br(),
+                            #           actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
+                            #           style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            #           icon = icon("save"), width = "300px",
+                            #           inputId = "dropdownbutton4"
+                            #         )
+                            # ),
                             
-                            tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
-                                                                     width = 12,
-                                                                     height = "100px",
-                                                                     solidHeader = FALSE,
-                                                                     pickerInput("filter_list", choices = NULL, multiple = TRUE,
-                                                                                 selected = NULL, options = pickerOptions(maxOptions = 1)
-                                                                     )
-                            ), br(), br(), br(), br(), br(),
-                            actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
-                            actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
-                            style = "material-circle", size = "lg", right = TRUE, status = "default",
-                            icon = icon("star"), width = "300px",
-                            tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
-                            inputId = "dropdownbutton3"
-                            ), 
-                            )
+                            # tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
+                            #                                          width = 12,
+                            #                                          height = "100px",
+                            #                                          solidHeader = FALSE,
+                            #                                          pickerInput("filter_list", choices = NULL, multiple = TRUE,
+                            #                                                      selected = NULL, options = pickerOptions(maxOptions = 1)
+                            #                                          )
+                            # ), br(), br(), br(), br(), br(),
+                            # actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
+                            # actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
+                            # style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            # icon = icon("star"), width = "300px",
+                            # tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+                            # inputId = "dropdownbutton3"
+                            # ), 
+                            # )
                             
                             #)
                             
@@ -306,8 +306,8 @@ ui <- dashboardPage(
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
-                                  menuSubItem("Breakdown", tabName = "volumebreakdown")#,
-                                  #menuSubItem("Comparison", tabName = "volumecomparison")
+                                  menuSubItem("Breakdown", tabName = "volumebreakdown"),
+                                  menuSubItem("Comparison", tabName = "volumecomparison")
                                   ),
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
@@ -630,18 +630,18 @@ ui <- dashboardPage(
                                label = NULL,
                                choices = c("All", "Site"),
                                selected = "All",
-                               status = "info")),
-                           box(
-                             title = "Analysis by:",
-                             width = 4,
-                             height = "110px",
-                             solidHeader = FALSE,
-                             awesomeRadio(
-                               inputId = "analysis_type",
-                               label = NULL,
-                               choices = c("Monthly", "Weekly"),
-                               selected = "Monthly",
-                               status = "info"))
+                               status = "info"))#,
+                           # box(
+                           #   title = "Analysis by:",
+                           #   width = 4,
+                           #   height = "110px",
+                           #   solidHeader = FALSE,
+                           #   awesomeRadio(
+                           #     inputId = "analysis_type",
+                           #     label = NULL,
+                           #     choices = c("Monthly", "Weekly"),
+                           #     selected = "Monthly",
+                           #     status = "info"))
                          ),
                          plotlyOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
@@ -1338,55 +1338,55 @@ ui <- dashboardPage(
          input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
          input.sbm == 'zipCode'",
         br(),
-        dropdown(
-        conditionalPanel(condition = "input.sbm == 'uniqueAll'",
-          box(
-            title = "Change Width:",
-            width = 12,
-            height = "150px",
-            solidHeader = FALSE,
-            sliderInput(
-              inputId = "plotWidth",
-              label = NULL, 
-              value = 1000, min = 200, max = 2000,
-              ticks = FALSE
-            ),
-            fluidRow(
-              column(2, offset = 4,
-                     actionButton("resetwidth", "Reset")
-              )
-            )
-          )
-        ),
-          box(
-            title = "Change Height:",
-            width = 12,
-            height = "150px",
-            solidHeader = FALSE,
-            sliderInput(
-              inputId = "plotHeight",
-              label = NULL, 
-              value = 650, min = 450, max = 2000,
-              ticks = FALSE
-            ),
-            fluidRow(
-              column(2, offset = 4,
-                     actionButton("resetheight", "Reset")
-              )
-            )
-          ),
-          
-          
-          
-          # numericInput("height", "height", 300),
-          
-          style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("gear"), width = "300px",
-          
-          tooltip = tooltipOptions(title = "Format graphs."),
-          inputId = "dropdownheight"
-          
-        ), # Close Drop Down Button
+        # dropdown(
+        # conditionalPanel(condition = "input.sbm == 'uniqueAll'",
+        #   box(
+        #     title = "Change Width:",
+        #     width = 12,
+        #     height = "150px",
+        #     solidHeader = FALSE,
+        #     sliderInput(
+        #       inputId = "plotWidth",
+        #       label = NULL, 
+        #       value = 1000, min = 200, max = 2000,
+        #       ticks = FALSE
+        #     ),
+        #     fluidRow(
+        #       column(2, offset = 4,
+        #              actionButton("resetwidth", "Reset")
+        #       )
+        #     )
+        #   )
+        # ),
+        #   box(
+        #     title = "Change Height:",
+        #     width = 12,
+        #     height = "150px",
+        #     solidHeader = FALSE,
+        #     sliderInput(
+        #       inputId = "plotHeight",
+        #       label = NULL, 
+        #       value = 650, min = 450, max = 2000,
+        #       ticks = FALSE
+        #     ),
+        #     fluidRow(
+        #       column(2, offset = 4,
+        #              actionButton("resetheight", "Reset")
+        #       )
+        #     )
+        #   ),
+        #   
+        #   
+        #   
+        #   # numericInput("height", "height", 300),
+        #   
+        #   style = "material-circle", size = "lg", right = TRUE, status = "default",
+        #   icon = icon("gear"), width = "300px",
+        #   
+        #   tooltip = tooltipOptions(title = "Format graphs."),
+        #   inputId = "dropdownheight"
+        #   
+        # ), # Close Drop Down Button
         br(),
         
         tags$head(
@@ -1405,12 +1405,12 @@ ui <- dashboardPage(
                     border-radius: 50%;
                     border-color: transparent;}"))),
         
-        bsTooltip("dropdownbutton3", "Load previously saved bookmarks.",
-                  "left", options = list(container = "body")
-        ),
-        bsTooltip("dropdownbutton4", "Bookmark global filters.",
-                  "left", options = list(container = "body")
-        ),
+        # bsTooltip("dropdownbutton3", "Load previously saved bookmarks.",
+        #           "left", options = list(container = "body")
+        # ),
+        # bsTooltip("dropdownbutton4", "Bookmark global filters.",
+        #           "left", options = list(container = "body")
+        # ),
         
         
         bsTooltip("download10", "Download (PNG) current tab.",
