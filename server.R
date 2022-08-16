@@ -582,7 +582,7 @@ server <- function(input, output, session) {
   
   
   observeEvent(c(input$selectedDisease),{
-    if(is.null(input$selectedDisease)){
+    if(!is.null(input$selectedDisease)){
       select_campus <- input$selectedCampus
       select_dept <- input$selectedDepartment
       select_disease <- input$selectedDisease
