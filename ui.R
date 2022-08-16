@@ -102,7 +102,7 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
                                     select(PROVIDER) %>%
                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                     collect()
-default_provider <- sort(default_provider$PROVIDER, na.last = T)
+default_provider <- sort(default_provider$PROVIDER)
 
 
 
