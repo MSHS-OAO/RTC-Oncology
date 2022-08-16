@@ -86,7 +86,7 @@ default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT
                                           select(DISEASE_GROUP) %>%
                                           mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
                                           collect()
-default_disease_group <- sort(default_disease_group$DISEASE_GROUP, na.last = T)
+default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 
 
 
@@ -102,7 +102,7 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
                                     select(PROVIDER) %>%
                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                     collect()
-default_provider <- sort(default_provider$PROVIDER)
+default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 
 
