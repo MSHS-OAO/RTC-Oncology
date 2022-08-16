@@ -433,7 +433,7 @@ ui <- dashboardPage(
                        # ),
                        div("Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$div(id = "home_text",
-                                HTML("<p>Version: 1.0 <br> Last Updated: 9/16/2021</p>")
+                                HTML("<p>Version: 1.0 <br> Last Updated: 08/13/2022</p>")
                        ),
                        tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: -4em; margin-left: 20px}")), 
                        br(), br(),
@@ -461,7 +461,7 @@ ui <- dashboardPage(
                                          box(
                                            title = p("Reference Files", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
                                            p("- Mapping File:", style = "font-size:22px; font-weight: bold"),
-                                           a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
+                                           a(href = "Mappings/Oncology Analysis Tool - Mappings - Saved 7.26.2022.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
                                          )))
                        ),
                        
