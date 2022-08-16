@@ -2,54 +2,125 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
-
-# # Remove Provider ID from Provider Name column
-# amb_df_groupings_unique$PROV_NAME_WID <- trimws(gsub("\\[.*?\\]", "", amb_df_groupings_unique$PROV_NAME_WID))
-
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
 #default_campus <- "DBC"
-default_campus <- unique(historical.data$SITE)
+#default_campus <- unique(historical.data$SITE)
+campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
+                        collect()
+campus_choices <<- sort(campus_choices$SITE, na.last = T)
 
-campus_choices <- sort(unique(historical.data$SITE))
 
-default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
-default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                      historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
+default_campus <- "MSW"
 
-default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"])) 
+#default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
+default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% select(DEPARTMENT_NAME) %>% 
+                                            mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
+                                            collect()
+default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
 
-default_visitType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                   historical.data$Department %in% default_departments, "AssociationListA"]))
 
-default_ApptType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                  historical.data$Department %in% default_departments &
-                                                  historical.data$AssociationListA %in% default_visitType, "AssociationListB"]))
+# default_diag_grouper <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                       historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
 
-default_TreatmentType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                       historical.data$Department %in% default_departments &
-                                                       historical.data$AssociationListA %in% default_visitType &
-                                                       historical.data$AssociationListB %in% default_ApptType, "AssociationListT"]))
+default_diag_grouper <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
+                                              select(DX_GROUPER) %>% mutate(DX_GROUPER = unique(DX_GROUPER)) %>%
+                                                                            collect()
+default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
 
-default_disease_group <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
-                                                           arrivedDisease.data$Department %in% default_departments_disease, "Disease_Group"]))
+# default_visitType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                    historical.data$Department %in% default_departments, "AssociationListA"]))
 
-default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
-                                                      arrivedDisease.data$Department %in% default_departments_disease &
-                                                      arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
 
-default_dx_grouper_zip <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
-                                                      arrivedDisease.data$Department %in% default_departments_disease &
-                                                      arrivedDisease.data$Disease_Group %in% default_disease_group &
-                                                      arrivedDisease.data$Provider %in%   default_provider, "Dx.Grouper"]))
+default_visitType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
+                                      select(ASSOCIATIONLISTA) %>%
+                                      mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
+                                      collect()
+default_visitType <- sort(default_visitType$ASSOCIATIONLISTA, na.last = T)
 
-default_provider1 <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                   historical.data$Department %in% default_departments_disease , "Provider"]))
 
-default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
-                                                              historical.data$Department %in% default_departments, "Provider"])),
-                                           stringsAsFactors=FALSE
-                                  )
+# default_ApptType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                   historical.data$Department %in% default_departments &
+#                                                   historical.data$AssociationListA %in% default_visitType, "AssociationListB"]))
+
+default_ApptType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
+                                              ASSOCIATIONLISTA %in%  default_visitType) %>%
+                                      select(ASSOCIATIONLISTB) %>% 
+                                      mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
+                                      collect()
+default_ApptType <- sort(default_ApptType$ASSOCIATIONLISTB, na.last = T)
+
+
+
+
+# 
+# default_TreatmentType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                        historical.data$Department %in% default_departments &
+#                                                        historical.data$AssociationListA %in% default_visitType &
+#                                                        historical.data$AssociationListB %in% default_ApptType, "AssociationListT"]))
+
+default_TreatmentType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
+                                              ASSOCIATIONLISTA %in% default_visitType &
+                                              ASSOCIATIONLISTB %in% default_ApptType) %>%
+                                              select(ASSOCIATIONLISTT) %>% 
+                                              mutate(ASSOCIATIONLISTT = unique(ASSOCIATIONLISTT)) %>% 
+                                              collect()
+default_TreatmentType <- sort(default_TreatmentType$ASSOCIATIONLISTT, na.last = T)
+
+
+# default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"]))
+
+default_departments_disease <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived")) %>%
+  select(DEPARTMENT_NAME) %>%
+  mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
+  collect()
+default_departments_disease <- sort(default_departments_disease$DEPARTMENT_NAME, na.last = T)
+
+
+
+# default_disease_group <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
+#                                                            arrivedDisease.data$Department %in% default_departments_disease, "Disease_Group"]))
+
+default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                                  DEPARTMENT_NAME %in% default_departments_disease) %>%
+                                          select(DISEASE_GROUP) %>%
+                                          mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
+                                          collect()
+default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
+
+
+
+
+# default_provider <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus &
+#                                                       arrivedDisease.data$Department %in% default_departments_disease &
+#                                                       arrivedDisease.data$Disease_Group %in% default_disease_group, "Provider"]))
+
+
+default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments_disease & 
+                                              DISEASE_GROUP %in% default_disease_group) %>%
+                                    select(PROVIDER) %>%
+                                    mutate(PROVIDER = unique(PROVIDER)) %>%
+                                    collect()
+default_provider <- sort(default_provider$PROVIDER, na.last = T)
+
+
+
+
+# default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
+#                                                               historical.data$Department %in% default_departments, "Provider"])),
+#                                            stringsAsFactors=FALSE
+#                                   )
+
+
+default_provider_utilization <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments) %>%
+  select(PROVIDER) %>%
+  mutate(PROVIDER = unique(PROVIDER)) %>%
+  collect()
+default_provider_utilization <- data.frame(Provider = sort(default_provider_utilization$PROVIDER, na.last = T), stringsAsFactors=FALSE)
+
+
 
 default_provider_utilization <- as.character(t(inner_join(default_provider_utilization, all_provider)))
 
@@ -64,13 +135,25 @@ util_date_end = max(utilization.data$Appt.DateYear)
 dateRange_min_default <- as.Date("2021-01-01")
 dateRange_min_default_unique <- as.Date("2021-01-01")
 #dateRange_min_default <- min(historical.data$Appt.DateYear) 
-dateRange_max <- max(historical.data$Appt.DateYear)
 daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 #today <- Sys.Date()
 
-dateRangetrend_min <- as.Date("2019-01-01")
+#dateRangetrend_min <- as.Date("2019-01-01")
+# dateRange_max <- max(historical.data$Appt.DateYear)
 
-dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
+dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
+dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
+dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
+
+
+
+dateRange_max <- glue("Select max(APPT_DTTM) AS maxDate FROM ONCOLOGY_ACCESS")
+dateRange_max <- dbGetQuery(con, dateRange_max)
+dateRange_max <- as.Date(dateRange_max$MAXDATE, format="%Y-%m-%d")
+
+dateRange_download_start <- floor_date(dateRange_max, 'month') 
+
+# dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
 
 header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
@@ -79,40 +162,40 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             tags$li(class = "dropdown", actionButton("download10",
                                                                      label = icon("download")
                             )
-                            ),
+                            )#,
                             
-                            tags$li(class = "dropdown",
-                                    dropdown(
-                                      box(
-                                        title = "Name preset input:",
-                                        width = 12,
-                                        height = "100px",
-                                        solidHeader = FALSE,
-                                        textInput("filter_name", label = NULL)
-                                      ), br(), br(), br(), br(), br(),
-                                      actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
-                                      style = "material-circle", size = "lg", right = TRUE, status = "default",
-                                      icon = icon("save"), width = "300px",
-                                      inputId = "dropdownbutton4"
-                                    )
-                            ),
+                            # tags$li(class = "dropdown",
+                            #         dropdown(
+                            #           box(
+                            #             title = "Name preset input:",
+                            #             width = 12,
+                            #             height = "100px",
+                            #             solidHeader = FALSE,
+                            #             textInput("filter_name", label = NULL)
+                            #           ), br(), br(), br(), br(), br(),
+                            #           actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
+                            #           style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            #           icon = icon("save"), width = "300px",
+                            #           inputId = "dropdownbutton4"
+                            #         )
+                            # ),
                             
-                            tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
-                                                                     width = 12,
-                                                                     height = "100px",
-                                                                     solidHeader = FALSE,
-                                                                     pickerInput("filter_list", choices = NULL, multiple = TRUE,
-                                                                                 selected = NULL, options = pickerOptions(maxOptions = 1)
-                                                                     )
-                            ), br(), br(), br(), br(), br(),
-                            actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
-                            actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
-                            style = "material-circle", size = "lg", right = TRUE, status = "default",
-                            icon = icon("star"), width = "300px",
-                            tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
-                            inputId = "dropdownbutton3"
-                            ), 
-                            )
+                            # tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
+                            #                                          width = 12,
+                            #                                          height = "100px",
+                            #                                          solidHeader = FALSE,
+                            #                                          pickerInput("filter_list", choices = NULL, multiple = TRUE,
+                            #                                                      selected = NULL, options = pickerOptions(maxOptions = 1)
+                            #                                          )
+                            # ), br(), br(), br(), br(), br(),
+                            # actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
+                            # actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
+                            # style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            # icon = icon("star"), width = "300px",
+                            # tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+                            # inputId = "dropdownbutton3"
+                            # ), 
+                            # )
                             
                             #)
                             
@@ -207,11 +290,6 @@ ui <- dashboardPage(
                  background: rgba(255, 255, 255, 0);
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
-                # menuItem("Scheduling", tabName = "scheduling", icon = icon("user-clock"),
-                #          menuItem("Scheduled/Arrived", tabName = "schedulingArrived"),
-                #          menuItem("No Shows/Overbooks", tabName = "schedulingNoShows"),
-                #          menuItem("Bumps/Cancellations", tabName = "schedulingBumps")
-                # ),
                 # menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
                 #          menuItem("By System", tabName = "SystemUnique",
                 #                   menuSubItem("All", tabName = "systemuniqueAll"),
@@ -229,17 +307,19 @@ ui <- dashboardPage(
                          menuItem("By Site", tabName = "siteVolume",
                                   menuSubItem("Trend", tabName = "volumetrend"),
                                   menuSubItem("Breakdown", tabName = "volumebreakdown"),
-                                  menuSubItem("Comparison", tabName = "volumecomparison")),
+                                  menuSubItem("Comparison", tabName = "volumecomparison")
+                                  ),
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
-                         menuItem("Exam Utilization", tabName = "utilization"),
+                         #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
-                )#,
-                #menuItem("Data Download", tabName = "download", icon = icon("download"))
-                
+                ),
+                uiOutput("data_download")
+                #menuItem("Data Download", tabName = "download", icon = icon("download")
+                         #)                
                 # menuItem("Access", tabName = "access", icon = icon("calendar-alt"),
                 #          menuItem("Booked and Filled", tabName = "bookedFilled")
                 #)
@@ -259,7 +339,14 @@ ui <- dashboardPage(
                 
                 
                 
-    ) # Close sidebarMenu
+    ), # Close sidebarMenu
+    
+    tags$head(tags$style(HTML("
+    #data_download {
+    padding: 12px 5px 12px 15px;
+    
+    }
+                    ")))
   ), # Close Dashboard Sidebar
   dashboardBody(
     
@@ -335,13 +422,7 @@ ui <- dashboardPage(
                     downloadButton("download1",""),
                     DTOutput("volume_data_tbl") %>% 
                       withSpinner(type = 5, color = "#d80b8c")
-                  )#,
-                  # boxPlus(
-                  #   title = "Utilization Data", width = 12, status = "primary",
-                  #   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                  #   DTOutput("utilization_data_tbl") %>% 
-                  #     withSpinner(type = 5, color = "#d80b8c")
-                  # )
+                  )
                 )
               ),
         # HomePage ------------------------------------------------------------------------------------------------------------------
@@ -379,36 +460,10 @@ ui <- dashboardPage(
                                 tags$div(id = "home_mapping",
                                          box(
                                            title = p("Reference Files", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
-                                           # p("- Metrics Overview:", style = "font-size:22px; font-weight: bold"),
-                                           # a(href = "Mappings/Metrics_Overview.pdf",target='blank', 'Click to View', download = 'Ambulatory Care Analysis Tool - Metric Overview.pdf', style = "font-size:22px"),
-                                           # p("- Metric Definitions and Analysis Methodology:", style = "font-size:20px; font-weight: bold"),
-                                           # a(href = "Mappings/Analysis Methodology.xlsx",target='blank', 'Click to Download', download = 'Ambulatory Care Analysis Tool - Metric definitions.xlsx', style = "font-size:22px"),
-                                           # p("- EPIC Site, Specialty, Department, and Provider Breakdown:", style = "font-size:20px; font-weight: bold"),
-                                           # a(href = "Mappings/Master Mapping File.xlsx",target='blank', 'Click to Download', download = 'Ambulatory Analytics Tool - Mappings.xlsx', style = "font-size:22px"),
                                            p("- Mapping File:", style = "font-size:22px; font-weight: bold"),
                                            a(href = "Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
                                          )))
                        ),
-                       
-                       # fluidRow(
-                       #   column(6,
-                       #          tags$div(id = "home_video",
-                       #                   box(
-                       #                     title = p("How to Use this Tool", style = "font-size:34px; font-weight:bold"), width = 12, status = "warning", solidHeader = TRUE,
-                       #                     shiny::tags$video(src = "Quick_HowtoUse_Amb Care Tool_Intro.mp4", type = "video/mp4",  autoplay = 'autoplay',
-                       #                                       controls = 'controls', width = "700px", height = "550px",
-                       #                                       style="display: block; margin-left: auto; margin-right: auto"),
-                       #                     p("For any technical issues, please reach out to OAO@mssm.edu.", 
-                       #                       style = "font-size:18px; font-style: italic")))),
-                         # column(6,
-                         #        tags$div(id = "home_use_case",
-                         #                 box(
-                         #                   title = p("Targeted Use", style = "font-size:34px; font-weight:bold"), width = 12, status = "warning", solidHeader = TRUE,
-                         #                   p("Data-driven insights and findings obtained from this tool should be used in conjunction with the learnings from the Ambulatory Care Academy to achieve operational improvements.", 
-                         #                     style = "font-size:20px; font-weight: bold; font-style: italic"),
-                         #                   img(src = "Use_Case.png", width = "700px", style="display: block; margin-left: auto; margin-right: auto"))))
-                       #)
-                       
                        
                 )),
         # Volume Trend Tab ------------------------------------------------------------------------------------------------------
@@ -574,18 +629,18 @@ ui <- dashboardPage(
                                label = NULL,
                                choices = c("All", "Site"),
                                selected = "All",
-                               status = "info")),
-                           box(
-                             title = "Analysis by:",
-                             width = 4,
-                             height = "110px",
-                             solidHeader = FALSE,
-                             awesomeRadio(
-                               inputId = "analysis_type",
-                               label = NULL,
-                               choices = c("Monthly", "Weekly"),
-                               selected = "Monthly",
-                               status = "info"))
+                               status = "info"))#,
+                           # box(
+                           #   title = "Analysis by:",
+                           #   width = 4,
+                           #   height = "110px",
+                           #   solidHeader = FALSE,
+                           #   awesomeRadio(
+                           #     inputId = "analysis_type",
+                           #     label = NULL,
+                           #     choices = c("Monthly", "Weekly"),
+                           #     selected = "Monthly",
+                           #     status = "info"))
                          ),
                          plotlyOutput("volumeCompTotal_grh", height = "auto") %>%
                            withSpinner(type = 5, color = "#d80b8c"), hr(),
@@ -658,29 +713,7 @@ ui <- dashboardPage(
                        # )
                 )
         ), # Close volume Comparison
-        
-        # System Unique Patients Tab ------------------------------------------------------------------------------------------------------
-        tabItem(tabName = "systemuniqueAll",
-                div("System Unique Patients - Exam, Treatment, and Lab Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_systemuniqueAll"),
-                tags$head(tags$style("#practiceName_systemuniqueAll{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
-                       boxPlus(
-                         title = "Unique Patients by System", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         br(),
-                         fluidRow(valueBoxOutput("uniqueAllSystem", width=4) %>%
-                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
-                         column(12,
-                                plotOutput("uniqueAllTrendSystem", height = "auto") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueAllMonthSystem", height = "auto") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")) 
-                       ), 
-                       
-                )
-        ), #Close Unique Patients - All tab
-        
+
         tabItem(tabName = "systemuniqueOffice",
                 div("System Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_systemuniqueOffice"),
@@ -843,293 +876,7 @@ ui <- dashboardPage(
                 )
                 
         ), #Close Unique Patients by Provider - Exam Visits tab
-        
-        
-        # Unique Patients by Zip Code Tab 
-        tabItem(tabName = "zipCode",
-                div("Patient Zip Code Analysis", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_zipCode"),
-                tags$head(tags$style("#practiceName_zipCode{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
-                       boxPlus(
-                         title = "Analysis Customization", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         fluidRow(
-                           box(
-                             title = "Select Provider:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedProvider7",label=NULL,
-                                         choices = default_provider,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Providers",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_provider)),
-                           box(
-                             title = "Select Diagnosis Gropuer:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("dx_grouper_zip",label=NULL,
-                                         choices = default_dx_grouper_zip,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} groups",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_dx_grouper_zip)),
-                           column(9,
-                                  actionButton("update_filters7", "CLICK TO UPDATE", width = "42%"),
-                                  br(),
-                                  br()
-                           )
-                         )
-                       ),
-                       boxPlus(
-                         title = "Total Unique Patients by Zip Code", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         br(),
-                         fluidRow(
-                           column(4,
-                                  box(
-                                    title = "Unique Patients by:",
-                                    width = 12,
-                                    height = "150px",
-                                    solidHeader = FALSE, 
-                                    radioButtons("selectedZipCodeMap", label=NULL,
-                                                 choices = c("System","Site"),
-                                                 selected = "System"))
-                           ),
-                           column(4,
-                                  box(
-                                    title = "Visit Type(s) Included:",
-                                    width = 12,
-                                    height = "150px",
-                                    solidHeader = FALSE, 
-                                    radioButtons("selectedZipCodeMap2", label=NULL,
-                                                 choices = c("All","Exam","Treatment"),
-                                                 selected = "All"))
-                           )
-                         ), hr(),
-                         fluidRow(
-                           column(4, tableOutput("zipCode_tb") %>%
-                                    withSpinner(type = 5, color = "#d80b8c")),
-                           column(8, leafletOutput("zipCode_map", height = "700px") %>%
-                                    withSpinner(type = 5, color = "#d80b8c")))
-                       )
-                )
-        ), # Close Zip Code tab
-        
-        
-        # Scheduling Tab ---------------------------------------------------------------------------------------------------------
-        ## Scheduled/Arrived Tab 
-        tabItem(tabName = "schedulingArrived",
-                div("Scheduling - Scheduled/Arrived", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_schedulingArrived"),
-                tags$head(tags$style("#practiceName_schedulingArrived{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
-                       boxPlus(
-                         title = "Analysis Customization", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         fluidRow(
-                           box(
-                             title = "Select Provider:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedProvider1",label=NULL,
-                                         choices = default_provider,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Providers",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_provider)),
-                           column(9,
-                                  actionButton("update_filters3", "CLICK TO UPDATE", width = "42%"),
-                                  br(),
-                                  br()
-                           )
-                         )
-                         
-                       ),
-                       boxPlus(
-                         title = "Scheduling Summary", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         column(4,
-                                valueBoxOutput("avgScheduled", width = 12) %>%
-                                  withSpinner(type = 5, color = "#d80b8c"),
-                                valueBoxOutput("incompleteAppts", width = 12) %>%
-                                  withSpinner(type = 5, color = "#d80b8c"),
-                                tags$em("*Incomplete Appts = No Show + Same-day Bumped/Canceled/Rescheduled Appts")),
-                         column(8,
-                                plotOutput("schedulingStatusSummary") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"))),
-                       boxPlus(
-                         title = "Patient Arrivals", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         plotOutput("avgPtArrival")  %>%
-                           withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         plotOutput("ptArrivalPattern", height = "700px") %>%
-                           withSpinner(type = 5, color = "#d80b8c")))
-                
-        ), # Close Scheduled/Arrived Tab
-        
-        ## No Shows/Overbooks Tab 
-        tabItem(tabName = "schedulingNoShows",
-                div("Scheduling - No Shows/Overbooks", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_schedulingNoShows"),
-                tags$head(tags$style("#practiceName_schedulingNoShows{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
-                       boxPlus(
-                         title = "Analysis Customization", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         fluidRow(
-                           box(
-                             title = "Select Provider:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedProvider4",label=NULL,
-                                         choices = default_provider,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Providers",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_provider)),
-                           column(9,
-                                  actionButton("update_filters4", "CLICK TO UPDATE", width = "42%"),
-                                  br(),
-                                  br()
-                           )
-                           
-                         )
-                       ),       
-                       column(6,
-                              boxPlus(
-                                title = "No Shows", width = 12, status = "primary",
-                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                                fluidRow(
-                                  valueBoxOutput("avgNoShows2", width = 6) %>%
-                                    withSpinner(type = 5, color = "#d80b8c"),
-                                  valueBoxOutput("avgNoShowsPerc", width = 6) %>%
-                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
-                                fluidRow(
-                                  materialSwitch(
-                                    inputId = "percent1",
-                                    label = "Percent (%)", 
-                                    right = TRUE,
-                                    status = "primary")),
-                                plotOutput("avgNoShowsDist", height = "600px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"),
-                                hr(),
-                                plotOutput("noShowLeadDays") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"))),
-                       column(6,
-                              boxPlus(
-                                title = "Overbooks", width = 12, status = "primary",
-                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE, 
-                                fluidRow(
-                                  valueBoxOutput("avgOverbooks", width = 6) %>%
-                                    withSpinner(type = 5, color = "#d80b8c"),
-                                  valueBoxOutput("avgOverbooksProv", width = 6) %>%
-                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
-                                br(), br(), 
-                                plotOutput("avgOverbooksDist", height = "600px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")))
-                )
-                
-        ), # Close No Shows/Overbooks Tab
-        
-        ## Bumps/Cancellations Tab 
-        tabItem(tabName = "schedulingBumps",
-                div("Scheduling - Bumps/Cancellations", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_schedulingBumps"),
-                tags$head(tags$style("#practiceName_schedulingBumps{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
-                       boxPlus(
-                         title = "Analysis Customization", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         fluidRow(
-                           box(
-                             title = "Select Provider:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedProvider5",label=NULL,
-                                         choices = default_provider,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Providers",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_provider)),
-                           column(9,
-                                  actionButton("update_filters5", "CLICK TO UPDATE", width = "42%"),
-                                  br(),
-                                  br()
-                           )
-                         )
-                       ),
-                       boxPlus(
-                         title = "Summary", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         fluidRow(
-                           valueBoxOutput("avgDailyBumps", width = 4) %>%
-                             withSpinner(type = 5, color = "#d80b8c"),
-                           valueBoxOutput("avgDailyCanc", width = 4) %>%
-                             withSpinner(type = 5, color = "#d80b8c"),
-                           valueBoxOutput("avgDailyResc", width = 4) %>%
-                             withSpinner(type = 5, color = "#d80b8c")), hr(),
-                         column(4, 
-                                plotOutput("avgBumpsCancRescRate", height = "450px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")),
-                         column(4,
-                                plotOutput("leadDaysBumpsCancResc", height = "450px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")),
-                         column(4,
-                                plotOutput("sameDayBumpedCanceledRescheduled", height = "450px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"))),
-                       boxPlus(
-                         title = "Top Reasons to Bumps and Cancellations", width = 12, status = "primary",
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
-                         fluidRow(
-                           materialSwitch(
-                             inputId = "percent2",
-                             label = "Percent (%)", 
-                             right = TRUE,
-                             status = "primary")), br(),
-                         column(6, 
-                                plotOutput("reasonsBumps", height = "600px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c")),
-                         column(6, 
-                                plotOutput("reasonsCanc", height = "600px") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"))
-                         
-                       )
-                )
-                
-        ), # Close Bumps/Cancellations Tab
-        
+
         # Utilization Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "utilization",
                        div("Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -1390,10 +1137,10 @@ ui <- dashboardPage(
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-        input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
+        input.sbm == `provvolbreakdown` |
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
-        input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
+        input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
         input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
         
         dropdown(
@@ -1439,7 +1186,7 @@ ui <- dashboardPage(
           ),
           conditionalPanel(
             condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-                          input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueAll'| input.sbm == 'systemuniqueTreatment' |
+                          input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                  input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
             box(
               title = "Select Diagnosis Grouper:",
@@ -1483,29 +1230,29 @@ ui <- dashboardPage(
           ),
           conditionalPanel(
             condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-        input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` |
+        input.sbm == `provvolbreakdown` |
         input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
-        input.sbm == 'zipCode' | input.sbm == 'download'" ,
+        input.sbm == 'zipCode' | input.sbm == 'volumetrend'" ,
               box(
                 title = "Select Date Range:", 
                 width = 12, 
                 height = "100px",
                 solidHeader = FALSE, 
                 dateRangeInput("dateRange", label = NULL,
-                               start = dateRange_min_default, end = dateRange_max,
-                               min = min_date, max = dateRange_max
+                               start = dateRangetrend_min, end = dateRange_max,
+                               min = dateRangetrend_min, max = dateRange_max
                 )
             )
           ),
           conditionalPanel(
-            condition = "input.sbm == 'volumetrend'",
+            condition = "input.sbm == 'download'",
             box(
               title = "Select Date Range:",
-              width = 12, 
+              width = 12,
               height = "100px",
-              solidHeader = FALSE, 
-              dateRangeInput("dateRangetrend", label = NULL,
-                             start = dateRangetrend_min, end = dateRange_max,
+              solidHeader = FALSE,
+              dateRangeInput("dateRangedwnld", label = NULL,
+                             start = dateRange_download_start, end = dateRange_max,
                              min = dateRangetrend_min, max = dateRange_max
               )
             )
@@ -1519,8 +1266,8 @@ ui <- dashboardPage(
               height = "100px",
               solidHeader = FALSE, 
               dateRangeInput("dateRangetreat_util", label = NULL,
-                             start = as.Date(paste0("01-01-",year(Sys.Date())), "%m-%d-%Y"), end = util_date_end,
-                             min = as.Date(min(historical.data$Appt.DateYear)), max = as.Date(max(historical.data$Appt.DateYear))
+                             start = dateRangetrend_min, end = dateRange_max,
+                             min = dateRangetrend_min, max = dateRange_max
               )
             )
           ),
@@ -1537,7 +1284,7 @@ ui <- dashboardPage(
           ),
           
           conditionalPanel(
-            condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueAll'| input.sbm == 'systemuniqueTreatment' |
+            condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                  input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
             box(
               title = "Select Date Range:",
@@ -1584,61 +1331,61 @@ ui <- dashboardPage(
       
       conditionalPanel(
         condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' |
-         input.sbm == `provvolbreakdown` | input.sbm == `schedulingArrived` | input.sbm == `schedulingNoShows` | input.sbm == `schedulingBumps` | 
+         input.sbm == `provvolbreakdown` | 
          input.sbm == `bookedFilled` |  
          input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
-         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll' |
+         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
          input.sbm == 'zipCode'",
         br(),
-        dropdown(
-        conditionalPanel(condition = "input.sbm == 'uniqueAll'",
-          box(
-            title = "Change Width:",
-            width = 12,
-            height = "150px",
-            solidHeader = FALSE,
-            sliderInput(
-              inputId = "plotWidth",
-              label = NULL, 
-              value = 1000, min = 200, max = 2000,
-              ticks = FALSE
-            ),
-            fluidRow(
-              column(2, offset = 4,
-                     actionButton("resetwidth", "Reset")
-              )
-            )
-          )
-        ),
-          box(
-            title = "Change Height:",
-            width = 12,
-            height = "150px",
-            solidHeader = FALSE,
-            sliderInput(
-              inputId = "plotHeight",
-              label = NULL, 
-              value = 650, min = 450, max = 2000,
-              ticks = FALSE
-            ),
-            fluidRow(
-              column(2, offset = 4,
-                     actionButton("resetheight", "Reset")
-              )
-            )
-          ),
-          
-          
-          
-          # numericInput("height", "height", 300),
-          
-          style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("gear"), width = "300px",
-          
-          tooltip = tooltipOptions(title = "Format graphs."),
-          inputId = "dropdownheight"
-          
-        ), # Close Drop Down Button
+        # dropdown(
+        # conditionalPanel(condition = "input.sbm == 'uniqueAll'",
+        #   box(
+        #     title = "Change Width:",
+        #     width = 12,
+        #     height = "150px",
+        #     solidHeader = FALSE,
+        #     sliderInput(
+        #       inputId = "plotWidth",
+        #       label = NULL, 
+        #       value = 1000, min = 200, max = 2000,
+        #       ticks = FALSE
+        #     ),
+        #     fluidRow(
+        #       column(2, offset = 4,
+        #              actionButton("resetwidth", "Reset")
+        #       )
+        #     )
+        #   )
+        # ),
+        #   box(
+        #     title = "Change Height:",
+        #     width = 12,
+        #     height = "150px",
+        #     solidHeader = FALSE,
+        #     sliderInput(
+        #       inputId = "plotHeight",
+        #       label = NULL, 
+        #       value = 650, min = 450, max = 2000,
+        #       ticks = FALSE
+        #     ),
+        #     fluidRow(
+        #       column(2, offset = 4,
+        #              actionButton("resetheight", "Reset")
+        #       )
+        #     )
+        #   ),
+        #   
+        #   
+        #   
+        #   # numericInput("height", "height", 300),
+        #   
+        #   style = "material-circle", size = "lg", right = TRUE, status = "default",
+        #   icon = icon("gear"), width = "300px",
+        #   
+        #   tooltip = tooltipOptions(title = "Format graphs."),
+        #   inputId = "dropdownheight"
+        #   
+        # ), # Close Drop Down Button
         br(),
         
         tags$head(
@@ -1657,12 +1404,12 @@ ui <- dashboardPage(
                     border-radius: 50%;
                     border-color: transparent;}"))),
         
-        bsTooltip("dropdownbutton3", "Load previously saved bookmarks.",
-                  "left", options = list(container = "body")
-        ),
-        bsTooltip("dropdownbutton4", "Bookmark global filters.",
-                  "left", options = list(container = "body")
-        ),
+        # bsTooltip("dropdownbutton3", "Load previously saved bookmarks.",
+        #           "left", options = list(container = "body")
+        # ),
+        # bsTooltip("dropdownbutton4", "Bookmark global filters.",
+        #           "left", options = list(container = "body")
+        # ),
         
         
         bsTooltip("download10", "Download (PNG) current tab.",
@@ -1700,7 +1447,7 @@ ui <- dashboardPage(
       
       # Info Button for System Unique Patients Tab ----------
       conditionalPanel(
-        condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' | input.sbm == 'systemuniqueAll'",
+        condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment'",
         br(),
         dropdown(
           box(
