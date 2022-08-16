@@ -2253,10 +2253,12 @@ server <- function(input, output, session) {
                   values_fill = 0)
     
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    site_selected <- input$selectedCampus
+    
+    if(length(unique(site_selected)) == length(campus_choices)){
       site <- "all sites"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
     }
     
     
