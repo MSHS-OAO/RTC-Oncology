@@ -7,7 +7,11 @@ server <- function(input, output, session) {
   })
   
   user <- reactive({
-    session$user
+    if(!is.null(session$user)){
+    name <- session$user
+    } else {
+      name <- "user"
+    }
     #"villea04"
   })
   
