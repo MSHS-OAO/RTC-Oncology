@@ -900,7 +900,7 @@ server <- function(input, output, session) {
     
     isolate({
       data <- dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
-                                  ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT) %>% 
+                                  ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT, EPIC_PROVIDER_ID, APPT_STATUS) %>% 
             rename(CAMPUS = SITE,
                DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
         relocate(CAMPUS, .before = DEPARTMENT)
@@ -5430,7 +5430,7 @@ server <- function(input, output, session) {
   # Data Download--------------------------------------------------------------------------------------------
   output$volume_data_tbl = renderDT(
     dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
-                         ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT) %>% 
+                         ASSOCIATIONLISTA, ASSOCIATIONLISTB, ASSOCIATIONLISTT, EPIC_PROVIDER_ID, APPT_STATUS) %>% 
       rename(CAMPUS = SITE,
              DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
       relocate(CAMPUS, .before = DEPARTMENT),
