@@ -233,12 +233,13 @@ groupByFilters_Trend <- function(dt, campus, department
                                  ){
   format <- "YYYY-MM-DD HH24:MI:SS"
   daysofweek <- toupper(daysofweek)
+  maxdateRange <- as.Date(maxdateRange) + 1
   
   
   result <- dt %>% filter(SITE %in% campus, 
                           DEPARTMENT_NAME %in% department, 
                           TO_DATE(mindateRange, format) <= APPT_DTTM, 
-                          TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                          TO_DATE(maxdateRange, format) > APPT_DTTM, 
                           APPT_DAY %in% daysofweek,
                           DX_GROUPER %in% diag#, 
                           #!HOLIDAY %in% holidays
@@ -248,7 +249,7 @@ groupByFilters_Trend <- function(dt, campus, department
     result_1 <- dt %>% filter(SITE %in% campus, 
                             DEPARTMENT_NAME %in% department, 
                             TO_DATE(mindateRange, format) <= APPT_DTTM, 
-                            TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                            TO_DATE(maxdateRange, format) > APPT_DTTM, 
                             APPT_DAY %in% daysofweek,
                             is.na(DX_GROUPER))
     
