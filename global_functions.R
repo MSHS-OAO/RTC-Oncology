@@ -8,12 +8,12 @@ groupByFilters <- function(dt, campus, department, mindateRange, maxdateRange, d
   
   format <- "YYYY-MM-DD HH24:MI:SS"
   daysofweek <- toupper(daysofweek)
-  
+  maxdateRange <- as.Date(maxdateRange) + 1
   
   result <- dt %>% filter(SITE %in% campus, 
                           DEPARTMENT_NAME %in% department, 
                           TO_DATE(mindateRange, format) <= APPT_DTTM, 
-                          TO_DATE(maxdateRange, format) >= APPT_DTTM, 
+                          TO_DATE(maxdateRange, format) > APPT_DTTM, 
                           APPT_DAY %in% daysofweek, 
                           #!HOLIDAY %in% holidays
   )
@@ -39,8 +39,9 @@ groupByFilters_unique <- function(dt, campus, department, mindateRange, maxdateR
 
 
 groupByFilters_pop <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider, dx){
+  maxdateRange <- as.Date(maxdateRange) + 1
   result <- dt %>% filter(SITE %in% campus, Department %in% department, 
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider,
+                          mindateRange <= Appt.DateYear, maxdateRange > Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider,
                           Dx.Grouper %in% dx)
   return(result)
 }
@@ -94,8 +95,10 @@ groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange,
 
 
 groupByFilters_util <- function(dt, campus, department, provider, mindateRange, maxdateRange, daysofweek, holidays, type){
+  maxdateRange <- as.Date(maxdateRange) + 1
+  
   result <- dt %>% filter(SITE %in% campus, Department %in% department, Provider %in% provider,
-                          mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, util.type %in% type)
+                          mindateRange <= Appt.DateYear, maxdateRange > Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, util.type %in% type)
   return(result)
 }
 
@@ -103,10 +106,11 @@ groupByFilters_util_treatment <- function(dt, campus, department, mindateRange, 
   
   format <- "YYYY-MM-DD HH24:MI:SS"
   daysofweek <- toupper(daysofweek)
+  maxdateRange <- as.Date(maxdateRange) + 1
   
   result <- dt %>% filter(SITE %in% campus, DEPARTMENT_NAME %in% department, #Provider %in% provider,
                           TO_DATE(mindateRange, format) <= APPT_DTTM, 
-                          TO_DATE(maxdateRange, format) >= APPT_DTTM, APPT_DAY %in% daysofweek
+                          TO_DATE(maxdateRange, format) > APPT_DTTM, APPT_DAY %in% daysofweek
                           #, !holiday %in% holidays
                           )
                           
