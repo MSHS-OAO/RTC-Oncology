@@ -2,6 +2,7 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
+
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
 #default_campus <- "DBC"
