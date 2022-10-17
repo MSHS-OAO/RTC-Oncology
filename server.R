@@ -5171,7 +5171,12 @@ server <- function(input, output, session) {
   
   
   output$treatment_input_table <- renderRHandsontable({
-    rhandsontable(treatment_input_table_data(), overflow= 'visible', rowHeaders = FALSE)
+    data <- treatment_input_table_data()
+    
+    rhandsontable(data, overflow= 'hidden', rowHeaders = FALSE, readOnly = FALSE) %>% hot_table() %>%
+      hot_col(1, readOnly = T) %>%
+      hot_col(2, readOnly = F)
+    
   })
   
   
