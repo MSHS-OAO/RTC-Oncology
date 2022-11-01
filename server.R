@@ -1498,7 +1498,7 @@ server <- function(input, output, session) {
 
     Total <- total_visits_break %>% 
       group_by(APPT_MONTH_YEAR) %>%
-      summarise(total = sum(total))
+      summarise(Total = sum(total))
     Total$AssociationListA <- "Total"
     total_visits_break <- full_join(total_visits_break,Total)
     
