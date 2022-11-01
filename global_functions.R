@@ -527,7 +527,7 @@ ggplot_line_graph <- function(df, title) {
     geom_point(aes(color=APPT_YEAR), size=3)+
     scale_color_MountSinai('dark')+
     labs(title = title,
-         y = NULL, x = NULL, fill = NULL)+
+         y = NULL, x = NULL, fill = NULL, color = NULL)+
     scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
     theme(legend.position = 'top',
           legend.title=element_blank(),
