@@ -1502,6 +1502,9 @@ server <- function(input, output, session) {
     Total$AssociationListA <- "Total"
     total_visits_break <- full_join(total_visits_break,Total)
     
+    total_visits_break <- total_visits_break %>% select(-ASSOCIATIONLISTA) %>% rename(ASSOCIATIONLISTA = AssociationListA)
+
+    
     n <- length(unique(total_visits_break$ASSOCIATIONLISTA)) - 1
     if(n==0){
       hline_y <- 0
