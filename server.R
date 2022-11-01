@@ -1486,10 +1486,10 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     
     title <- paste0(site," ","All Visit Volume Composition")
@@ -1570,10 +1570,10 @@ server <- function(input, output, session) {
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Telehealth Visit","New Visit","Established Visit"))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     
     total_visits_break <- total_visits_break %>% filter(!is.na(ASSOCIATIONLISTB))
@@ -1682,10 +1682,10 @@ server <- function(input, output, session) {
     
     total_visits_break <- inner_join(total_visits_break,sum, by = c("APPT_MONTH_YEAR"))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     
     # g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
