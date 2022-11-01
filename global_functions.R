@@ -303,9 +303,6 @@ valueBoxSpark <- function(value, title, subtitle, sparkobj = NULL, info = NULL,
   )
 }
 
-# ### (0) Maximize R Memory Size 
-memory.limit(size = 8000000)
-
 ### (1) Set aesthetics theme -----------------------------------------------------------------------------
 
 # Color Functions for Graphs =====================================
@@ -527,7 +524,7 @@ ggplot_line_graph <- function(df, title) {
     geom_point(aes(color=APPT_YEAR), size=3)+
     scale_color_MountSinai('dark')+
     labs(title = title,
-         y = NULL, x = NULL, fill = NULL)+
+         y = NULL, x = NULL, fill = NULL, color = NULL)+
     scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
     theme(legend.position = 'top',
           legend.title=element_blank(),

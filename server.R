@@ -1161,6 +1161,8 @@ server <- function(input, output, session) {
     total_visits$APPT_YEAR <- as.character(total_visits$APPT_YEAR)
     total_visits$APPT_MONTH <- str_to_title(total_visits$APPT_MONTH)
     
+    
+    
     g1 <- ggplot_line_graph(total_visits, title)
     g2 <- ggplot_table(total_visits, hline_y)
     
@@ -1478,7 +1480,7 @@ server <- function(input, output, session) {
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
-    
+
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA %in% c("Labs","Treatment","Exam")) %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
     
@@ -1486,10 +1488,10 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     
     title <- paste0(site," ","All Visit Volume Composition")
@@ -1501,6 +1503,8 @@ server <- function(input, output, session) {
       summarise(total = sum(total))
     Total$AssociationListA <- "Total"
     total_visits_break <- full_join(total_visits_break,Total)
+    
+    total_visits_break <- total_visits_break %>% select(-ASSOCIATIONLISTA) %>% rename(ASSOCIATIONLISTA = AssociationListA)
     
     n <- length(unique(total_visits_break$ASSOCIATIONLISTA)) - 1
     if(n==0){
@@ -1567,10 +1571,10 @@ server <- function(input, output, session) {
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Telehealth Visit","New Visit","Established Visit"))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     
     total_visits_break <- total_visits_break %>% filter(!is.na(ASSOCIATIONLISTB))
@@ -1726,7 +1730,7 @@ server <- function(input, output, session) {
     Total <- total_visits_break %>% 
       group_by(APPT_MONTH_YEAR) %>%
       summarise(total = sum(total))
-    Total$AssociationListT <- "Total"
+    Total$ASSOCIATIONLISTT <- "Total"
     total_visits_break <- full_join(total_visits_break,Total)
     
     

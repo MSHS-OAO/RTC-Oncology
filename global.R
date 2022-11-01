@@ -11,7 +11,7 @@ suppressMessages({
   library(shinyWidgets)
   library(htmlwidgets)
   library(lubridate)
-  library(tcltk)
+  #library(tcltk)
   library(tidyverse)
   library(plotly)
   library(knitr)
@@ -100,8 +100,9 @@ if(file.exists("J:/")){
 }else{
   #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   #population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-  holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-  utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
+  # holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
+  holid <- tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% collect() %>% rename(holiday = HOLIDAY)
+  # utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
   filter_path <- "/data/Oncology/Filters"
 }
 
