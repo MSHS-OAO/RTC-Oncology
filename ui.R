@@ -1088,6 +1088,9 @@ ui <- dashboardPage(
       
       
       # Formatting Dropdown Buttons
+      tags$head(tags$style(HTML(".ht_master .wtHolder {
+                                overflow: hidden;
+                           }"))),
       tags$head(tags$style(HTML("#dropdownbutton {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownbutton1 {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
