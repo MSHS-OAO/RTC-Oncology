@@ -5133,9 +5133,13 @@ server <- function(input, output, session) {
     # operating_hours_end <- "6:00PM"
     # set_rooms <- "16"
     
-    if(remainder/input$setHours_treatment != 1){
+    if(grepl(":30", operating_hours_start, fixed = TRUE)){
       start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
-      end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+        end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+      }else {
+        end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      }
       start_time_hour <- start_time + 1800
       
       time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
@@ -5149,7 +5153,11 @@ server <- function(input, output, session) {
       time_df <- rbind(start_time, time_df)
     }else{
       start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
-      end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+        end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+      }else {
+        end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+      }      
       start_time_hour <- start_time
       
       time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
