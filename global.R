@@ -11,7 +11,7 @@ suppressMessages({
   library(shinyWidgets)
   library(htmlwidgets)
   library(lubridate)
-  library(tcltk)
+  #library(tcltk)
   library(tidyverse)
   library(plotly)
   library(knitr)
