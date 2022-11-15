@@ -94,18 +94,16 @@ if(file.exists("J:/")){
   #### Local Data Directories
   #historical.data <- readRDS("Data/historical_data.rds")
   #population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-  utilization.data <- readRDS("Data/utilization_data_grouped.rds")
-  holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+  # utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   filter_path <- here::here("Filters")
 }else{
   #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   #population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-  holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-  utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
+  # utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
   filter_path <- "/data/Oncology/Filters"
 }
 
-
+holid <-tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% collect()
 
 
 
