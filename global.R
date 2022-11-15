@@ -103,7 +103,7 @@ if(file.exists("J:/")){
   filter_path <- "/data/Oncology/Filters"
 }
 
-holid <-tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% collect()
+holid <-tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% rename(holiday = HOLIDAY) %>% collect()
 
 
 
