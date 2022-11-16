@@ -1809,14 +1809,14 @@ server <- function(input, output, session) {
     
     flag <- 0
       
-    if(length(unique(data$AssociationListA)) == 1){
-      visitType <- unique(data$AssociationListA)
-      apptType <-  paste(sort(unique(data$AssociationListB)), sep="", collapse=", ")
-      # apptType <-  paste(paste(sort(unique(data$AssociationListB)), sep="", collapse=", "),", ",
+    if(length(unique(data$ASSOCIATIONLISTA)) == 1){
+      visitType <- unique(data$ASSOCIATIONLISTA)
+      apptType <-  paste(sort(unique(data$ASSOCIATIONLISTB)), sep="", collapse=", ")
+      # apptType <-  paste(paste(sort(unique(data$ASSOCIATIONLISTB)), sep="", collapse=", "),", ",
       #                     paste(sort(unique(data$AssociationListT)), sep="", collapse=", "))
     } else{
-      visitType <- paste(sort(unique(data$AssociationListA)),sep="", collapse=", ")
-      apptType <-  paste(sort(unique(data$AssociationListB)), sep="", collapse=", ")
+      visitType <- paste(sort(unique(data$ASSOCIATIONLISTA)),sep="", collapse=", ")
+      apptType <-  paste(sort(unique(data$ASSOCIATIONLISTB)), sep="", collapse=", ")
     }
     
     
@@ -1846,6 +1846,9 @@ server <- function(input, output, session) {
                subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
                caption = paste0("\n*Includes ",apptType),
                y = NULL, x = NULL, fill = NULL)
+        
+        visit_comp_all <- visit_comp_all %>% mutate(Total = "Total")
+        table <- ggplot_table_comparison(visit_comp_all, 0)
       # } else{
       #   # Comparison by site
       #   visit_comp_all <- data %>%
@@ -1897,12 +1900,13 @@ server <- function(input, output, session) {
                     #size=5, fontface="bold", position = position_stack(vjust = 0.5))
         
     
-        
-        Total$SITE <- " Total"
-        visit_comp_site <- subset(visit_comp_site, select = -c(Total))
-        Total <- Total %>%
-                  rename(total = Total)
-        visit_comp_site <- full_join(Total, visit_comp_site)
+        if(length(isolate(input$selectedCampus)) > 1){
+          Total$SITE <- " Total"
+          visit_comp_site <- subset(visit_comp_site, select = -c(Total))
+          Total <- Total %>%
+                    rename(total = Total)
+          visit_comp_site <- full_join(Total, visit_comp_site)
+        }
         
         n <- length(unique(visit_comp_site$SITE)) - 1
         if(n==0){
@@ -1922,6 +1926,8 @@ server <- function(input, output, session) {
           table_theme()+
           labs(caption = paste0("\n*Includes ",apptType))+
           theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+        
+        #table <- ggplot_table_comparison_site(visit_comp_site, hline_y)
         
       # } else{
       #   # Comparison by site
@@ -1986,9 +1992,12 @@ server <- function(input, output, session) {
     
     if(flag == 0){
       library(patchwork)
-      ggplotly(g1, tooltip = c("total")) # + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      #ggplotly(g1, tooltip = c("total")) # + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+      
     }else{
-        ggplotly(g1, tooltip = c("total"))
+        #ggplotly(g1, tooltip = c("total"))
+      subplot(g1, table, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
     }
       
     
@@ -2043,7 +2052,7 @@ server <- function(input, output, session) {
 
         g2 <- ggplot(visit_comp_all, aes(x=APPT_MONTH_YEAR, y= "Total", label=total)) +
           scale_color_MountSinai('dark')+
-          geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+          geom_text(size = 5, vjust = "center", hjust = "center", fontface = "bold")+
           geom_hline(yintercept = c(2.5), colour='black')+
           geom_vline(xintercept = 0, colour = 'black')+
           scale_x_discrete(position = "top") +
@@ -2104,13 +2113,14 @@ server <- function(input, output, session) {
           theme_new_line()+
           theme(axis.text.x = element_text(angle = 0, hjust=0.5))
         
-        
-        Total <- visit_comp_site %>%
-          group_by(APPT_MONTH_YEAR) %>%
-          summarise(total = sum(total))
-        
-        Total$SITE <- " Total"
-        visit_comp_site <- full_join(Total, visit_comp_site)
+        if(length(isolate(input$selectedCampus)) > 1) {
+          Total <- visit_comp_site %>%
+            group_by(APPT_MONTH_YEAR) %>%
+            summarise(total = sum(total))
+          
+          Total$SITE <- " Total"
+          visit_comp_site <- full_join(Total, visit_comp_site)
+        }
         
         
         n <- length(unique(visit_comp_site$SITE)) - 1
@@ -2194,10 +2204,12 @@ server <- function(input, output, session) {
 
     if(flag == 1){
       library(patchwork)
-      ggplotly(g1, tooltip = c("total"))# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      # ggplotly(g1, tooltip = c("total"))# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(visit_comp_site$SITE))))
+      subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
       }else if(flag == 0){
         library(patchwork)
-        ggplotly(g1,  tooltip = c("total"))# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
+        # ggplotly(g1,  tooltip = c("total"))# + g2 + plot_layout(ncol = 1, heights = c(7, 0.67))
+        subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
       }else{
         ggplotly(g1,  tooltip = c("total"))
         }

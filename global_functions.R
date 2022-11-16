@@ -573,6 +573,68 @@ ggplot_table <- function(df, hline_y) {
   ggplotly(graph, tooltip = NULL)
 }
 
+ggplot_table_comparison <- function(df, hline_y) {
+  graph <- ggplot(df, aes(x= factor(APPT_MONTH_YEAR, levels = APPT_MONTH_YEAR), y= Total))+
+    labs(x=NULL, y=NULL)+
+    scale_x_discrete(position = "bottom")+
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.key.size = unit(.8,"cm"),
+          legend.text = element_text(size="10"),
+          axis.title.x = element_blank(),
+          # axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+          axis.title.y = element_blank(),
+          axis.text.x = element_blank(),
+          # axis.text.y = element_text(color= "black", margin = margin(r=15)),
+          axis.text.y = element_blank(),
+          # axis.text = element_text(size="14"),
+          axis.text = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+    ) +
+    geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+    geom_hline(yintercept = hline_y, colour='black')+
+    geom_vline(xintercept = 0, colour = 'black') +
+    table_theme() +
+    theme(axis.title.y = element_text(size="14"),
+          axis.text.y = element_text(size="14"))
+  
+  ggplotly(graph, tooltip = NULL)
+}
+
+ggplot_table_comparison_site <- function(df, hline_y) {
+  graph <- ggplot(df, aes(x= factor(APPT_MONTH_YEAR, levels = APPT_MONTH_YEAR), y= SITE))+
+    labs(x=NULL, y=NULL)+
+    scale_x_discrete(position = "bottom")+
+    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.key.size = unit(.8,"cm"),
+          legend.text = element_text(size="10"),
+          axis.title.x = element_blank(),
+          # axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+          axis.title.y = element_blank(),
+          axis.text.x = element_blank(),
+          # axis.text.y = element_text(color= "black", margin = margin(r=15)),
+          axis.text.y = element_blank(),
+          # axis.text = element_text(size="14"),
+          axis.text = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+    ) +
+    geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+    geom_hline(yintercept = hline_y, colour='black')+
+    geom_vline(xintercept = 0, colour = 'black') +
+    table_theme() +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank())
+  
+  ggplotly(graph, tooltip = NULL)
+}
+
 
 ggplot_bar_graph <- function(df, title, x_data, y_data, group, max) {
   graph <- ggplot(df, aes(x = x_data, y = y_data, group = group, fill = group))+
