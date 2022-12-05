@@ -2,10 +2,15 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
+<<<<<<< HEAD
 
 ### Set default values for master filters --------------------------------------------------------------------------------------
 
 
+=======
+### Set default values for master filters --------------------------------------------------------------------------------------
+
+>>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
 #default_campus <- "DBC"
 #default_campus <- unique(historical.data$SITE)
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
@@ -463,7 +468,7 @@ ui <- dashboardPage(
                                          box(
                                            title = p("Reference Files", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
                                            p("- Mapping File:", style = "font-size:22px; font-weight: bold"),
-                                           a(href = "Mappings/Oncology Analysis Tool - Mappings - Saved 7.26.2022.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
+                                           a(href = "Mappings/Oncology Analytics Tool - Mappings - Saved 11.1.2022.xlsx",target='blank', 'Click to View', download = 'Oncology Analysis Tool - Mappings.xlsx', style = "font-size:22px"),
                                          )))
                        ),
                        
@@ -1090,6 +1095,10 @@ ui <- dashboardPage(
       
       
       # Formatting Dropdown Buttons
+
+      tags$head(tags$style(HTML(".ht_master .wtHolder {
+                                overflow: hidden;
+                           }"))),
       tags$head(tags$style(HTML("#dropdownbutton {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownbutton1 {color: #212070;}"))),
       tags$head(tags$style(HTML("#dropdownheight {color: #212070;}"))),
@@ -1144,191 +1153,195 @@ ui <- dashboardPage(
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
         input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
-        
-        dropdown(
-          br(),
-          actionButton("update_filters", "CLICK TO UPDATE", width = "80%"),
-          br(),
-          br(),
-          br(),
-          br(),
-          box(
-            title = "Select Campus:",
-            width = 12,
-            height = "100px",
-            solidHeader = FALSE,
-            pickerInput("selectedCampus",label=NULL,
-                        choices = campus_choices,
-                        multiple=TRUE,
-                        options = pickerOptions(
-                          liveSearch = TRUE,
-                          actionsBox = TRUE,
-                          selectedTextFormat = "count > 1", 
-                          countSelectedText = "{0}/{1} Campuses", 
-                          dropupAuto = FALSE,
-                          size = 10),
-                        selected = default_campus)),
-          box(
-            title = "Select Department:",
-            width = 12,
-            height = "100px",
-            solidHeader = FALSE,
-            pickerInput("selectedDepartment",label=NULL,
-                        choices=default_departments,
-                        multiple=TRUE,
-                        options = pickerOptions(
-                          liveSearch = TRUE,
-                          actionsBox = TRUE,
-                          selectedTextFormat = "count > 1",
-                          countSelectedText = "{0}/{1} Departments",
-                          dropupAuto = FALSE,
-                          size = 10),
-                        selected = default_departments
-            )
-          ),
-          conditionalPanel(
-            condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-                          input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
+        column(1,
+          dropdown(
+            br(),
+            actionButton("update_filters", "CLICK TO UPDATE", width = "80%"),
+            br(),
+            br(),
+            br(),
+            br(),
             box(
-              title = "Select Diagnosis Grouper:",
+              title = "Select Campus:",
               width = 12,
               height = "100px",
               solidHeader = FALSE,
-              pickerInput("diag_grouper",label=NULL,
-                          choices = default_diag_grouper,
+              pickerInput("selectedCampus",label=NULL,
+                          choices = campus_choices,
+                          multiple=TRUE,
+                          options = pickerOptions(
+                            liveSearch = TRUE,
+                            actionsBox = TRUE,
+                            selectedTextFormat = "count > 1", 
+                            countSelectedText = "{0}/{1} Campuses", 
+                            dropupAuto = FALSE,
+                            size = 10),
+                          selected = default_campus)),
+            box(
+              title = "Select Department:",
+              width = 12,
+              height = "100px",
+              solidHeader = FALSE,
+              pickerInput("selectedDepartment",label=NULL,
+                          choices=default_departments,
                           multiple=TRUE,
                           options = pickerOptions(
                             liveSearch = TRUE,
                             actionsBox = TRUE,
                             selectedTextFormat = "count > 1",
-                            countSelectedText = "{0}/{1} Groups",
+                            countSelectedText = "{0}/{1} Departments",
                             dropupAuto = FALSE,
                             size = 10),
-                          selected = default_diag_grouper
+                          selected = default_departments
               )
             ),
-          ),
-          conditionalPanel(
-              condition = "input.sbm == 'utilization' | input.sbm == 'prov_util'",
+            conditionalPanel(
+              condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+                            input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
               box(
-                title = "Select Provider:",
+                title = "Select Diagnosis Grouper:",
                 width = 12,
                 height = "100px",
                 solidHeader = FALSE,
-                pickerInput("selectedProviderUtil",label=NULL,
-                            choices=default_provider_utilization,
+                pickerInput("diag_grouper",label=NULL,
+                            choices = default_diag_grouper,
                             multiple=TRUE,
                             options = pickerOptions(
                               liveSearch = TRUE,
                               actionsBox = TRUE,
                               selectedTextFormat = "count > 1",
-                              countSelectedText = "{0}/{1} Providers",
+                              countSelectedText = "{0}/{1} Groups",
                               dropupAuto = FALSE,
                               size = 10),
-                            selected = default_provider_utilization
+                            selected = default_diag_grouper
+                )
+              ),
+            ),
+            conditionalPanel(
+                condition = "input.sbm == 'utilization' | input.sbm == 'prov_util'",
+                box(
+                  title = "Select Provider:",
+                  width = 12,
+                  height = "100px",
+                  solidHeader = FALSE,
+                  pickerInput("selectedProviderUtil",label=NULL,
+                              choices=default_provider_utilization,
+                              multiple=TRUE,
+                              options = pickerOptions(
+                                liveSearch = TRUE,
+                                actionsBox = TRUE,
+                                selectedTextFormat = "count > 1",
+                                countSelectedText = "{0}/{1} Providers",
+                                dropupAuto = FALSE,
+                                size = 10),
+                              selected = default_provider_utilization
+                  )
+                )
+            ),
+            conditionalPanel(
+              condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+          input.sbm == `provvolbreakdown` |
+          input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
+          input.sbm == 'zipCode' | input.sbm == 'volumetrend'" ,
+                box(
+                  title = "Select Date Range:", 
+                  width = 12, 
+                  height = "100px",
+                  solidHeader = FALSE, 
+                  dateRangeInput("dateRange", label = NULL,
+                                 start = dateRangetrend_min, end = dateRange_max,
+                                 min = dateRangetrend_min, max = dateRange_max
+                  )
+              )
+            ),
+            conditionalPanel(
+              condition = "input.sbm == 'download'",
+              box(
+                title = "Select Date Range:",
+                width = 12,
+                height = "100px",
+                solidHeader = FALSE,
+                dateRangeInput("dateRangedwnld", label = NULL,
+                               start = dateRange_download_start, end = dateRange_max,
+                               min = dateRangetrend_min, max = dateRange_max
                 )
               )
-          ),
-          conditionalPanel(
-            condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
-        input.sbm == `provvolbreakdown` |
-        input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
-        input.sbm == 'zipCode' | input.sbm == 'volumetrend'" ,
+            ),
+            
+            conditionalPanel(
+              condition = "input.sbm == 'treat_util'",
               box(
-                title = "Select Date Range:", 
+                title = "Select Date Range:",
                 width = 12, 
                 height = "100px",
                 solidHeader = FALSE, 
-                dateRangeInput("dateRange", label = NULL,
+                dateRangeInput("dateRangetreat_util", label = NULL,
                                start = dateRangetrend_min, end = dateRange_max,
                                min = dateRangetrend_min, max = dateRange_max
                 )
-            )
-          ),
-          conditionalPanel(
-            condition = "input.sbm == 'download'",
-            box(
-              title = "Select Date Range:",
-              width = 12,
-              height = "100px",
-              solidHeader = FALSE,
-              dateRangeInput("dateRangedwnld", label = NULL,
-                             start = dateRange_download_start, end = dateRange_max,
-                             min = dateRangetrend_min, max = dateRange_max
               )
-            )
-          ),
-          
-          conditionalPanel(
-            condition = "input.sbm == 'treat_util'",
+            ),
+            
+            # conditionalPanel(
+            #   condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
+            #   box(
+            #     title = "Select Date Range:",
+            #     width = 12, 
+            #     solidHeader = FALSE, 
+            #     dateRangeInput("dateRangeUtil", label = NULL,
+            #                    start = util_date_start, end = util_date_end,
+            #                    min = util_date_min, max = util_date_end)),
+            # ),
+            
+            conditionalPanel(
+              condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
+              box(
+                title = "Select Date Range:",
+                width = 12,
+                height = "100px",
+                solidHeader = FALSE,
+                dateRangeInput("dateRangeunique", label = NULL,
+                               start = dateRange_min_default_unique, end = unique_max,
+                               min = unique_min, max = unique_max
+                )
+              )
+            ),
             box(
-              title = "Select Date Range:",
+              title = "Select Days of Week:",
               width = 12, 
-              height = "100px",
               solidHeader = FALSE, 
-              dateRangeInput("dateRangetreat_util", label = NULL,
-                             start = dateRangetrend_min, end = dateRange_max,
-                             min = dateRangetrend_min, max = dateRange_max
+              selectInput("daysOfWeek",label = NULL,
+                          choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
+                          multiple=TRUE, selectize=TRUE
               )
-            )
-          ),
-          
-          # conditionalPanel(
-          #   condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
-          #   box(
-          #     title = "Select Date Range:",
-          #     width = 12, 
-          #     solidHeader = FALSE, 
-          #     dateRangeInput("dateRangeUtil", label = NULL,
-          #                    start = util_date_start, end = util_date_end,
-          #                    min = util_date_min, max = util_date_end)),
-          # ),
-          
-          conditionalPanel(
-            condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
+            ),
             box(
-              title = "Select Date Range:",
+              title = "Select Holidays to Exclude:",
               width = 12,
-              height = "100px",
               solidHeader = FALSE,
-              dateRangeInput("dateRangeunique", label = NULL,
-                             start = dateRange_min_default_unique, end = unique_max,
-                             min = unique_min, max = unique_max
+              pickerInput("excludeHolidays",label=NULL,
+                          choices= unique(holid$holiday),
+                          multiple=TRUE,
+                          options = pickerOptions(
+                            liveSearch = TRUE,
+                            actionsBox = TRUE,
+                            dropupAuto = FALSE),
+                          selected = NULL
               )
-            )
-          ),
-          box(
-            title = "Select Days of Week:",
-            width = 12, 
-            solidHeader = FALSE, 
-            selectInput("daysOfWeek",label = NULL,
-                        choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
-                        multiple=TRUE, selectize=TRUE
-            )
-          ),
-          box(
-            title = "Select Holidays to Exclude:",
-            width = 12,
-            solidHeader = FALSE,
-            pickerInput("excludeHolidays",label=NULL,
-                        choices= unique(holid$holiday),
-                        multiple=TRUE,
-                        options = pickerOptions(
-                          liveSearch = TRUE,
-                          actionsBox = TRUE,
-                          dropupAuto = FALSE),
-                        selected = NULL
-            )
-          ),
-          
-          style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("filter"), width = "300px",
-          tooltip = tooltipOptions(title = "Set filters for graphs/tables."),
-          inputId = "dropdownbutton"
-          
-        ) # Close Drop Down Button
+            ),
+            
+            style = "material-circle", size = "lg", right = TRUE, status = "default",
+            icon = icon("filter"), width = "300px",
+            tooltip = tooltipOptions(title = "Set filters for graphs/tables."),
+            inputId = "dropdownbutton"
+            
+          ) # Close Drop Down Button
+      ),
+      br(),
+      br(),
+      br()
       ),# Close conditional Panel
       
       conditionalPanel(
@@ -1496,23 +1509,25 @@ ui <- dashboardPage(
       conditionalPanel(
         condition = "input.sbm == 'treat_util'",
         br(),
-        dropdown(
-          box(
-            title = NULL,
-            width = 20,
-            height = "600px",
-            solidHeader = FALSE,
-            h3("Treatment Space Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment"),
-            h3("Nurse Capacity Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Nurse Capacity  (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated"),
-            h3("Effective Infusion Capacity Utilization:"),h4("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month patients were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.")),
-          
-          style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("info"), width = "600px",
-          
-          tooltip = tooltipOptions(title = "Click for additional info on the utilization analysis."),
-          inputId = "dropdown_treatment_utilization"
-          
-        ) # Close Drop Down Button
+          column(1,
+          dropdown(
+            box(
+              title = NULL,
+              width = 20,
+              height = "600px",
+              solidHeader = FALSE,
+              h3("Treatment Space Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment"),
+              h3("Nurse Capacity Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Nurse Capacity  (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated"),
+              h3("Effective Infusion Capacity Utilization:"),h4("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month patients were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.")),
+            
+            style = "material-circle", size = "lg", right = TRUE, status = "default",
+            icon = icon("info"), width = "600px",
+            
+            tooltip = tooltipOptions(title = "Click for additional info on the utilization analysis."),
+            inputId = "dropdown_treatment_utilization"
+            
+          ) # Close Drop Down Button
+        )
       ), # Close Conditional Panel
       conditionalPanel(
         condition = "input.sbm == 'volumetrend'",
