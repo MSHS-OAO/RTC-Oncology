@@ -874,6 +874,18 @@ server <- function(input, output, session) {
   #   })
   # })
   
+  # dataArrivedTrend <- eventReactive(list(input$update_filters),{
+  #   validate(
+  #     need(input$selectedCampus != "" , "Please select a Campus"),
+  #     need(input$selectedDepartment != "", "Please select a Department")
+  #   )
+  #    groupByFilters_Trend(arrived_data,
+  #                          input$selectedCampus, input$selectedDepartment,
+  #                          input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+  #                          input$diag_grouper
+  #     )
+  # })
+
   
   dataArrivedTrend <- reactive({
     
@@ -1127,9 +1139,10 @@ server <- function(input, output, session) {
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlotly({
+    input$update_filters
     
     data <- dataArrivedTrend()
-    #data <<- data_test
+    data_test <<- data
     
     # min_date <- min(data$Appt.DateYear)
     # max_date <- max(data$Appt.DateYear)
@@ -1137,6 +1150,8 @@ server <- function(input, output, session) {
     total_visits <- data %>%
       filter(ASSOCIATIONLISTA %in% c("Exam","Treatment","Labs")) %>%
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+
     
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -1161,7 +1176,24 @@ server <- function(input, output, session) {
     total_visits$APPT_YEAR <- as.character(total_visits$APPT_YEAR)
     total_visits$APPT_MONTH <- str_to_title(total_visits$APPT_MONTH)
     
-    g1 <- ggplot_line_graph(total_visits, title)
+    total_visits_yearly_total <- total_visits %>% group_by(APPT_YEAR) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
+    total_visits_yearly_total <- total_visits_yearly_total %>% ungroup() %>% select(-APPT_YEAR) %>%
+                          rename(APPT_YEAR = APPT_YEAR_RENAME)
+    
+    g1 <- ggplot_line_graph(total_visits_yearly_total, title)
+    
+    
+    
+
+    
+    #total_visits <- bind_rows(total_visits, total_visits_yearly_total)
     g2 <- ggplot_table(total_visits, hline_y)
     
 
@@ -1199,7 +1231,18 @@ server <- function(input, output, session) {
     total_visits$APPT_YEAR <- as.character(total_visits$APPT_YEAR)
     total_visits$APPT_MONTH <- str_to_title(total_visits$APPT_MONTH)
     
-    g1 <- ggplot_line_graph(total_visits, title)
+    total_visits_yearly_total <- total_visits %>% group_by(APPT_YEAR) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
+    total_visits_yearly_total <- total_visits_yearly_total %>% ungroup() %>% select(-APPT_YEAR) %>%
+      rename(APPT_YEAR = APPT_YEAR_RENAME)
+    
+    g1 <- ggplot_line_graph(total_visits_yearly_total, title)
     g2 <- ggplot_table(total_visits, hline_y)
     
     
@@ -1238,7 +1281,18 @@ server <- function(input, output, session) {
     total_visits$APPT_YEAR <- as.character(total_visits$APPT_YEAR)
     total_visits$APPT_MONTH <- str_to_title(total_visits$APPT_MONTH)
   
-    g1 <- ggplot_line_graph(total_visits, title) 
+    total_visits_yearly_total <- total_visits %>% group_by(APPT_YEAR) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
+    total_visits_yearly_total <- total_visits_yearly_total %>% ungroup() %>% select(-APPT_YEAR) %>%
+      rename(APPT_YEAR = APPT_YEAR_RENAME)
+    
+    g1 <- ggplot_line_graph(total_visits_yearly_total, title)
     g2 <- ggplot_table(total_visits, hline_y)
     
     
@@ -1278,7 +1332,18 @@ server <- function(input, output, session) {
     total_visits$APPT_MONTH <- str_to_title(total_visits$APPT_MONTH)
     
     
-    g1 <- ggplot_line_graph(total_visits, title)
+    total_visits_yearly_total <- total_visits %>% group_by(APPT_YEAR) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
+    total_visits_yearly_total <- total_visits_yearly_total %>% ungroup() %>% select(-APPT_YEAR) %>%
+      rename(APPT_YEAR = APPT_YEAR_RENAME)
+    
+    g1 <- ggplot_line_graph(total_visits_yearly_total, title)
     g2 <- ggplot_table(total_visits, hline_y)
     
     
@@ -1493,8 +1558,19 @@ server <- function(input, output, session) {
     }
     
     title <- paste0(site," ","All Visit Volume Composition")
+
+    total_visits_yearly_total <- total_visits_break %>% group_by(AssociationListA) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
     
-    g1 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$APPT_MONTH_YEAR, total_visits_break$total, total_visits_break$AssociationListA, max)
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$AssociationListA, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
+    total_visits_break_legend <- total_visits_break_legend %>% ungroup() %>% select(-AssociationListA) %>%
+      rename(AssociationListA = APPT_YEAR_RENAME)
+    
+    g1 <- ggplot_bar_graph(total_visits_break_legend, title, total_visits_break_legend$APPT_MONTH_YEAR, total_visits_break_legend$total, total_visits_break_legend$AssociationListA, max)
 
     Total <- total_visits_break %>% 
       group_by(APPT_MONTH_YEAR) %>%
@@ -1512,7 +1588,7 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
-    total_visits_break$ASSOCIATIONLISTA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Total","Exam","Treatment","Labs"))
+    total_visits_break$ASSOCIATIONLISTA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Total","Treatment","Labs","Exam"))
     
     # g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
     #   #scale_color_MountSinai('dark' )+
@@ -1593,7 +1669,21 @@ server <- function(input, output, session) {
     #   #              size=5, fontface="bold.italic")
     
     title <- paste0(site," ","Exam Visit Volume Composition")
-    g3 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$APPT_MONTH_YEAR, total_visits_break$total, total_visits_break$ASSOCIATIONLISTB, max)
+    
+    
+    total_visits_yearly_total <- total_visits_break %>% group_by(ASSOCIATIONLISTB) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTB, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
+    total_visits_break_legend <- total_visits_break_legend %>% ungroup() %>% select(-ASSOCIATIONLISTB) %>%
+      rename(ASSOCIATIONLISTB = APPT_YEAR_RENAME)
+    
+    
+    g3 <- ggplot_bar_graph(total_visits_break_legend, title, total_visits_break_legend$APPT_MONTH_YEAR, total_visits_break_legend$total, total_visits_break_legend$ASSOCIATIONLISTB, max)
 
     
     Total <- total_visits_break %>% 
@@ -1609,7 +1699,7 @@ server <- function(input, output, session) {
       hline_y <- seq(1.5, 0.5+n, by= 1)
     }
     
-    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Total","Established Visit","New Visit","Telehealth Visit"))
+    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Total","Telehealth Visit","New Visit","Established Visit"))
     
     total_in_list <- length(unique(total_visits_break$ASSOCIATIONLISTB))-1
     colors <- all_pallete[total_in_list:1]
@@ -1706,7 +1796,20 @@ server <- function(input, output, session) {
     
     
     title <- paste0(site," ","Treatment Visit Volume Composition")
-    g5 <- ggplot_bar_graph(total_visits_break, title, total_visits_break$APPT_MONTH_YEAR, total_visits_break$total, total_visits_break$ASSOCIATIONLISTT, max)
+    
+    total_visits_yearly_total <- total_visits_break %>% group_by(ASSOCIATIONLISTT) %>% 
+      summarise(total = sum(total, na.rm = T)) %>% 
+      mutate(APPT_MONTH = "Total")
+    
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTT, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
+    
+    total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
+    total_visits_break_legend <- total_visits_break_legend %>% ungroup() %>% select(-ASSOCIATIONLISTT) %>%
+      rename(ASSOCIATIONLISTT = APPT_YEAR_RENAME)
+    
+    
+    g5 <- ggplot_bar_graph(total_visits_break_legend, title, total_visits_break_legend$APPT_MONTH_YEAR, total_visits_break_legend$total, total_visits_break_legend$ASSOCIATIONLISTT, max)
     # g5 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListT, fill=AssociationListT))+
     #   geom_bar(position="stack",stat="identity", width=0.7)+
     #   scale_fill_MountSinai('dark')+
@@ -1741,7 +1844,7 @@ server <- function(input, output, session) {
     }
     
     
-    factor_levels = c("Total","Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")
+    factor_levels = c("Total",rev(c("Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")))
     
     total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, levels = factor_levels)
     

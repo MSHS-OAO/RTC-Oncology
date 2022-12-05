@@ -527,7 +527,7 @@ ggplot_line_graph <- function(df, title) {
     geom_point(aes(color=APPT_YEAR), size=3)+
     scale_color_MountSinai('dark')+
     labs(title = title,
-         y = NULL, x = NULL, fill = NULL, color = NULL)+
+         y = NULL, x = NULL, fill = NULL, color = NULL, tag = paste0("2022 Total 2222 \n 2021 Total 24532"))+
     scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
     theme(legend.position = 'top',
           legend.title=element_blank(),
@@ -536,7 +536,8 @@ ggplot_line_graph <- function(df, title) {
           axis.text = element_text(size="12"),
           axis.title.x = element_blank(),
           axis.line = element_line(size = 0.3, colour = "black"),
-          axis.title.y = element_text(size = 12, angle = 90)
+          axis.title.y = element_text(size = 12, angle = 90),
+          plot.tag.position = 'top'
           
     )
   
@@ -548,7 +549,8 @@ ggplot_line_graph <- function(df, title) {
 
 
 ggplot_table <- function(df, hline_y) {
-  graph <- ggplot(df, aes(x= factor(APPT_MONTH, levels = monthOptions), y= APPT_YEAR))+
+  monthOptions_total <- c(monthOptions, "Total")
+  graph <- ggplot(df, aes(x= factor(APPT_MONTH, levels = monthOptions_total), y= APPT_YEAR))+
     labs(x=NULL, y=NULL)+
     scale_x_discrete(position = "bottom")+
     theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
@@ -568,7 +570,8 @@ ggplot_table <- function(df, hline_y) {
     geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
     geom_hline(yintercept = hline_y, colour='black')+
     geom_vline(xintercept = 0, colour = 'black') +
-    table_theme()
+    table_theme() +
+    theme(plot.margin=unit(c(1,0,1,1), "cm"))
   
   ggplotly(graph, tooltip = NULL)
 }
