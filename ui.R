@@ -2,15 +2,7 @@ library(shinydashboardPlus)
 library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
-<<<<<<< HEAD
-
 ### Set default values for master filters --------------------------------------------------------------------------------------
-
-
-=======
-### Set default values for master filters --------------------------------------------------------------------------------------
-
->>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
 #default_campus <- "DBC"
 #default_campus <- unique(historical.data$SITE)
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
