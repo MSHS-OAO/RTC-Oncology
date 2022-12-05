@@ -94,30 +94,18 @@ if(file.exists("J:/")){
   #### Local Data Directories
   #historical.data <- readRDS("Data/historical_data.rds")
   #population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-<<<<<<< HEAD
-  utilization.data <- readRDS("Data/utilization_data_grouped.rds")
-  holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
-=======
   # utilization.data <- readRDS("Data/utilization_data_grouped.rds")
->>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
   filter_path <- here::here("Filters")
 }else{
   #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   #population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-<<<<<<< HEAD
   # holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-  holid <- tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% collect() %>% rename(holiday = HOLIDAY)
-=======
->>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
   # utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
   filter_path <- "/data/Oncology/Filters"
 }
 
-<<<<<<< HEAD
 
-=======
 holid <-tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% rename(holiday = HOLIDAY) %>% collect()
->>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
 
 
 
@@ -296,8 +284,5 @@ all_provider <- all_provider[,1]
 # historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
 # historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
 
-<<<<<<< HEAD
-download_list <- c("villea04")
-=======
+
 download_list <- c("villea04", "Walsht02")
->>>>>>> 4b6e2d48a7314d5b1f1276acd2db3d4fadca2cb6
