@@ -11,7 +11,7 @@ suppressMessages({
   library(shinyWidgets)
   library(htmlwidgets)
   library(lubridate)
-  library(tcltk)
+  #library(tcltk)
   library(tidyverse)
   library(plotly)
   library(knitr)
@@ -94,18 +94,18 @@ if(file.exists("J:/")){
   #### Local Data Directories
   #historical.data <- readRDS("Data/historical_data.rds")
   #population.data_filtered <- readRDS("Data/population_data_grouped.rds")
-  utilization.data <- readRDS("Data/utilization_data_grouped.rds")
-  holid <-as.data.frame(read_feather(here::here("Data/holid.feather")))
+  # utilization.data <- readRDS("Data/utilization_data_grouped.rds")
   filter_path <- here::here("Filters")
 }else{
   #historical.data <- as.data.frame(read_feather("/data/Oncology/Data/historical_data.feather"))
   #population.data_filtered <- as.data.frame(read_feather("/data/Oncology/Data/population_data_filtered.feather"))
-  holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
-  utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
+  # holid <- as.data.frame(read_feather("/data/Oncology/Data/holid.feather"))
+  # utilization.data <- as.data.frame(read_feather("/data/Oncology/Data/utilization_data.feather"))
   filter_path <- "/data/Oncology/Filters"
 }
 
 
+holid <-tbl(con, "HOLIDAYS") %>% distinct(HOLIDAY) %>% rename(holiday = HOLIDAY) %>% collect()
 
 
 
@@ -283,5 +283,6 @@ all_provider <- all_provider[,1]
 # historical.data.site.all <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Exam","Labs","Treatment"))
 # historical.data.site.treatment <- uniquePts_df_site(historical.data[arrived.data.rows.unique,], c("Treatment"))
 # historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
+
 
 download_list <- c("villea04", "Walsht02")

@@ -3,7 +3,6 @@ library(shinycssloaders)
 library(shinyBS)
 library(shinyscreenshot)
 ### Set default values for master filters --------------------------------------------------------------------------------------
-
 #default_campus <- "DBC"
 #default_campus <- unique(historical.data$SITE)
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
@@ -126,8 +125,8 @@ default_provider_utilization <- as.character(t(inner_join(default_provider_utili
 
 
 util_date_start <- as.Date(paste0(year(Sys.Date()),"-01-01"), format = "%Y-%d-%m")
-util_date_min <- min(utilization.data$Appt.DateYear)
-util_date_end = max(utilization.data$Appt.DateYear)
+# util_date_min <- min(utilization.data$Appt.DateYear)
+# util_date_end = max(utilization.data$Appt.DateYear)
 
 
 #dateRange_min <- min(historical.data$Appt.DateYear) 
@@ -1088,6 +1087,7 @@ ui <- dashboardPage(
       
       
       # Formatting Dropdown Buttons
+
       tags$head(tags$style(HTML(".ht_master .wtHolder {
                                 overflow: hidden;
                            }"))),
@@ -1275,16 +1275,16 @@ ui <- dashboardPage(
               )
             ),
             
-            conditionalPanel(
-              condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
-              box(
-                title = "Select Date Range:",
-                width = 12, 
-                solidHeader = FALSE, 
-                dateRangeInput("dateRangeUtil", label = NULL,
-                               start = util_date_start, end = util_date_end,
-                               min = util_date_min, max = util_date_end)),
-            ),
+            # conditionalPanel(
+            #   condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
+            #   box(
+            #     title = "Select Date Range:",
+            #     width = 12, 
+            #     solidHeader = FALSE, 
+            #     dateRangeInput("dateRangeUtil", label = NULL,
+            #                    start = util_date_start, end = util_date_end,
+            #                    min = util_date_min, max = util_date_end)),
+            # ),
             
             conditionalPanel(
               condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
