@@ -1339,7 +1339,7 @@ server <- function(input, output, session) {
   
   output$trend_visitstable <- function(){
     
-    #options(knitr.kable.NA = "-")
+    options(knitr.kable.NA = "-")
      data <- dataArrivedTrend()
     # data <- historical.data[arrived.data.rows.trend,] %>% filter(Appt.DateYear >= "2019-04-01")
     #created an if statement to include another table for all of the visit types
