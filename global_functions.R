@@ -87,6 +87,28 @@ groupByFilters_3 <- function(dt, diseaseGroup, provider, dx){
   return(result)
 }
 
+groupByFilters_3_detail <- function(dt, diseaseGroup, provider, dx, diseaseGroupDetail){
+  result <- dt %>% filter(DISEASE_GROUP %in% diseaseGroup, PROVIDER %in% provider) %>%
+    filter(DX_GROUPER %in% dx) %>% filter(DISEASE_GROUP_DETAIL %in% diseaseGroupDetail)
+  
+  if("NA" %in% dx){
+    result_1 <- dt %>% filter(DISEASE_GROUP %in% diseaseGroup, PROVIDER %in% provider) %>%
+      filter(is.na(DX_GROUPER))
+    
+    result <- result %>% union_all(result_1)
+  }
+  
+  if("NA" %in% diseaseGroupDetail){
+    result_2 <- dt %>% filter(DISEASE_GROUP %in% diseaseGroup, PROVIDER %in% provider) %>%
+      filter(is.na(DISEASE_GROUP_DETAIL))
+    
+    result <- result %>% union_all(result_2)
+  }
+  result
+  
+  return(result)
+}
+
 groupByFilters_4 <- function(dt, campus, department, mindateRange, maxdateRange, daysofweek, holidays, provider){
   result <- dt %>% filter(SITE %in% campus, Department %in% department, 
                           mindateRange <= Appt.DateYear, maxdateRange >= Appt.DateYear, Appt.Day %in% daysofweek, !holiday %in% holidays, Provider %in% provider)

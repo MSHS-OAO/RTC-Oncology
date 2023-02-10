@@ -5,6 +5,8 @@ library(shinyscreenshot)
 ### Set default values for master filters --------------------------------------------------------------------------------------
 #default_campus <- "DBC"
 #default_campus <- unique(historical.data$SITE)
+dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), format="%Y-%m-%d")
+
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                         collect()
 campus_choices <<- sort(campus_choices$SITE, na.last = T)
@@ -13,7 +15,9 @@ campus_choices <<- sort(campus_choices$SITE, na.last = T)
 default_campus <- "MSW"
 
 #default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
-default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% select(DEPARTMENT_NAME) %>% 
+default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% 
+                                            filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+                                            select(DEPARTMENT_NAME) %>%
                                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                             collect()
 default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
@@ -23,6 +27,7 @@ default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
 #                                                       historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
 
 default_diag_grouper <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
+                                          filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                               select(DX_GROUPER) %>% mutate(DX_GROUPER = unique(DX_GROUPER)) %>%
                                                                             collect()
 default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
@@ -32,6 +37,7 @@ default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
 
 
 default_visitType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
+                                      filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                       select(ASSOCIATIONLISTA) %>%
                                       mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
                                       collect()
@@ -44,6 +50,7 @@ default_visitType <- sort(default_visitType$ASSOCIATIONLISTA, na.last = T)
 
 default_ApptType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
                                               ASSOCIATIONLISTA %in%  default_visitType) %>%
+                                      filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                       select(ASSOCIATIONLISTB) %>% 
                                       mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
                                       collect()
@@ -61,6 +68,7 @@ default_ApptType <- sort(default_ApptType$ASSOCIATIONLISTB, na.last = T)
 default_TreatmentType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
                                               ASSOCIATIONLISTA %in% default_visitType &
                                               ASSOCIATIONLISTB %in% default_ApptType) %>%
+                                              filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                               select(ASSOCIATIONLISTT) %>% 
                                               mutate(ASSOCIATIONLISTT = unique(ASSOCIATIONLISTT)) %>% 
                                               collect()
@@ -70,6 +78,7 @@ default_TreatmentType <- sort(default_TreatmentType$ASSOCIATIONLISTT, na.last = 
 # default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"]))
 
 default_departments_disease <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived")) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
@@ -82,10 +91,20 @@ default_departments_disease <- sort(default_departments_disease$DEPARTMENT_NAME,
 
 default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                   DEPARTMENT_NAME %in% default_departments_disease) %>%
+                                          filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                           select(DISEASE_GROUP) %>%
                                           mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
                                           collect()
 default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
+
+default_disease_group_detail <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                                                DEPARTMENT_NAME %in% default_departments_disease) %>%
+                                                filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+                                                select(DISEASE_GROUP_DETAIL) %>%
+                                                mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
+                                                collect()
+
+default_disease_group_detail <- sort(default_disease_group_detail$DISEASE_GROUP_DETAIL, na.last = T)
 
 
 
@@ -98,6 +117,7 @@ default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                               DEPARTMENT_NAME %in% default_departments_disease & 
                                               DISEASE_GROUP %in% default_disease_group) %>%
+                                    filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                     select(PROVIDER) %>%
                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                     collect()
@@ -114,6 +134,7 @@ default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 default_provider_utilization <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                               DEPARTMENT_NAME %in% default_departments) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(PROVIDER) %>%
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
@@ -143,6 +164,7 @@ daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
 dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
 dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
+
 
 
 
@@ -659,7 +681,7 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
                            box(
-                             title = "Select Provider Group:",
+                             title = "Select Disease Group:",
                              width = 4,
                              height = "100px",
                              solidHeader = FALSE,
@@ -670,10 +692,26 @@ ui <- dashboardPage(
                                            liveSearch = TRUE,
                                            actionsBox = TRUE,
                                            selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Provider Groups",
+                                           countSelectedText = "{0}/{1} Disease Groups",
                                            dropupAuto = FALSE,
                                            size = 10),
                                          selected = default_disease_group)),
+                           box(
+                             title = "Select Disease Group Detail:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedDiseaseDetail",label=NULL,
+                                         choices = default_disease_group_detail,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Disease Detail Groups",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_disease_group_detail)),
                            box(
                              title = "Select Provider:",
                              width = 4,
@@ -1242,7 +1280,7 @@ ui <- dashboardPage(
                   height = "100px",
                   solidHeader = FALSE, 
                   dateRangeInput("dateRange", label = NULL,
-                                 start = dateRangetrend_min, end = dateRange_max,
+                                 start = dateRangetrend_start, end = dateRange_max,
                                  min = dateRangetrend_min, max = dateRange_max
                   )
               )
@@ -1269,7 +1307,7 @@ ui <- dashboardPage(
                 height = "100px",
                 solidHeader = FALSE, 
                 dateRangeInput("dateRangetreat_util", label = NULL,
-                               start = dateRangetrend_min, end = dateRange_max,
+                               start = dateRangetrend_start, end = dateRange_max,
                                min = dateRangetrend_min, max = dateRange_max
                 )
               )

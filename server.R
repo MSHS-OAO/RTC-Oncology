@@ -464,6 +464,20 @@ server <- function(input, output, session) {
                         selected = disease_choices
       )
       
+      disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                   DEPARTMENT_NAME %in% department_choices_disease &
+                                                   DISEASE_GROUP %in% disease_choices) %>%
+        select(DISEASE_GROUP_DETAIL) %>%
+        mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
+        collect()
+      disease_detail_choices <- sort(disease_detail_choices$DISEASE_GROUP_DETAIL, na.last = T)
+      
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseDetail",
+                        choices = disease_detail_choices,
+                        selected = disease_detail_choices
+      )
+      
       
       
      
@@ -592,12 +606,55 @@ server <- function(input, output, session) {
       select_disease <- input$selectedDisease
       
       
-      provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease) %>%
-                                                  select(PROVIDER) %>%
-                                                  mutate(PROVIDER = unique(PROVIDER)) %>%
+                                                  select(DISEASE_GROUP_DETAIL) %>%
+                                                  mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
                                                   collect()
+      disease_detail_choices <- sort(disease_detail_choices$DISEASE_GROUP_DETAIL, na.last = T)
+      
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseDetail",
+                        choices = disease_detail_choices,
+                        selected = disease_detail_choices
+      )
+    }
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  observeEvent(c(input$selectedDiseaseDetail),{
+    if(!is.null(input$selectedDiseaseDetail)){
+      select_campus <- input$selectedCampus
+      select_dept <- input$selectedDepartment
+      select_disease <- input$selectedDisease
+      select_disease_detail <- input$selectedDiseaseDetail
+      
+      if(c("NA") %in% input$selectedDiseaseDetail) {
+        print("disease detail has NA")
+        provider_choices_non_nan <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                      DEPARTMENT_NAME %in% select_dept & 
+                                                      DISEASE_GROUP %in% select_disease &
+                                                      DISEASE_GROUP_DETAIL %in% select_disease_detail)
+        
+        provider_choices_na <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                      DEPARTMENT_NAME %in% select_dept & 
+                                                      DISEASE_GROUP %in% select_disease &
+                                                      is.na(DISEASE_GROUP_DETAIL)) 
+        provider_choices <- union_all(provider_choices_non_nan, provider_choices_na) %>% 
+                                  select(PROVIDER) %>%
+                                  mutate(PROVIDER = unique(PROVIDER)) %>%
+                                  collect()
+      } else{
+      provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                    DEPARTMENT_NAME %in% select_dept & 
+                                                    DISEASE_GROUP %in% select_disease &
+                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail) %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      }
       provider_choices <- sort(provider_choices$PROVIDER, na.last = T)
       
       updatePickerInput(session,
@@ -772,12 +829,13 @@ server <- function(input, output, session) {
   
   dataArrived_disease <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
-      need(input$selectedDisease != "", "Please select a provider group"),
+      need(input$selectedDisease != "", "Please select a disease group"),
+      need(input$selectedDiseaseDetail != "", "Please select a disease group detail"),
       need(input$selectedProvider != "", "Please select a provider")
     )
     #groupByFilters_3(dataArrived(),
-    groupByFilters_3(dataArrived_Diag(),
-                     input$selectedDisease, input$selectedProvider, input$diag_grouper
+    groupByFilters_3_detail(dataArrived_Diag(),
+                     input$selectedDisease, input$selectedProvider, input$diag_grouper, input$selectedDiseaseDetail
                      )
     
 
@@ -2334,9 +2392,9 @@ server <- function(input, output, session) {
     #   filter(AssociationListB == "Telehealth Visit", SITE %in% c("DBC"))
     
     prov_tb <- data %>% 
-      group_by(DISEASE_GROUP, PROVIDER, ASSOCIATIONLISTB,  APPT_MONTH_YEAR) %>%
+      group_by(DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER, ASSOCIATIONLISTB,  APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect() %>%
-      `colnames<-` (c("Disease", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
+      `colnames<-` (c("Disease", "Disease Detail", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
                   values_fill = 0) %>%
@@ -2345,12 +2403,14 @@ server <- function(input, output, session) {
       mutate(Disease = ifelse(Disease == "Total", lag(Disease, 1), Disease),
              Provider = ifelse(Provider == "-", lag(Provider, 1), Provider),
              `Appointment Type` = ifelse(`Appointment Type` == "-", "Exam Total", `Appointment Type`)) %>%
-      arrange(-desc(Disease))
+      arrange(-desc(Disease)) %>%
+      mutate(`Disease Detail` = na_if(`Disease Detail`, "-")) %>%
+      fill(`Disease Detail`, .direction = "down")
     
     tele_tb <- tele_data %>% 
-      group_by(DISEASE_GROUP, PROVIDER, APPT_TYPE, APPT_MONTH_YEAR) %>%
+      group_by(DISEASE_GROUP,DISEASE_GROUP_DETAIL,  PROVIDER, APPT_TYPE, APPT_MONTH_YEAR) %>%
       summarise(total = n()) %>% collect() %>%
-      `colnames<-` (c("Disease", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
+      `colnames<-` (c("Disease", "Disease Detail","Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
                   values_fill = 0)
@@ -2370,7 +2430,7 @@ server <- function(input, output, session) {
     final_df <- bind_rows(prov_tb, tele_tb)
     final_df <- final_df[order(match(final_df$`Appointment Type`, appt_order)), ]
     final_df <- final_df %>%
-      arrange(Disease, Provider) %>%
+      arrange(Disease, `Disease Detail`, Provider) %>%
       adorn_totals("col", fill = "-", na.rm = TRUE, name = "Total") 
     
     indent_rows <- which(final_df$`Appointment Type` %in% unique(tele_tb$`Appointment Type`))
@@ -2379,8 +2439,8 @@ server <- function(input, output, session) {
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
     
-    months_sorted <- sort(colnames(final_df)[4:(length(final_df)-1)])
-    col_order <- c(colnames(final_df)[1:3], months_sorted, colnames(final_df)[length(final_df)])
+    months_sorted <- sort(colnames(final_df)[5:(length(final_df)-1)])
+    col_order <- c(colnames(final_df)[1:4], months_sorted, colnames(final_df)[length(final_df)])
     final_df <- final_df[, col_order]
     final_df$Disease = ifelse(duplicated(final_df$Disease),"",final_df$Disease)
     final_df$Provider = ifelse(duplicated(final_df$Provider),"",final_df$Provider)
@@ -2397,7 +2457,7 @@ server <- function(input, output, session) {
       row_spec(which(final_df$`Appointment Type` == "Exam Total"), bold = T) %>%
       column_spec(length(final_df), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
-      collapse_rows(c(1,2), valign = "top") %>%
+      collapse_rows(c(1,2,3), valign = "top") %>%
       add_indent(indent_rows, level_of_indent = 2) %>%
       gsub("NA", " ", .)
   }
