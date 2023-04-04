@@ -313,16 +313,16 @@ ui <- dashboardPage(
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
                 menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
                          menuItem("By System", tabName = "SystemUnique",
-                                  menuSubItem("All", tabName = "systemuniqueAll"),
+                                  #menuSubItem("All", tabName = "systemuniqueAll"),
                                   menuSubItem("Exam", tabName = "systemuniqueOffice"),
                                   menuSubItem("Treatment", tabName = "systemuniqueTreatment")),
-                         menuItem("By Site", tabName = "siteUnique",
-                                  menuSubItem("All", tabName = "uniqueAll"),
-                                  menuSubItem("Exam", tabName = "uniqueOffice"),
-                                  menuSubItem("Treatment", tabName = "uniqueTreatment")),
+                         # menuItem("By Site", tabName = "siteUnique",
+                         #          menuSubItem("All", tabName = "uniqueAll"),
+                         #          menuSubItem("Exam", tabName = "uniqueOffice"),
+                         #          menuSubItem("Treatment", tabName = "uniqueTreatment")),
                          menuItem("By Provider", tabName = "provUnique",
-                                  menuSubItem("Exam", tabName = "provUniqueExam")),
-                         menuItem("By Zip Code", tabName = "zipCode")
+                                  menuSubItem("Exam", tabName = "provUniqueExam"))#,
+                         #menuItem("By Zip Code", tabName = "zipCode")
                 ),
                 menuItem("Volume", tabName = "volume", icon = icon("chart-bar"),
                          menuItem("By Site", tabName = "siteVolume",
@@ -763,9 +763,9 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueOfficeSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                plotOutput("uniqueOfficeTrendSystem", height = "auto") %>%
+                                plotOutput("uniqueOfficeTrendSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueOfficeMonthSystem", height = "auto") %>%
+                                plotOutput("uniqueOfficeMonthSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
                        
@@ -784,9 +784,9 @@ ui <- dashboardPage(
                          fluidRow(valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                plotOutput("uniqueTreatmentTrendSystem", height = "auto") %>%
+                                plotOutput("uniqueTreatmentTrendSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueTreatmentMonthSystem", height = "auto") %>%
+                                plotOutput("uniqueTreatmentMonthSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
                        
@@ -826,11 +826,11 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(), 
                          column(12,
-                                plotOutput("uniqueOfficeSite", height = "auto") %>%
+                                plotOutput("uniqueOfficeSite") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueOfficeTrendSite", height = "auto") %>%
+                                plotOutput("uniqueOfficeTrendSite") %>%
                                   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueOfficeMonthSite", height = "auto") %>%
+                                plotOutput("uniqueOfficeMonthSite") %>%
                                   withSpinner(type = 5, color = "#d80b8c"))
                        )
                 )
@@ -1273,7 +1273,8 @@ ui <- dashboardPage(
               condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
-          input.sbm == 'zipCode' | input.sbm == 'volumetrend'" ,
+          input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'" ,
                 box(
                   title = "Select Date Range:", 
                   width = 12, 
@@ -1324,20 +1325,20 @@ ui <- dashboardPage(
             #                    min = util_date_min, max = util_date_end)),
             # ),
             
-            conditionalPanel(
-              condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
-              box(
-                title = "Select Date Range:",
-                width = 12,
-                height = "100px",
-                solidHeader = FALSE,
-                dateRangeInput("dateRangeunique", label = NULL,
-                               start = dateRange_min_default_unique, end = unique_max,
-                               min = unique_min, max = unique_max
-                )
-              )
-            ),
+            # conditionalPanel(
+            #   condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+            #        input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'",
+            #   box(
+            #     title = "Select Date Range:",
+            #     width = 12,
+            #     height = "100px",
+            #     solidHeader = FALSE,
+            #     dateRangeInput("dateRangeunique", label = NULL,
+            #                    start = dateRange_min_default_unique, end = unique_max,
+            #                    min = unique_min, max = unique_max
+            #     )
+            #   )
+            # ),
             box(
               title = "Select Days of Week:",
               width = 12, 

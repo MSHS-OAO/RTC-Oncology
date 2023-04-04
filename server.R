@@ -774,6 +774,15 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
+  dataArrived_unique_trend <- eventReactive(list(input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+    groupByFilters_unique_trend(arrived_data,
+                   input$selectedCampus, input$selectedDepartment,
+                   input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+  })
   
   dataArrived_Diag <- eventReactive(list(input$update_filters),{
     validate(
@@ -966,18 +975,18 @@ server <- function(input, output, session) {
   })
   
   # Unique Patients  data ============================================================================================================
-  # dataUniqueExam_system <- eventReactive(list(input$update_filters),{
-  #   validate(
-  #     need(input$selectedCampus != "" , "Please select a Campus"),
-  #     need(input$selectedDepartment != "", "Please select a Department")
-  #   )
-  # 
-  #   groupByFilters_unique(historical.data.unique.exam,
-  #                         input$selectedCampus, input$selectedDepartment,
-  #                         input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
-  #                         input$diag_grouper)
-  #   
-  # })
+  dataUniqueExam_system <- eventReactive(list(input$update_filters),{
+    validate(
+      need(input$selectedCampus != "" , "Please select a Campus"),
+      need(input$selectedDepartment != "", "Please select a Department")
+    )
+
+    groupByFilters_unique(arrived_data,
+                          input$selectedCampus, input$selectedDepartment,
+                          input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
+                          input$diag_grouper)
+
+  })
   # 
   # dataUniqueExam_system_month <- eventReactive(list(input$update_filters),{
   #   validate(
@@ -2928,13 +2937,14 @@ server <- function(input, output, session) {
   # Unique Patients by System and Site - Exam Tab --------------------------------------------------------------------------------------------
   ## Unique MRN by System
   output$uniqueOfficeSystem <- renderValueBox({
-    
-    #data <- uniquePts_df_system(dataArrived(), c("Exam"))
+    data <- dataArrived_unique_trend()
+
+    data <- uniquePts_df_system(data, c("Exam")) %>% summarise(total = n()) %>% collect()
     # data <- uniquePts.office.data
-    data <- historical.data.unique.exam
+    #data <- historical.data.unique.exam
     
     valueBoxSpark(
-      value =  prettyNum(nrow(data), big.mark = ','),
+      value =  prettyNum(data$total, big.mark = ','),
       title = toupper("Total System Unique Patients - Exam Visits"),
       sparkobj = NULL,
       info = paste0("Total count of unique patients visited MSHS from..."), 
@@ -2947,11 +2957,20 @@ server <- function(input, output, session) {
   
   ## Unique MRN  over Time (Months)
   output$uniqueOfficeTrendSystem <- renderPlot({
+    print("1")
     
-    data <- dataUniqueExam_system()
+    data <- dataArrived_unique_trend()
+    data_trend_test <<- data
 
+    unique <- uniquePts_df_system(data, c("Exam")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
+    unique_test <<- unique
+    
+    min_date <- as.Date(paste0(format(as.Date(isolate(input$dateRange[1]), format = "%Y-%m-%d"), "%Y-%m"), "-01"))
+    unique$APPT_MONTH_YEAR <- as.Date(paste0(unique$APPT_MONTH_YEAR,"-01"), format = "%Y-%m-%d")
+    unique <- unique %>% filter(APPT_MONTH_YEAR >= min_date)
+    unique$APPT_MONTH_YEAR <- format(unique$APPT_MONTH_YEAR, "%Y-%m")
 
-
+print("2")
     
     # input$update_filters
     # 
@@ -2970,17 +2989,17 @@ server <- function(input, output, session) {
 
     # data <- uniquePts.office.data
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
-      site <- "System"
-    } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
-    }
+    # if(length(unique(data$SITE)) == length(campus_choices)){
+    #   site <- "System"
+    # } else{
+    #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    # }
     
-    unique <- data %>%
-      group_by(Appt.MonthYear) %>%
-      summarise(total = n())
+    # unique <- data %>%
+    #   group_by(APPT_MONTH_YEAR) %>%
+    #   summarise(total = n())
 
-    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
     
     # unique <- data %>%
@@ -2996,8 +3015,8 @@ server <- function(input, output, session) {
     #   hline_y <- seq(1.5, 0.5+n, by= 1)
     # }
     
-    g15 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
-    g16 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+    g15 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
+    g16 <-  ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
     
       # g15 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
       # g16 <-  ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
@@ -3010,7 +3029,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Exam Visits*"),
-           subtitle = paste0("Based on arrived visits from ", unique_min, " to ",unique_max, "\n" ),
+           subtitle = paste0("Based on arrived visits from ", unique_min, " to ",isolate(input$dateRange[2]), "\n" ),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -3025,7 +3044,7 @@ server <- function(input, output, session) {
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs(y = NULL, x = NULL,
-           caption = paste0("*Total count of unique patients who had at least one exam visit at any MSHS site over the past 3 years (",unique_min, " to ", unique_max,")" ))+
+           caption = paste0("*Total count of unique patients who had at least one exam visit at any MSHS site over the past 3 years (",unique_min, " to ", isolate(input$dateRange[2]),")" ))+
       theme_minimal() +
       table_theme()+
       theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
@@ -3033,46 +3052,32 @@ server <- function(input, output, session) {
     library(patchwork)
     g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67))#* length(unique(unique$Appt.Year))))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   
   ## Unique MRN by Month
   output$uniqueOfficeMonthSystem <- renderPlot({
+    data <- dataArrived()
+    
+     unique <- uniquePts_df_systemMonth(data, c("Exam")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
 
-    data <- dataUniqueExam_system_month()
 
   
     # data <- uniquePts.office.data
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
-      site <- "System"
-    } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
-    }
-    
-    # unique <- data %>% 
-    #   group_by(Appt.Year, Appt.Month) %>%
-    #   summarise(total = n())
-    # 
-    # 
-    # n <- length(unique(unique$Appt.Year)) - 1
-    # if(n==0){
-    #   hline_y <- 0
+    # if(length(unique(data$SITE)) == length(campus_choices)){
+    #   site <- "System"
     # } else{
-    #   hline_y <- seq(1.5, 0.5+n, by= 1)
+    #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     # }
-    # 
     
-    unique <- data %>% 
-      group_by(Appt.MonthYear) %>%
-      summarise(total = n())
-    
-    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+
+    unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
       # g17 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
       # g18 <-  ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
-    g17 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
-    g18 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+    g17 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
+    g18 <-  ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
     
     
     g17 <- g17+
@@ -3081,7 +3086,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month - Exam Visits*"),
-           subtitle = paste0("Based on arrived visits from ", isolate(input$dateRangeunique[1]), " to ",isolate(input$dateRangeunique[2]), "\n" ),
+           subtitle = paste0("Based on arrived visits from ", isolate(input$dateRange[1]), " to ",isolate(input$dateRange[2]), "\n" ),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -3105,19 +3110,19 @@ server <- function(input, output, session) {
     library(patchwork)
     g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   
   ## Unique MRN by Site
   output$uniqueOfficeSite <- renderPlot({
     
-    #data <- uniquePts_df_site(dataArrived(), c("Exam"))
+    data <- uniquePts_df_site(dataArrived(), c("Exam"))
     # data <- uniquePts.office.data
-    data <- historical.data.site.exam
+    #data <- historical.data.site.exam
     
     unique <- data %>% 
       group_by(SITE) %>%
-      summarise(total = n())
+      summarise(total = n()) %>% collect()
     
     g13 <- ggplot(unique, aes(x=SITE, y=total, fill=SITE, group=SITE))+
       geom_bar(position="stack",stat="identity")+
@@ -3148,7 +3153,7 @@ server <- function(input, output, session) {
     library(patchwork)
     g13 + g14 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   ## Unique MRN  over Time (Months)
   output$uniqueOfficeTrendSite <- renderPlot({
@@ -3220,7 +3225,7 @@ server <- function(input, output, session) {
     library(patchwork)
     g15 + g16 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   
   ## Unique MRN by Month
@@ -3294,7 +3299,7 @@ server <- function(input, output, session) {
     library(patchwork)
     g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67 * length(unique(unique$SITE))))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   # Unique Patients by System and Site - Treatment Tab ------------------------------------------------------------------
   ## Unique MRN by System
@@ -3302,10 +3307,13 @@ server <- function(input, output, session) {
     
     #data <- uniquePts_df_system(dataArrived(), c("Treatment Visit"))
     # data <- uniquePts_df(arrived.data, c("Treatment"))
-    data <- historical.data.unique.treatment
+    # data <- historical.data.unique.treatment
+    data <- dataArrived_unique_trend()
+    
+    data <- uniquePts_df_system(data, c("Treatment Visit")) %>% summarise(total = n()) %>% collect()
     
     valueBoxSpark(
-      value =  prettyNum(nrow(data), big.mark = ','),
+      value =  prettyNum(data$total, big.mark = ','),
       title = toupper("Total System Unique Patients - Treatment Visits"),
       sparkobj = NULL,
       info = paste0("Total count of unique patients visited MSHS from..."), 
@@ -3326,22 +3334,26 @@ server <- function(input, output, session) {
     #   data <- uniquePts_df_system_rev(dataArrived(), c("Treatment Visit"))
     # }
     # 
-    
-    data <- dataUniqueTreatment_system()
-
+    print("1")
+    # data <- dataUniqueTreatment_system()
+    # data <- dataArrived_unique_trend()
+    data <- dataArrived()
+    data_test <<- data
     # data <- uniquePts_df_system(arrived.data, c("Treatment Visit"))
     
-    if(length(unique(data$SITE)) == length(campus_choices)){
+    if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
     } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+      site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
     }
     # 
-    unique <- data %>%
-      group_by(Appt.MonthYear) %>%
-      summarise(total = n())
+    
+    unique <- uniquePts_df_system(data, c("Treatment Visit")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
+    # unique <- data %>%
+    #   group_by(Appt.MonthYear) %>%
+    #   summarise(total = n())
 
-    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
     # unique <- data %>% 
     #   group_by(Appt.Year, Appt.Month) %>%
@@ -3350,8 +3362,8 @@ server <- function(input, output, session) {
 
     
 
-      g21 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
-      g22 <-  ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      g21 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
+      g22 <-  ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
     
     # g21 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
     # g22 <-  ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
@@ -3366,7 +3378,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients over Time - Treatment Visits*"),
-           subtitle = paste0("Based on arrived visits from ",unique_min," to ",unique_max,"\n"),
+           subtitle = paste0("Based on arrived visits from ",unique_min," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -3382,55 +3394,51 @@ server <- function(input, output, session) {
       geom_vline(xintercept = 0, colour = 'black')+
       scale_x_discrete(position = "top") + 
       labs(y = NULL, x = NULL,
-           caption = paste0("*Total count of unique patients who had at least one treatment visit at any MSHS site over the past 3 years (",unique_min, " to ", unique_max,")" ))+
+           caption = paste0("*Total count of unique patients who had at least one treatment visit at any MSHS site over the past 3 years (",unique_min, " to ", isolate(input$dateRange[2]),")" ))+
       theme_minimal() +
       table_theme()+
       theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
     
     g21 + g22 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   
   ## Unique MRN by Month
   output$uniqueTreatmentMonthSystem <- renderPlot({
+
     
-    
-    # if(input$sort_unique5 == FALSE){
-    #   data <- uniquePts_df_systemMonth(dataArrived(), c("Treatment Visit"))
-    #   
-    # }else{
-    #   data <- uniquePts_df_systemMonth_rev(dataArrived(), c("Treatment Visit"))
-    # }
-    # 
-    
-    data <- dataUniqueTreatment_system_month()
+    # data <- dataUniqueTreatment_system_month()
     
 
     # data <- uniquePts_df(arrived.data, c("Treatment Visit"))
     
-    if(length(unique(data$SITE)) == 9){
-      site <- "System"
-    } else{
-      site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
-    }
     
-    unique <- data %>%
-      group_by(Appt.MonthYear) %>%
-      summarise(total = n())
+    data <- dataArrived()
+    unique <- uniquePts_df_systemMonth(data, c("Treatment Visit")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
+    
+    # if(length(unique(data$SITE)) == 9){
+    #   site <- "System"
+    # } else{
+    #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
+    # }
+    
+    # unique <- data %>%
+    #   group_by(APPT_MONTH_YEAR) %>%
+    #   summarise(total = n())
 
-    unique$Appt.MonthYear <- as.factor(unique$Appt.MonthYear)
+    unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
     # unique <- data %>% 
     #   group_by(Appt.Year, Appt.Month) %>%
     #   summarise(total = n())
     
-
+    
     # g23 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
     # g24 <- ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
     
-      g23 <- ggplot(unique, aes(x=Appt.MonthYear, y=total, group=1))
-      g24 <- ggplot(unique, aes(x=Appt.MonthYear, y= "System", label= total))
+      g23 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
+      g24 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
 
     
     
@@ -3443,7 +3451,7 @@ server <- function(input, output, session) {
       scale_fill_MountSinai('dark')+
       scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month  - Treatment Visits*"),
-           subtitle = paste0("Based on arrived vistis from ",isolate(input$dateRangeunique[1])," to ",isolate(input$dateRangeunique[2]),"\n"),
+           subtitle = paste0("Based on arrived vistis from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
       theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
@@ -3466,7 +3474,7 @@ server <- function(input, output, session) {
     
     g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67))
     
-  }, height = function(x) input$plotHeight)
+  })
   
   
   ## Unique MRN by Site
@@ -3666,26 +3674,33 @@ server <- function(input, output, session) {
   ## Unique Patients by Provider and Month
   output$uniqueProvMonthExam_tb <- function(){
 
-    data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
+    # data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
+    data <- uniquePts_df_siteProvMonth(dataArrived(), c("Exam")) 
     
     # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
     # data <- uniquePts_df_siteProvMonth(data, c("Exam"))
 
     uniquePts_tb <- data %>%
-      group_by(SITE, Provider, Appt.MonthYear) %>%
-      summarise(total = n()) %>%
+      group_by(SITE, PROVIDER, APPT_MONTH_YEAR) %>%
+      summarise(total = n()) %>% collect() %>%
+      rename(Appt.MonthYear = APPT_MONTH_YEAR,
+             Provider = PROVIDER) %>%
       arrange(Appt.MonthYear, SITE) %>%
       `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) #%>%
     #adorn_totals(where = "col", fill = "-", na.rm = TRUE, name = "YTD Total")
     
-    data_over_time <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
+    data_over_time <- uniquePts_df_siteProv(dataArrived(), c("Exam")) 
+    
+    # data_over_time <- uniquePts_df_siteProv(dataArrived_disease_2(), c("Exam")) 
     # data_over_time <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
     # data_over_time <- uniquePts_df_siteProv(data_over_time, c("Exam"))
     
     uniquePts_tb_over_time <- data_over_time %>%
-      group_by(SITE, Provider, Appt.MonthYear) %>%
-      summarise(total = n()) %>%
+      group_by(SITE, PROVIDER, APPT_MONTH_YEAR) %>%
+      summarise(total = n()) %>% collect() %>%
+      rename(Appt.MonthYear = APPT_MONTH_YEAR,
+             Provider = PROVIDER) %>%
       arrange(Appt.MonthYear, SITE) %>%
       `colnames<-` (c("Site", "Provider", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear, values_from = Total, values_fill = 0) %>%
