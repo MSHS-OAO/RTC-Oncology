@@ -124,6 +124,14 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
 default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 
+default_provider_unique <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments_disease) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  select(PROVIDER) %>%
+  mutate(PROVIDER = unique(PROVIDER)) %>%
+  collect()
+default_provider_unique <- sort(default_provider_unique$PROVIDER, na.last = T)
+
 
 
 # default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
@@ -312,10 +320,11 @@ ui <- dashboardPage(
                  color: #FFFFFF"),
                 tags$hr(style="border-color: #FFFFFF; margin-top: 10px;"),
                 menuItem("Unique Patients", tabName = "uniquePts", icon = icon("hospital-user"),
-                         menuItem("By System", tabName = "SystemUnique",
+                         menuItem("By Site", tabName = "SystemUnique",
                                   #menuSubItem("All", tabName = "systemuniqueAll"),
-                                  menuSubItem("Exam", tabName = "systemuniqueOffice"),
-                                  menuSubItem("Treatment", tabName = "systemuniqueTreatment")),
+                                  menuSubItem("Treatment & Exam", tabName = "systemuniqueOffice")#,
+                                  #menuSubItem("Treatment", tabName = "systemuniqueTreatment")
+                                  ),
                          # menuItem("By Site", tabName = "siteUnique",
                          #          menuSubItem("All", tabName = "uniqueAll"),
                          #          menuSubItem("Exam", tabName = "uniqueOffice"),
@@ -752,46 +761,55 @@ ui <- dashboardPage(
         ), # Close volume Comparison
 
         tabItem(tabName = "systemuniqueOffice",
-                div("System Unique Patients - Exam Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Site Unique Patients", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_systemuniqueOffice"),
                 tags$head(tags$style("#practiceName_systemuniqueOffice{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
-                         title = "Unique Patients by System", width = 12, status = "primary", 
+                         title = "Exam Unique Patients by Site", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          fluidRow(valueBoxOutput("uniqueOfficeSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                plotOutput("uniqueOfficeTrendSystem") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueOfficeMonthSystem") %>%
+                                plotlyOutput("uniqueOfficeMonthSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
                        ), 
                        
-                )
-        ), #Close Unique Patients - Exam tab
-        
-        tabItem(tabName = "systemuniqueTreatment",
-                div("System Unique Patients - Treatment Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                textOutput("practiceName_systemuniqueTreatment"),
-                tags$head(tags$style("#practiceName_systemuniqueTreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                column(11,
                        boxPlus(
-                         title = "Unique Patients by System", width = 12, status = "primary", 
+                         title = "Treatment Unique Patients by Site", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          fluidRow(valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
                                     withSpinner(type = 5, color = "#d80b8c")), hr(),
                          column(12,
-                                plotOutput("uniqueTreatmentTrendSystem") %>%
-                                  withSpinner(type = 5, color = "#d80b8c"), hr(),
-                                plotOutput("uniqueTreatmentMonthSystem") %>%
+                                plotlyOutput("uniqueTreatmentMonthSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
-                       ), 
+                       ),
                        
                 )
-        ), #Close Ystsem Unique Patients - Treatment tab
+        ), #Close Unique Patients - Exam tab
+        
+        # tabItem(tabName = "systemuniqueTreatment",
+        #         div("System Unique Patients - Treatment Visits", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+        #         textOutput("practiceName_systemuniqueTreatment"),
+        #         tags$head(tags$style("#practiceName_systemuniqueTreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+        #         column(11,
+        #                boxPlus(
+        #                  title = "Unique Patients by System", width = 12, status = "primary", 
+        #                  solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+        #                  br(),
+        #                  fluidRow(valueBoxOutput("uniqueTreatmentSystem", width=4) %>%
+        #                             withSpinner(type = 5, color = "#d80b8c")), hr(),
+        #                  column(12,
+        #                         plotOutput("uniqueTreatmentTrendSystem") %>%
+        #                           withSpinner(type = 5, color = "#d80b8c"), hr(),
+        #                         plotOutput("uniqueTreatmentMonthSystem") %>%
+        #                           withSpinner(type = 5, color = "#d80b8c")) 
+        #                ), 
+        #                
+        #         )
+        # ), #Close Ystsem Unique Patients - Treatment tab
         
         
         
@@ -866,29 +884,29 @@ ui <- dashboardPage(
                          title = "Analysis Customization", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
                          fluidRow(
-                           box(
-                             title = "Select Provider Group:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedDisease2",label=NULL,
-                                         choices = default_disease_group,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Provider Groups",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_disease_group)),
+                           # box(
+                           #   title = "Select Provider Group:",
+                           #   width = 4,
+                           #   height = "100px",
+                           #   solidHeader = FALSE,
+                           #   pickerInput("selectedDisease2",label=NULL,
+                           #               choices = default_disease_group,
+                           #               multiple=TRUE,
+                           #               options = pickerOptions(
+                           #                 liveSearch = TRUE,
+                           #                 actionsBox = TRUE,
+                           #                 selectedTextFormat = "count > 1",
+                           #                 countSelectedText = "{0}/{1} Provider Groups",
+                           #                 dropupAuto = FALSE,
+                           #                 size = 10),
+                           #               selected = default_disease_group)),
                            box(
                              title = "Select Provider:",
                              width = 4,
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selectedProvider2",label=NULL,
-                                         choices = default_provider,
+                                         choices = default_provider_unique,
                                          multiple=TRUE,
                                          options = pickerOptions(
                                            liveSearch = TRUE,
@@ -897,7 +915,7 @@ ui <- dashboardPage(
                                            countSelectedText = "{0}/{1} Providers",
                                            dropupAuto = FALSE,
                                            size = 10),
-                                         selected = default_provider)),
+                                         selected = default_provider_unique)),
                            column(5,
                                   actionButton("update_filters2", "CLICK TO UPDATE", width = "75%"),
                                   br(),
@@ -1502,7 +1520,7 @@ ui <- dashboardPage(
             height = "600px",
             solidHeader = FALSE,
             h3("TOTAL SYSTEM UNIQUE PATIENTS:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system)."),
-            h3("SYSTEM UNIQUE PATIENTS OVER TIME:"),h4("TOTAL SYSTEM UNIQUE PATIENTS by month."),
+            # h3("SYSTEM UNIQUE PATIENTS OVER TIME:"),h4("TOTAL SYSTEM UNIQUE PATIENTS by month."),
             h3("SYSTEM UNIQUE PATIENTS BY MONTH:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month).")
           ),
           

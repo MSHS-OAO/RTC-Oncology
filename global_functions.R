@@ -214,7 +214,7 @@ uniquePts_df_systemMonth <- function(dt, visitType){
   }
   
   result <- data %>%
-    arrange(MRN, APPT_DTTM) %>% group_by(MRN, APPT_MONTH_YEAR) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
+    arrange(MRN, APPT_DTTM) %>% group_by(SITE, MRN, APPT_MONTH_YEAR) %>% mutate(uniqueSystemMonth = row_number()) %>% ungroup() %>%
     filter(uniqueSystemMonth == 1) %>%
     select(SITE, DEPARTMENT_NAME, APPT_DATE_YEAR, APPT_YEAR, APPT_MONTH, APPT_MONTH_YEAR, uniqueSystemMonth, APPT_DAY, DX_GROUPER)
   

@@ -1963,8 +1963,7 @@ server <- function(input, output, session) {
   output$volumeCompTotal_grh <- renderPlotly({
     
     data <- dataArrived_filtered() %>% select(ASSOCIATIONLISTA, ASSOCIATIONLISTB, SITE, APPT_MONTH_YEAR) %>% collect()
-    data_test <<- data
-    
+
     flag <- 0
       
 
@@ -3056,10 +3055,9 @@ print("2")
   
   
   ## Unique MRN by Month
-  output$uniqueOfficeMonthSystem <- renderPlot({
+  output$uniqueOfficeMonthSystem <- renderPlotly({
     data <- dataArrived()
-    
-     unique <- uniquePts_df_systemMonth(data, c("Exam")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
+     unique <- uniquePts_df_systemMonth(data, c("Exam")) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
 
 
   
@@ -3070,46 +3068,65 @@ print("2")
     # } else{
     #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     # }
-    
 
     unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
       # g17 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
       # g18 <-  ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
-    g17 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
-    g18 <-  ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
-    
+    g17 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=SITE, fill=SITE))
+    # g18 <-  ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
     
     g17 <- g17+
       # geom_bar(position="dodge", stat="identity")+
-      geom_bar(stat="identity", fill = "#221f72")+
+      geom_bar(position="stack", stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
-      labs(title = paste0("System Unique Patients by Month - Exam Visits*"),
+      # scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
+      labs(title = paste0("Site Unique Patients by Month - Exam Visits*"),
            subtitle = paste0("Based on arrived visits from ", isolate(input$dateRange[1]), " to ",isolate(input$dateRange[2]), "\n" ),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))
+      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+      # geom_text(aes(label=total), color="white", 
+      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))
     
-    g18 <- g18+
-      scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
-      # geom_hline(yintercept = hline_y, colour='black')+
-      geom_hline(yintercept = c(2.5), colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL,
-           caption = paste0("*Total count of unique patients who had at least one exam visit at any MSHS site within the respective month (",isolate(input$dateRange[1]), " to ", isolate(input$dateRange[2]),")" )
-           )+
-      theme_minimal() +
-      table_theme()+
-      theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+    # g18 <- g18+
+    #   scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    #   # geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_hline(yintercept = c(2.5), colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL,
+    #        caption = paste0("*Total count of unique patients who had at least one exam visit at any MSHS site within the respective month (",isolate(input$dateRange[1]), " to ", isolate(input$dateRange[2]),")" )
+    #        )+
+    #   theme_minimal() +
+    #   table_theme()+
+    #   theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+    
+    
+    if(length(unique(unique$SITE)) == 1) {
+      unique <- unique %>% mutate(Total = "Total")
+      g18 <- ggplot_table_comparison(unique, 0)
+    } else {
+      n <- length(unique(unique$SITE)) - 1
+      hline_y <- seq(1.5, 0.5+n, by= 1)
+      
+      g18 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y= SITE, label=total)) +
+        #scale_color_MountSinai('dark')+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = 'bold')+
+        geom_hline(yintercept = hline_y, colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()+
+        theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+    }
     
     library(patchwork)
-    g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
-    
+    # g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    subplot(g17, g18, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1))) %>%
+      style(hoverinfo = 'none')
   })
   
   
@@ -3405,7 +3422,7 @@ print("2")
   
   
   ## Unique MRN by Month
-  output$uniqueTreatmentMonthSystem <- renderPlot({
+  output$uniqueTreatmentMonthSystem <- renderPlotly({
 
     
     # data <- dataUniqueTreatment_system_month()
@@ -3415,7 +3432,7 @@ print("2")
     
     
     data <- dataArrived()
-    unique <- uniquePts_df_systemMonth(data, c("Treatment Visit")) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
+    unique <- uniquePts_df_systemMonth(data, c("Treatment Visit")) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
     
     # if(length(unique(data$SITE)) == 9){
     #   site <- "System"
@@ -3437,8 +3454,8 @@ print("2")
     # g23 <- ggplot(unique, aes(x=factor(Appt.Month, levels = monthOptions), y=total, fill=Appt.Year))
     # g24 <- ggplot(unique, aes(x= factor(Appt.Month, levels = monthOptions), y= Appt.Year, label=total))
     
-      g23 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=1))
-      g24 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
+      g23 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y=total, group=SITE, fill = SITE))
+      # g24 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y= "System", label= total))
 
     
     
@@ -3447,32 +3464,54 @@ print("2")
       # geom_point(size=3)+
       # scale_color_MountSinai('dark')+
       # geom_bar(position="dodge", stat="identity")+
-      geom_bar(stat="identity", fill = "#221f72")+
+      geom_bar(position="stack", stat="identity", width=0.7)+
       scale_fill_MountSinai('dark')+
-      scale_y_continuous(limits=c(0,max(unique$total)*1.2))+
       labs(title = paste0("System Unique Patients by Month  - Treatment Visits*"),
            subtitle = paste0("Based on arrived vistis from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
            y = NULL, x = NULL, fill = NULL)+
       theme_new_line()+
-      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))+
-      geom_text(aes(label=total), color="white", 
-                size=5, fontface="bold", position = position_stack(vjust = 0.5))
+      theme(plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
+      # geom_text(aes(label=total), color="white", 
+      #           size=5, fontface="bold", position = position_stack(vjust = 0.5))
       # geom_label(aes(label=prettyNum(total, big.mark = ',')), hjust = 1, color="black", fontface="bold",
       #            nudge_x = 0.1, size=5)
 
-    g24 <- g24+
-      scale_color_MountSinai('dark')+
-      geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
-      geom_hline(yintercept = c(2.5), colour='black')+
-      geom_vline(xintercept = 0, colour = 'black')+
-      scale_x_discrete(position = "top") + 
-      labs(y = NULL, x = NULL,
-           caption = paste0("*Total count of unique patients who had at least one treatment visit at any MSHS site within the respective month (",isolate(input$dateRange[1]), " to ", isolate(input$dateRange[2]),")" ))+
-      theme_minimal() +
-      table_theme()+
-      theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+    # g24 <- g24+
+    #   scale_color_MountSinai('dark')+
+    #   geom_text(size = 7, vjust = "center", hjust = "center", fontface = "bold")+
+    #   geom_hline(yintercept = c(2.5), colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black')+
+    #   scale_x_discrete(position = "top") + 
+    #   labs(y = NULL, x = NULL,
+    #        caption = paste0("*Total count of unique patients who had at least one treatment visit at any MSHS site within the respective month (",isolate(input$dateRange[1]), " to ", isolate(input$dateRange[2]),")" ))+
+    #   theme_minimal() +
+    #   table_theme()+
+    #   theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
     
-    g23 + g24 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    
+    if(length(unique(unique$SITE)) == 1) {
+      unique <- unique %>% mutate(Total = "Total")
+      g24 <- ggplot_table_comparison(unique, 0)
+    } else {
+      n <- length(unique(unique$SITE)) - 1
+      hline_y <- seq(1.5, 0.5+n, by= 1)
+      
+      g24 <- ggplot(unique, aes(x=APPT_MONTH_YEAR, y= SITE, label=total)) +
+        #scale_color_MountSinai('dark')+
+        geom_text(size = 5, vjust = "center", hjust = "center", fontface = 'bold')+
+        geom_hline(yintercept = hline_y, colour='black')+
+        geom_vline(xintercept = 0, colour = 'black')+
+        scale_x_discrete(position = "top") + 
+        labs( y = NULL, x = NULL, fill = "SITE")+
+        theme_minimal() +
+        table_theme()+
+        theme(plot.caption = element_text(hjust = 0, size = 18, face = "italic"))
+    }
+    
+    library(patchwork)
+    # g17 + g18 + plot_layout(ncol = 1, heights = c(7, 0.67))
+    subplot(g23, g24, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1))) %>%
+      style(hoverinfo = 'none')
     
   })
   
