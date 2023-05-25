@@ -124,13 +124,14 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
 default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 
-default_provider_unique <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
-                                              DEPARTMENT_NAME %in% default_departments_disease) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments &
+                                                ASSOCIATIONLISTA %in% c("Exam")) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(PROVIDER) %>%
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
-default_provider_unique <- sort(default_provider_unique$PROVIDER, na.last = T)
+default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.last = T)
 
 
 
@@ -906,7 +907,7 @@ ui <- dashboardPage(
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selectedProvider2",label=NULL,
-                                         choices = default_provider_unique,
+                                         choices = default_provider_unique_exam,
                                          multiple=TRUE,
                                          options = pickerOptions(
                                            liveSearch = TRUE,
@@ -915,8 +916,11 @@ ui <- dashboardPage(
                                            countSelectedText = "{0}/{1} Providers",
                                            dropupAuto = FALSE,
                                            size = 10),
-                                         selected = default_provider_unique)),
+                                         selected = default_provider_unique_exam)),
                            column(5,
+                                  br(),
+                                  br(),
+                                  br(),
                                   actionButton("update_filters2", "CLICK TO UPDATE", width = "75%"),
                                   br(),
                                   br()

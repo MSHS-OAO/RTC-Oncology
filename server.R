@@ -496,6 +496,18 @@ server <- function(input, output, session) {
                         selected = provider_choices
       )  
       
+      date_1 <- input$dateRange[1]
+      date_2 <- input$dateRange[2]
+      default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                                                DEPARTMENT_NAME %in% default_departments &
+                                                                ASSOCIATIONLISTA %in% c("Exam")) %>%
+        filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
+               TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.last = T)
+      
       updatePickerInput(session,
                         inputId = "selectedProvider2",
                         choices = provider_choices,
@@ -667,33 +679,33 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-  
-  observeEvent(c(input$selectedDisease2),{
-    
-    if(!is.null(input$selectedDisease2)){
-      select_campus <- input$selectedCampus
-      select_dept <- input$selectedDepartment
-      select_disease <- input$selectedDisease2
-      
-      
-      provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                    DEPARTMENT_NAME %in% select_dept & 
-                                                    DISEASE_GROUP %in% select_disease) %>%
-                                                    select(PROVIDER) %>%
-                                                    mutate(PROVIDER = unique(PROVIDER)) %>%
-                                                    collect()
-      provider_choices <- sort(provider_choices$PROVIDER, na.last = T)
-      
-      updatePickerInput(session,
-                        inputId = "selectedProvider2",
-                        choices = provider_choices,
-                        selected = provider_choices
-      )
-    }
-  },
-  ignoreNULL = FALSE,
-  ignoreInit = TRUE)
-  
+  # 
+  # observeEvent(c(input$selectedDisease2),{
+  #   
+  #   if(!is.null(input$selectedDisease2)){
+  #     select_campus <- input$selectedCampus
+  #     select_dept <- input$selectedDepartment
+  #     select_disease <- input$selectedDisease2
+  #     
+  #     
+  #     provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+  #                                                   DEPARTMENT_NAME %in% select_dept & 
+  #                                                   DISEASE_GROUP %in% select_disease) %>%
+  #                                                   select(PROVIDER) %>%
+  #                                                   mutate(PROVIDER = unique(PROVIDER)) %>%
+  #                                                   collect()
+  #     provider_choices <- sort(provider_choices$PROVIDER, na.last = T)
+  #     
+  #     updatePickerInput(session,
+  #                       inputId = "selectedProvider2",
+  #                       choices = provider_choices,
+  #                       selected = provider_choices
+  #     )
+  #   }
+  # },
+  # ignoreNULL = FALSE,
+  # ignoreInit = TRUE)
+  # 
   
   observeEvent(list(input$selectedDepartment),{
     if(!is.null(input$selectedDepartment)) {
