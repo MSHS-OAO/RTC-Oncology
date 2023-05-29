@@ -346,6 +346,7 @@ ui <- dashboardPage(
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
+                         menuItem("Exam Utilization", tabName = "utilization_exam"),
                          menuItem("Treatment Utilization", tabName = "treat_util")
                 ),
                 uiOutput("data_download")
@@ -1051,6 +1052,12 @@ ui <- dashboardPage(
                          )
                          )
                 ),
+        tabItem(tabName = "utilization_exam",
+                div("Exam Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                column(11,
+                       tableOutput("exam_utlization_volume")
+                       )
+                ),
         
         tabItem(tabName = "treat_util",
                   div("Treatment Utilization", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -1204,7 +1211,8 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' |
+        input.sbm == 'utilization_exam'",
         column(1,
           dropdown(
             br(),
@@ -1250,7 +1258,8 @@ ui <- dashboardPage(
             conditionalPanel(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' |
+              input.sbm == 'utilization_exam'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1296,7 +1305,8 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'" ,
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' |
+              input.sbm == 'utilization_exam'" ,
                 box(
                   title = "Select Date Range:", 
                   width = 12, 

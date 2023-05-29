@@ -5722,6 +5722,38 @@ print("2")
       write.csv(dataArrivedTrend_download(),file, row.names = F)
     }
   )
+exam_utlization_data <- reactive({
+  utlization_mapping_exam <- read_excel("Oncology Exam Utilization Mapping.xlsx", sheet = "Sheet4")
+  data <- dataArrived()
+  data_testing <<- data
+  
+  exam_data <- data %>% filter(ASSOCIATIONLISTA == 'Exam', APPT_MONTH_YEAR %in% c('2023-01', '2023-02', '2023-03'), APPT_STATUS == 'Arrived', SITE == 'RTC',
+                               !is.na(DISEASE_GROUP_DETAIL)) %>%
+    group_by(EPIC_PROVIDER_ID) %>% summarise(total = n()) %>%
+    collect()
+  exam_data <- exam_data %>% mutate(EPIC_PROVIDER_ID = as.character(EPIC_PROVIDER_ID))
+  
+  utlization_mapping_exam <- utlization_mapping_exam %>% rename(EPIC_PROVIDER_ID = PROVIDER_ID)
+  utlization_mapping_exam <- utlization_mapping_exam %>% mutate(EPIC_PROVIDER_ID = as.character(EPIC_PROVIDER_ID))
+  exam_data_mapped <- inner_join(exam_data, utlization_mapping_exam)
+  
+  
+  exam_expect_volume_provider <- exam_data_mapped %>% group_by(Provider, EPIC_PROVIDER_ID, `Disease Group`) %>% summarise(EV = `# Session` * `Effective # of Rooms` * 60)
+  exam_expect_volume_specialty <- exam_expect_volume_provider %>% group_by(`Disease Group`) %>% summarise(EV = sum(EV))
+  
+  # actual_volume <- exam_data_mapped %>% group_by(APPT_MONTH_YEAR, Provider, `Disease Group`) %>% summarise(AV = sum(total))
+  actual_volume <- exam_data_mapped %>% group_by(`Disease Group`) %>% summarise(AV = sum(total))
+  
+  
+  exam_expect_volume_specialty <- inner_join(exam_expect_volume_specialty, actual_volume)
+  exam_expect_volume_specialty
+})
 
+output$exam_utlization_volume <- function() {
+  kable(exam_utlization_data(),booktabs = T, escape = F) %>%
+    kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+    row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+    row_spec(nrow(exam_utlization_data()), background = "#d80b8c", color = "white", bold = T) 
+}
 
 } # Close Server
