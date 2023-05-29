@@ -481,9 +481,9 @@ server <- function(input, output, session) {
       
       
      
-      
+      selected_dept <- input$selectedDepartment
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                    DEPARTMENT_NAME %in% input$selectedDepartment & 
+                                                    DEPARTMENT_NAME %in% selected_dept & 
                                                     DISEASE_GROUP %in% disease_choices) %>%
                                                     select(PROVIDER) %>%
                                                     mutate(PROVIDER = unique(PROVIDER)) %>%
@@ -498,8 +498,10 @@ server <- function(input, output, session) {
       
       date_1 <- input$dateRange[1]
       date_2 <- input$dateRange[2]
+      
+      selected_dept <- input$selectedDepartment
       default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                                DEPARTMENT_NAME %in% input$selectedDepartment &
+                                                                DEPARTMENT_NAME %in% selected_dept &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
         filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
                TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
