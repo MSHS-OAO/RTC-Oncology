@@ -448,7 +448,7 @@ ui <- dashboardPage(
                 div("Data Download", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column (11,
                   boxPlus(
-                    title = "Volume and Utilization Data", width = 12, status = "primary",
+                    title = "Volume Data", width = 12, status = "primary",
                     solidHeader = TRUE,
                     downloadButton("download1",""),
                     DTOutput("volume_data_tbl") %>% 
