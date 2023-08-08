@@ -57,23 +57,49 @@ server <- function(input, output, session) {
   observeEvent(input$save_filters,{
     user <- user()
     
-    if(input$filter_name == ""){
+    print("collect")
+    choices <- oncology_filters_tbl %>% summarise(choices_unique = unique(FILTER_NAME)) %>% collect()
+    choices <- sort(choices$choices_unique, na.last = T)
+    print("after collect")
+    
+    filter_name <- input$filter_name
+    if(filter_name == ""){
       shinyalert("Please provide a name.", type = "error")
       #showNotification("Please provider a name", duration = 5, type = "error")
-    }else{
+    } else if (filter_name %in% choices){
+      shinyalert("The current name already exists, please provide a new one.", type = "error")
+    } else{
       updateTextInput(session, "filter_name", value = "")
-      print(input$filter_name)
+      print(filter_name)
       filter_path_full <- paste0(filter_path, "/", user)
       
-      filter_df <- mapply(c, input$filter_name, input$selectedCampus, input$selectedDepartment,format(input$dateRangetrend[1], '%Y-%m-%d'), format(input$dateRangetrend[2], '%Y-%m-%d'),
-                           input$daysOfWeek, format(input$dateRange[1], '%Y-%m-%d'), format(input$dateRange[2], '%Y-%m-%d'),
+
+      campus <- input$selectedCampus
+      department <- input$selectedDepartment
+      days <- input$daysOfWeek
+      holidays <- input$excludeHolidays
+      diagnosis <- input$diag_grouper
+      
+      if (length(holidays) == 0) {
+        holidays <- "none"
+      }
+      
+      
+      filter_df <- mapply(c, filter_name, campus,
+                          department,days, holidays,
+                          diagnosis,
                           SIMPLIFY = TRUE)
       filter_df <- as.data.frame(t(filter_df), row.names = FALSE)
-      colnames(filter_df) <- c("Name", "Campus", "Department", "Daterange_1_trend", 'Daterange_2_trend',
-                               "Days", "Daterange_1", 'Daterange_2')
-      write.csv(filter_df, here::here(paste0(filter_path_full, "/" , input$filter_name, ".csv")), row.names = FALSE)
+      colnames(filter_df) <- c("Name", "Campus","Department", "Days", "Holiday", "Diagnosis_Grouper")
+      # write.csv(filter_df, here::here(paste0(filter_path_full, "/" , input$filter_name, ".csv")), row.names = FALSE)
+      # 
+      # filter_list_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
+      write_filters_db(filter_df)
       
-      filter_list_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
+      filter_list_choices <- oncology_filters_tbl %>% summarise(choices = unique(FILTER_NAME)) %>% collect()
+      filter_list_choices <- sort(filter_list_choices$choices, na.last = T)
+      
+      print("after collect")
       
       updatePickerInput(session,
                         inputId = "filter_list",
@@ -83,7 +109,9 @@ server <- function(input, output, session) {
       filter_df
     }
     
-  })
+  },
+  ignoreInit = TRUE,
+  ignoreNULL = FALSE)
   
   
   

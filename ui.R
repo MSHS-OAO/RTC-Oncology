@@ -192,41 +192,44 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             tags$li(class = "dropdown", actionButton("download10",
                                                                      label = icon("download")
                             )
-                            )#,
+                            ),
                             
-                            # tags$li(class = "dropdown",
-                            #         dropdown(
-                            #           box(
-                            #             title = "Name preset input:",
-                            #             width = 12,
-                            #             height = "100px",
-                            #             solidHeader = FALSE,
-                            #             textInput("filter_name", label = NULL)
-                            #           ), br(), br(), br(), br(), br(),
-                            #           actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
-                            #           style = "material-circle", size = "lg", right = TRUE, status = "default",
-                            #           icon = icon("save"), width = "300px",
-                            #           inputId = "dropdownbutton4"
-                            #         )
-                            # ),
+                            tags$li(class = "dropdown",
+                                    dropdown(
+                                      box(
+                                        title = "Bookmark Current Filter:",
+                                        width = 12,
+                                        height = "200px",
+                                        solidHeader = FALSE,
+                                        h5("For naming your filters please follow: 'SITE_FIRSTNAME_LASTNAME_DESC'"),#, style = "font-size:12px;"), br(),
+                                        textInput("filter_name", label = NULL),
+                                        actionButton("save_filters", "CLICK TO SAVE", width = "80%")
+                                      ), br(), br(), br(), br(), br(), br(), br(), br(),
+                                      br(), br(),
+                                      style = "material-circle", size = "lg", right = TRUE, status = "default",
+                                      icon = icon("save"), width = "300px",
+                                      inputId = "dropdownbutton4"
+                                    )
+                            ),
                             
-                            # tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
-                            #                                          width = 12,
-                            #                                          height = "100px",
-                            #                                          solidHeader = FALSE,
-                            #                                          pickerInput("filter_list", choices = NULL, multiple = TRUE,
-                            #                                                      selected = NULL, options = pickerOptions(maxOptions = 1)
-                            #                                          )
-                            # ), br(), br(), br(), br(), br(),
-                            # actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
+                            tags$li(class = "dropdown", dropdown(box(title = "Retrieve Previously Saved Filter:",
+                                                                     width = 12,
+                                                                     height = "100px",
+                                                                     solidHeader = FALSE,
+                                                                     pickerInput("filter_list", choices = NA, multiple = TRUE,
+                                                                                 selected = NULL, options = pickerOptions(maxOptions = 1)
+                                                                     ),
+                                                                     actionButton("update_filters1", "CLICK TO UPDATE", width = "80%")
+                            ), br(), br(), br(), br(), br(), br(),
+                            br(), br(),
                             # actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
-                            # style = "material-circle", size = "lg", right = TRUE, status = "default",
-                            # icon = icon("star"), width = "300px",
-                            # tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
-                            # inputId = "dropdownbutton3"
-                            # ), 
-                            # )
-                            
+                            style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            icon = icon("star"), width = "300px",
+                            tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+                            inputId = "dropdownbutton3"
+                            ),
+                            )
+
                             #)
                             
 )
@@ -1482,7 +1485,11 @@ ui <- dashboardPage(
         
         bsTooltip("download10", "Download (PNG) current tab.",
                   "right", options = list(container = "body")
-        )
+        ),
+        
+        tags$head(tags$style(HTML("#save_filters19 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px}")))
         
       ), # Close Conditional Panel
       
