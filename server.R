@@ -853,9 +853,13 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
+    
     groupByFilters(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+    
+
+    
   })
   
   dataArrived_unique_trend <- eventReactive(list(input$update_filters, input$update_filters1),{
@@ -1036,11 +1040,19 @@ server <- function(input, output, session) {
         need(input$selectedCampus != "" , "Please select a Campus"),
         need(input$selectedDepartment != "", "Please select a Department")
       )
-      groupByFilters_Trend(arrived_data,
+      data  <- groupByFilters_Trend(arrived_data,
                            input$selectedCampus, input$selectedDepartment,
                            input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                            input$diag_grouper
       )
+      
+      
+      data_test <- data %>% head(n = 1L) %>% collect()
+      validate(
+        need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+        )
+      
+      data
 
     })
   })
