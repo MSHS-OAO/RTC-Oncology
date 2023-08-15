@@ -57,14 +57,24 @@ server <- function(input, output, session) {
     } else{
       updateTextInput(session, "filter_name", value = "")
       print(filter_name)
-      filter_path_full <- paste0(filter_path, "/", user)
-      
+
 
       campus <- input$selectedCampus
       department <- input$selectedDepartment
       days <- input$daysOfWeek
       holidays <- input$excludeHolidays
       diagnosis <- input$diag_grouper
+      
+      dept_title_text <- input$dept_text
+      print(dept_title_text)
+      dept_title_text_selected <- gsub("/.*", "\\1", dept_title_text)
+      dept_title_text_total <-  gsub(".*/(.+) .*", "\\1", dept_title_text)
+      
+      
+      if(dept_title_text_selected == dept_title_text_total && length(department) > 1) {
+        department <- "All"
+      }
+      
       
       if (length(holidays) == 0) {
         holidays <- "none"
@@ -77,9 +87,6 @@ server <- function(input, output, session) {
                           SIMPLIFY = TRUE)
       filter_df <- as.data.frame(t(filter_df), row.names = FALSE)
       colnames(filter_df) <- c("Name", "Campus","Department", "Days", "Holiday", "Diagnosis_Grouper")
-      # write.csv(filter_df, here::here(paste0(filter_path_full, "/" , input$filter_name, ".csv")), row.names = FALSE)
-      # 
-      # filter_list_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
       write_filters_db(filter_df)
       
       filter_list_choices <- oncology_filters_tbl %>% summarise(choices = unique(FILTER_NAME)) %>% collect()
@@ -102,7 +109,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$filter_list, {
     filter_name <- input$filter_list
-    # filter_name <- "MSW_FILTERS"
+    # filter_name <- "test_not_all"
     filter_saved_all <- oncology_filters_tbl %>% filter(FILTER_NAME == filter_name) %>% collect()
     
     campus_selected <- unique(filter_saved_all$CAMPUS)
@@ -110,13 +117,16 @@ server <- function(input, output, session) {
     
     
     departments_selected <- unique(filter_saved_all$DEPARTMENT)
-    
-    
     department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>% select(DEPARTMENT_NAME) %>% 
       mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
       collect()
     department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
     
+    if(c("All") %in% departments_selected) {
+      departments_selected <- department_choices
+      print("TRUE")
+    }
+
     
     updatePickerInput(session,
                       inputId = "selectedDepartment",
@@ -560,7 +570,7 @@ server <- function(input, output, session) {
       date_2 <- input$dateRange[2]
       
       selected_dept <- input$selectedDepartment
-      default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
         filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
@@ -568,12 +578,12 @@ server <- function(input, output, session) {
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
-      default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.last = T)
+      provider_unique_exam_choices <- sort(provider_unique_exam_choices$PROVIDER, na.last = T)
       
       updatePickerInput(session,
                         inputId = "selectedProvider2",
-                        choices = provider_choices,
-                        selected = provider_choices
+                        choices = provider_unique_exam_choices,
+                        selected = provider_unique_exam_choices
       ) 
       
       

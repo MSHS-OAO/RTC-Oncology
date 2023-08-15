@@ -16,7 +16,7 @@ default_campus <- "MSW"
 
 #default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
 default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% 
-                                            filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+                                            filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
                                             select(DEPARTMENT_NAME) %>%
                                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                             collect()
@@ -391,6 +391,12 @@ ui <- dashboardPage(
     
     }
                     "))),
+    tags$script('
+    document.getElementById("save_filters").onclick = function() {
+      var text = $("[data-id=\\"selectedDepartment\\"]").attr("title");
+      Shiny.onInputChange("dept_text", text);
+    };
+  '),
     # 
     # box "status" color for Mount Sinai Grey
     tags$style(HTML("
