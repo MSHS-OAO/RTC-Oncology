@@ -9,7 +9,7 @@ dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), form
 
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                         collect()
-campus_choices <<- sort(campus_choices$SITE, na.last = T)
+campus_choices <- sort(campus_choices$SITE, na.last = T)
 
 
 default_campus <- "MSW"
@@ -185,6 +185,7 @@ dateRange_download_start <- floor_date(dateRange_max, 'month')
 
 # dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
+default_filter_choices <- oncology_filters_tbl %>% summarise(filter = unique(FILTER_NAME)) %>% collect()
 
 header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             disable = FALSE,
@@ -216,7 +217,7 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                                                                      width = 12,
                                                                      height = "100px",
                                                                      solidHeader = FALSE,
-                                                                     pickerInput("filter_list", choices = NA, multiple = TRUE,
+                                                                     pickerInput("filter_list", choices = default_filter_choices$filter, multiple = TRUE,
                                                                                  selected = NULL, options = pickerOptions(maxOptions = 1)
                                                                      ),
                                                                      actionButton("update_filters1", "CLICK TO UPDATE", width = "80%")

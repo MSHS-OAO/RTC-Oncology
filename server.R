@@ -15,13 +15,7 @@ server <- function(input, output, session) {
     #"villea04"
   })
   
-  filter_choices <- eventReactive(input$save_filters,{
-    user <- user()
-    filter_path <- paste0(filter_path, "/", user)
-    file_path_sans_ext(list.files(path = filter_path, pattern = "*.csv"))
-  })
-  
-  
+
   observeEvent(input$remove_filters,{
     if(is.null(input$filter_list)){
       shinyalert("No preset selected.", type = "error")
@@ -45,15 +39,7 @@ server <- function(input, output, session) {
     
     
   })
-  
-  # observeEvent(input$sbm,{
-  #   user <- user()
-  #   filter_path_full <- paste0(filter_path, "/", user)
-  #   dir.create(file.path(filter_path, user), showWarnings = FALSE)
-  #   filter_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
-  #   updatePickerInput(session, "filter_list", choices = filter_choices)
-  # }, once = TRUE)
-  
+
   observeEvent(input$save_filters,{
     user <- user()
     
@@ -112,6 +98,52 @@ server <- function(input, output, session) {
   },
   ignoreInit = TRUE,
   ignoreNULL = FALSE)
+  
+  
+  observeEvent(input$filter_list, {
+    filter_name <- input$filter_list
+    # filter_name <- "MSW_FILTERS"
+    filter_saved_all <- oncology_filters_tbl %>% filter(FILTER_NAME == filter_name) %>% collect()
+    
+    campus_selected <- unique(filter_saved_all$CAMPUS)
+    updatePickerInput(session, "selectedCampus", selected = campus_selected)
+    
+    
+    departments_selected <- unique(filter_saved_all$DEPARTMENT)
+    
+    
+    department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>% select(DEPARTMENT_NAME) %>% 
+      mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
+      collect()
+    department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
+    
+    
+    updatePickerInput(session,
+                      inputId = "selectedDepartment",
+                      choices = department_choices,
+                      selected = departments_selected
+    )
+    
+    diag_grouper_selected <-  unique(filter_saved_all$DIAGNOSIS_GROUPER)
+    updatePickerInput(session,
+                      inputId = "diag_grouper",
+                      selected = diag_grouper_selected
+    )
+    
+    days_selected <- unique(filter_saved_all$DAYS)
+    updatePickerInput(session,
+                      inputId = "daysOfWeek",
+                      selected = days_selected
+    )
+    
+    
+  })
+  
+  observeEvent(input$update_filters1,{
+    
+    updatePickerInput(session, "filter_list", selected = NA)
+    
+  })
   
   
   
@@ -784,7 +816,7 @@ server <- function(input, output, session) {
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
-  dataAll <- eventReactive(list(input$update_filters),{
+  dataAll <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -806,7 +838,7 @@ server <- function(input, output, session) {
   # })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- eventReactive(list(input$update_filters),{
+  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -816,7 +848,7 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
-  dataArrived_unique_trend <- eventReactive(list(input$update_filters),{
+  dataArrived_unique_trend <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -826,7 +858,7 @@ server <- function(input, output, session) {
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
   })
   
-  dataArrived_Diag <- eventReactive(list(input$update_filters),{
+  dataArrived_Diag <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -864,7 +896,7 @@ server <- function(input, output, session) {
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
-  dataArrived_filtered <- eventReactive(list(input$update_filters,input$update_filters6),{
+  dataArrived_filtered <- eventReactive(list(input$update_filters,input$update_filters6, input$update_filters1),{
     validate(
       need(input$selectedVisitType != "", "Please select a visit type"),
       need(input$selectedApptType != "", "Please select a visit type detail"),
@@ -892,7 +924,7 @@ server <- function(input, output, session) {
 
   })
   
-  dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2),{
+  dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2, input$update_filters1),{
     validate(
       need(input$selectedDisease2 != "", "Please select a provider group"),
       need(input$selectedProvider2 != "", "Please select a provider")
@@ -902,7 +934,7 @@ server <- function(input, output, session) {
   })
   
   # Arrived population data ============================================================================================================
-  dataArrivedPop <- eventReactive(list(input$update_filters, input$update_filters7),{
+  dataArrivedPop <- eventReactive(list(input$update_filters, input$update_filters7, input$update_filters1),{
     validate(
       need(input$selectedVisitType != "", "Please select a visit type"),
       need(input$selectedApptType != "", "Please select a visit type detail"),
@@ -987,6 +1019,7 @@ server <- function(input, output, session) {
   dataArrivedTrend <- reactive({
     
     input$update_filters
+    input$update_filters1
     
     isolate({
       validate(
@@ -1006,6 +1039,7 @@ server <- function(input, output, session) {
   dataArrivedTrend_download <- reactive({
     
     input$update_filters
+    input$update_filters1
     
     isolate({
       data <- dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
@@ -1017,7 +1051,7 @@ server <- function(input, output, session) {
   })
   
   # Unique Patients  data ============================================================================================================
-  dataUniqueExam_system <- eventReactive(list(input$update_filters),{
+  dataUniqueExam_system <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
