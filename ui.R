@@ -393,8 +393,10 @@ ui <- dashboardPage(
                     "))),
     tags$script('
     document.getElementById("save_filters").onclick = function() {
-      var text = $("[data-id=\\"selectedDepartment\\"]").attr("title");
-      Shiny.onInputChange("dept_text", text);
+      var text_dept = $("[data-id=\\"selectedDepartment\\"]").attr("title");
+      var text_diagnosis = $("[data-id=\\"diag_grouper\\"]").attr("title");
+      Shiny.onInputChange("dept_text", text_dept);
+      Shiny.onInputChange("diagnosis_text", text_diagnosis);
     };
   '),
     # 

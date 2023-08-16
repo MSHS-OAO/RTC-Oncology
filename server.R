@@ -75,6 +75,16 @@ server <- function(input, output, session) {
         department <- "All"
       }
       
+      diagnosis_title_text <- input$diagnosis_text
+      print(diagnosis_title_text)
+      diagnosis_title_text_selected <- gsub("/.*", "\\1", diagnosis_title_text)
+      diagnosis_title_text_total <-  gsub(".*/(.+) .*", "\\1", diagnosis_title_text)
+      
+      
+      if(diagnosis_title_text_selected == diagnosis_title_text_total && length(diagnosis) > 1) {
+        diagnosis <- "All"
+      }
+      
       
       if (length(holidays) == 0) {
         holidays <- "none"
@@ -135,6 +145,10 @@ server <- function(input, output, session) {
     )
     
     diag_grouper_selected <-  unique(filter_saved_all$DIAGNOSIS_GROUPER)
+    if(c("All") %in% diag_grouper_selected) {
+      diag_grouper_selected <- default_diag_grouper
+      print("TRUE")
+    }
     updatePickerInput(session,
                       inputId = "diag_grouper",
                       selected = diag_grouper_selected
@@ -831,9 +845,16 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters(oncology_tbl,
+    data <- groupByFilters(oncology_tbl,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRangedwnld[1], input$dateRangedwnld[2], input$daysOfWeek, input$excludeHolidays)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no data for these filters.")
+    )
+    
+    data
   })
   
   # [2.2] Arrived + No Show data ============================================================================================================
@@ -854,9 +875,16 @@ server <- function(input, output, session) {
       need(input$selectedDepartment != "", "Please select a Department")
     )
     
-    groupByFilters(arrived_data,
+    data <- groupByFilters(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+    )
+    
+    data
     
 
     
@@ -867,9 +895,16 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters_unique_trend(arrived_data,
+    data <- groupByFilters_unique_trend(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+    )
+    
+    data
   })
   
   dataArrived_Diag <- eventReactive(list(input$update_filters, input$update_filters1),{
@@ -878,11 +913,18 @@ server <- function(input, output, session) {
       need(input$selectedDepartment != "", "Please select a Department")
     )
     #groupByFilters_Trend(historical.data[arrived.data.rows,],
-    groupByFilters_Trend(arrived_data,
+    data <- groupByFilters_Trend(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                    input$diag_grouper
                    )
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+    )
+    
+    data
 
   })
   
@@ -919,6 +961,13 @@ server <- function(input, output, session) {
     data <- groupByFilters_2(dataArrived(),
                       input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
     
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+    )
+    
+    data
+    
   })
   
   
@@ -954,10 +1003,17 @@ server <- function(input, output, session) {
       need(input$selectedApptType != "", "Please select a visit type detail"),
       need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
-    groupByFilters_pop(population.data_filtered,
+    data <- groupByFilters_pop(population.data_filtered,
                        input$selectedCampus, input$selectedDepartment,
                        input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider7,
                        input$dx_grouper_zip)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no data for these filters.")
+    )
+    
+    data
   })
   
   # Scheduling  data ============================================================================================================
@@ -1069,6 +1125,13 @@ server <- function(input, output, session) {
             rename(CAMPUS = SITE,
                DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
         relocate(CAMPUS, .before = DEPARTMENT)
+      
+      data_test <- data %>% head(n = 1L) %>% collect()
+      validate(
+        need(nrow(data_test) != 0, "There is no data for these filters.")
+      )
+      
+      data
     })
   })
   
@@ -1079,10 +1142,17 @@ server <- function(input, output, session) {
       need(input$selectedDepartment != "", "Please select a Department")
     )
 
-    groupByFilters_unique(arrived_data,
+    data <- groupByFilters_unique(arrived_data,
                           input$selectedCampus, input$selectedDepartment,
                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
                           input$diag_grouper)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+    )
+    
+    data
 
   })
   # 
@@ -1247,9 +1317,16 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters_util(utilization.data,
+    data <- groupByFilters_util(utilization.data,
                      input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                      input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no utilization data for these filters.")
+    )
+    
+    data
   }) 
   
   
@@ -1264,6 +1341,13 @@ server <- function(input, output, session) {
                                   input$dateRangetreat_util[1], input$dateRangetreat_util[2], input$daysOfWeek, input$excludeHolidays)
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no data for these filters.")
+    )
+    
+    data
   }) 
   
   dataUtilization_Treatment_download <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
@@ -1277,6 +1361,13 @@ server <- function(input, output, session) {
                                           input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays)
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no data for these filters.")
+    )
+    
+    data
   }) 
   
   dataUtilization_provider <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
@@ -1284,9 +1375,16 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    groupByFilters_util(utilization.data,
+    data <- groupByFilters_util(utilization.data,
                         input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                         input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType1)
+    
+    data_test <- data %>% head(n = 1L) %>% collect()
+    validate(
+      need(nrow(data_test) != 0, "There is no utilization data for these filters.")
+    )
+    
+    data
   }) 
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0
