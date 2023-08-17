@@ -146,7 +146,12 @@ server <- function(input, output, session) {
     
     diag_grouper_selected <-  unique(filter_saved_all$DIAGNOSIS_GROUPER)
     if(c("All") %in% diag_grouper_selected) {
-      diag_grouper_selected <- default_diag_grouper
+      diag_grouper_selected <- c(default_diag_grouper, "NA")
+      print("TRUE")
+    }
+    
+    if(c("NA") %in% diag_grouper_selected) {
+      diag_grouper_selected <- c(diag_grouper_selected, "NA")
       print("TRUE")
     }
     updatePickerInput(session,
