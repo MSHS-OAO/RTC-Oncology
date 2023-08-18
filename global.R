@@ -286,4 +286,4 @@ all_provider <- all_provider[,1]
 # historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
 
 
-download_list <- c("villea04", "Walsht02")
+download_list <- c("villea04", "portj01", "lium10")
