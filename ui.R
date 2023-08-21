@@ -117,7 +117,7 @@ default_disease_group_detail <- sort(default_disease_group_detail$DISEASE_GROUP_
 default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                               DEPARTMENT_NAME %in% default_departments_disease & 
                                               DISEASE_GROUP %in% default_disease_group) %>%
-                                    filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+                                    filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
                                     select(PROVIDER) %>%
                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                     collect()

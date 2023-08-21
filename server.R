@@ -126,10 +126,16 @@ server <- function(input, output, session) {
     updatePickerInput(session, "selectedCampus", selected = campus_selected)
     
     
+    date_1 <- input$dateRange[1]
+    date_2 <- input$dateRange[2]
+    
     departments_selected <- unique(filter_saved_all$DEPARTMENT)
-    department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>% select(DEPARTMENT_NAME) %>% 
-      mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
-      collect()
+    department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>%
+                          filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR ,
+                                   TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR)%>% 
+                            select(DEPARTMENT_NAME) %>% 
+                            mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
+                            collect()
     department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
     
     if(c("All") %in% departments_selected) {
@@ -477,9 +483,13 @@ server <- function(input, output, session) {
     if(!is.null(input$selectedDepartment)) {
     
       select_campus <- input$selectedCampus
-    
+      first_date <- input$dateRange[1]  
+      second_date <- input$dateRange[2]  
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% select(DEPARTMENT_NAME) %>% 
+      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
+        filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+               TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+        select(DEPARTMENT_NAME) %>% 
         mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
         collect()
       department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
@@ -612,8 +622,13 @@ server <- function(input, output, session) {
       # )
       
       depts <- input$selectedDepartment
+      
+      date_util1 <- input$dateRangetreat_util[1]
+      date_util2 <- input$dateRangetreat_util[2]
       provider_utlization_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% depts) %>%
+        filter(TO_DATE(date_util1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+               TO_DATE(date_util2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
