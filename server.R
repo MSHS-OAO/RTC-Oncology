@@ -364,13 +364,19 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$selectedCampus,{
+  observeEvent(c(input$selectedCampus, input$dateRange[1], input$dateRange[2]),{
     if(!is.null(input$selectedCampus)) {
       select_campus <- input$selectedCampus
+      first_date <- input$dateRange[1]  
+      second_date <- input$dateRange[2]  
+      
       #select_campus <- "MSW"
       # department_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Department"]))
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% select(DEPARTMENT_NAME) %>% 
+      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
+                            filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+                                   TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+                            select(DEPARTMENT_NAME) %>% 
                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                             collect()
       department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
@@ -479,7 +485,7 @@ server <- function(input, output, session) {
   ignoreInit = TRUE)
   
   
-  observeEvent(input$selectedDepartment,{
+  observeEvent(c(input$selectedDepartment, input$dateRange[1], input$dateRange[2]),{
     if(!is.null(input$selectedDepartment)) {
     
       select_campus <- input$selectedCampus

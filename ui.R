@@ -78,7 +78,7 @@ default_TreatmentType <- sort(default_TreatmentType$ASSOCIATIONLISTT, na.last = 
 # default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"]))
 
 default_departments_disease <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived")) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
