@@ -571,7 +571,7 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                                         width = 12,
                                         height = "200px",
                                         solidHeader = FALSE,
-                                        h5("For naming your filters please follow: 'SITE_FIRSTNAME_LASTNAME_DESC'"),#, style = "font-size:12px;"), br(),
+                                        h5("For naming your filters please follow: 'SITE_DESC'"),#, style = "font-size:12px;"), br(),
                                         textInput("filter_name", label = NULL),
                                         actionButton("save_filters", "CLICK TO SAVE", width = "80%")
                                       ), br(), br(), br(), br(), br(), br(), br(), br(),
