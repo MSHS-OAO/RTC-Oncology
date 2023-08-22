@@ -77,7 +77,6 @@ source("global_functions.R")
 
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
-oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
 
 
 ### (2) Import Data ----------------------------------------------------------------------------------
@@ -287,83 +286,4 @@ all_provider <- all_provider[,1]
 # historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
 
 
-get_values <- function(x,table_name){
-  
-  filter_name <- x[1]
-  campus <- x[2]
-  department <- x[3]
-  days <- x[4]
-  holiday <- x[5]
-  diagnosis <- x[6]
-  
-  values <- glue("INTO \"{table_name}\" (FILTER_NAME,CAMPUS,DEPARTMENT, DAYS, HOLIDAYS, DIAGNOSIS_GROUPER) 
-                 VALUES('{filter_name}','{campus}','{department}','{days}', '{holiday}', '{diagnosis}')")
-  
-  return(values)
-}
-
-
-write_filters_db <- function(df) {
-  print("function_start")
-  df[] <- lapply(df, as.character)
-  
-  df <-  df %>% mutate_at(vars(colnames(df)), ~ str_replace(., "\'", "''")) %>% 
-    mutate_at(vars(colnames(df)), ~ str_replace(., "&", "' || chr(38) || '")) %>%
-    select(Name, Campus, Department, Days, Holiday, Diagnosis_Grouper)
-  
-  TABLE_NAME <- "ONCOLOGY_FILTERS"
-  
-  inserts <- lapply(
-    lapply(
-      lapply(split(df , 
-                   1:nrow(df)),
-             as.list), 
-      as.character),
-    FUN = get_values ,TABLE_NAME)
-  
-  values <- glue_collapse(inserts,sep = "\n\n")
-  all_data <- glue('INSERT ALL
-                        {values}
-                      SELECT 1 from DUAL;')
-  
-  all_data <<- gsub("'NA'", "''", all_data)
-  
-  conn <- dbConnect(odbc::odbc(), "OAO Cloud DB")
-  print("after conn")
-  
-  dbBegin(conn)
-  tryCatch({
-    dbExecute(conn, all_data)
-    dbCommit(conn)
-    dbDisconnect(conn)
-    if(isRunning()) {
-      showModal(modalDialog(
-        title = "Success",
-        paste0("The filters have been saved successfully."),
-        easyClose = TRUE,
-        footer = NULL
-      ))
-    } else{
-      print(paste0("The filters have been saved successfully."))
-    }
-  },
-  error = function(err){
-    #print(err)
-    dbRollback(conn)
-    dbDisconnect(conn)
-    print("error")
-    if(isRunning()) {
-      showModal(modalDialog(
-        title = "Error",
-        paste0("There was an issue saving the filters."),
-        easyClose = TRUE,
-        footer = NULL
-      ))
-    } else{
-      print(paste0("There was an issue saving the filters."))
-    }
-  })
-  
-}
 download_list <- c("villea04", "portj01", "lium10", "jwallace")
-

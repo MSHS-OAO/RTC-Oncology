@@ -15,7 +15,13 @@ server <- function(input, output, session) {
     #"villea04"
   })
   
-
+  filter_choices <- eventReactive(input$save_filters,{
+    user <- user()
+    filter_path <- paste0(filter_path, "/", user)
+    file_path_sans_ext(list.files(path = filter_path, pattern = "*.csv"))
+  })
+  
+  
   observeEvent(input$remove_filters,{
     if(is.null(input$filter_list)){
       shinyalert("No preset selected.", type = "error")
@@ -39,70 +45,35 @@ server <- function(input, output, session) {
     
     
   })
-
+  
+  # observeEvent(input$sbm,{
+  #   user <- user()
+  #   filter_path_full <- paste0(filter_path, "/", user)
+  #   dir.create(file.path(filter_path, user), showWarnings = FALSE)
+  #   filter_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
+  #   updatePickerInput(session, "filter_list", choices = filter_choices)
+  # }, once = TRUE)
+  
   observeEvent(input$save_filters,{
     user <- user()
     
-    print("collect")
-    choices <- oncology_filters_tbl %>% summarise(choices_unique = unique(FILTER_NAME)) %>% collect()
-    choices <- sort(choices$choices_unique, na.last = T)
-    print("after collect")
-    
-    filter_name <- input$filter_name
-    if(filter_name == ""){
+    if(input$filter_name == ""){
       shinyalert("Please provide a name.", type = "error")
       #showNotification("Please provider a name", duration = 5, type = "error")
-    } else if (filter_name %in% choices){
-      shinyalert("The current name already exists, please provide a new one.", type = "error")
-    } else{
+    }else{
       updateTextInput(session, "filter_name", value = "")
-      print(filter_name)
-
-
-      campus <- input$selectedCampus
-      department <- input$selectedDepartment
-      days <- input$daysOfWeek
-      holidays <- input$excludeHolidays
-      diagnosis <- input$diag_grouper
+      print(input$filter_name)
+      filter_path_full <- paste0(filter_path, "/", user)
       
-      dept_title_text <- input$dept_text
-      print(dept_title_text)
-      dept_title_text_selected <- gsub("/.*", "\\1", dept_title_text)
-      dept_title_text_total <-  gsub(".*/(.+) .*", "\\1", dept_title_text)
-      
-      
-      if(dept_title_text_selected == dept_title_text_total && length(department) > 1) {
-        department <- "All"
-      }
-      
-      diagnosis_title_text <- input$diagnosis_text
-      print(diagnosis_title_text)
-      diagnosis_title_text_selected <- gsub("/.*", "\\1", diagnosis_title_text)
-      diagnosis_title_text_total <-  gsub(".*/(.+) .*", "\\1", diagnosis_title_text)
-      
-      
-      if(diagnosis_title_text_selected == diagnosis_title_text_total && length(diagnosis) > 1) {
-        diagnosis <- "All"
-      }
-      
-      
-      if (length(holidays) == 0) {
-        holidays <- "none"
-      }
-      
-      
-      filter_df <- mapply(c, filter_name, campus,
-                          department,days, holidays,
-                          diagnosis,
+      filter_df <- mapply(c, input$filter_name, input$selectedCampus, input$selectedDepartment,format(input$dateRangetrend[1], '%Y-%m-%d'), format(input$dateRangetrend[2], '%Y-%m-%d'),
+                           input$daysOfWeek, format(input$dateRange[1], '%Y-%m-%d'), format(input$dateRange[2], '%Y-%m-%d'),
                           SIMPLIFY = TRUE)
       filter_df <- as.data.frame(t(filter_df), row.names = FALSE)
-      colnames(filter_df) <- c("Name", "Campus","Department", "Days", "Holiday", "Diagnosis_Grouper")
-      write_filters_db(filter_df)
+      colnames(filter_df) <- c("Name", "Campus", "Department", "Daterange_1_trend", 'Daterange_2_trend',
+                               "Days", "Daterange_1", 'Daterange_2')
+      write.csv(filter_df, here::here(paste0(filter_path_full, "/" , input$filter_name, ".csv")), row.names = FALSE)
       
-      filter_list_choices <- oncology_filters_tbl %>% summarise(choices = unique(FILTER_NAME)) %>% collect()
-      filter_list_choices <- sort(filter_list_choices$choices, na.last = T)
-      
-      print("after collect")
+      filter_list_choices <- file_path_sans_ext(list.files(path = filter_path_full, pattern = "*.csv"))
       
       updatePickerInput(session,
                         inputId = "filter_list",
@@ -111,72 +82,6 @@ server <- function(input, output, session) {
       
       filter_df
     }
-    
-  },
-  ignoreInit = TRUE,
-  ignoreNULL = FALSE)
-  
-  
-  observeEvent(input$filter_list, {
-    filter_name <- input$filter_list
-    # filter_name <- "test_not_all"
-    filter_saved_all <- oncology_filters_tbl %>% filter(FILTER_NAME == filter_name) %>% collect()
-    
-    campus_selected <- unique(filter_saved_all$CAMPUS)
-    updatePickerInput(session, "selectedCampus", selected = campus_selected)
-    
-    
-    date_1 <- input$dateRange[1]
-    date_2 <- input$dateRange[2]
-    
-    departments_selected <- unique(filter_saved_all$DEPARTMENT)
-    department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>%
-                          filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR ,
-                                   TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR)%>% 
-                            select(DEPARTMENT_NAME) %>% 
-                            mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
-                            collect()
-    department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
-    
-    if(c("All") %in% departments_selected) {
-      departments_selected <- department_choices
-      print("TRUE")
-    }
-
-    
-    updatePickerInput(session,
-                      inputId = "selectedDepartment",
-                      choices = department_choices,
-                      selected = departments_selected
-    )
-    
-    diag_grouper_selected <-  unique(filter_saved_all$DIAGNOSIS_GROUPER)
-    if(c("All") %in% diag_grouper_selected) {
-      diag_grouper_selected <- c(default_diag_grouper, "NA")
-      print("TRUE")
-    }
-    
-    if(c("NA") %in% diag_grouper_selected) {
-      diag_grouper_selected <- c(diag_grouper_selected, "NA")
-      print("TRUE")
-    }
-    updatePickerInput(session,
-                      inputId = "diag_grouper",
-                      selected = diag_grouper_selected
-    )
-    
-    days_selected <- unique(filter_saved_all$DAYS)
-    updatePickerInput(session,
-                      inputId = "daysOfWeek",
-                      selected = days_selected
-    )
-    
-    
-  })
-  
-  observeEvent(input$update_filters1,{
-    
-    updatePickerInput(session, "filter_list", selected = NA)
     
   })
   
@@ -364,19 +269,13 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(c(input$selectedCampus, input$dateRange[1], input$dateRange[2]),{
+  observeEvent(input$selectedCampus,{
     if(!is.null(input$selectedCampus)) {
       select_campus <- input$selectedCampus
-      first_date <- input$dateRange[1]  
-      second_date <- input$dateRange[2]  
-      
       #select_campus <- "MSW"
       # department_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Department"]))
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
-                            filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-                                   TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
-                            select(DEPARTMENT_NAME) %>% 
+      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% select(DEPARTMENT_NAME) %>% 
                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                             collect()
       department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
@@ -485,17 +384,13 @@ server <- function(input, output, session) {
   ignoreInit = TRUE)
   
   
-  observeEvent(c(input$selectedDepartment, input$dateRange[1], input$dateRange[2]),{
+  observeEvent(input$selectedDepartment,{
     if(!is.null(input$selectedDepartment)) {
     
       select_campus <- input$selectedCampus
-      first_date <- input$dateRange[1]  
-      second_date <- input$dateRange[2]  
+    
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
-        filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-               TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
-        select(DEPARTMENT_NAME) %>% 
+      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% select(DEPARTMENT_NAME) %>% 
         mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
         collect()
       department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
@@ -544,8 +439,6 @@ server <- function(input, output, session) {
       
       
       department_choices_disease <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
-                                                      filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-                                                             TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                             select(DEPARTMENT_NAME) %>%
                                                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                                             collect()
@@ -574,8 +467,6 @@ server <- function(input, output, session) {
       disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease &
                                                    DISEASE_GROUP %in% disease_choices) %>%
-        filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-               TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
         select(DISEASE_GROUP_DETAIL) %>%
         mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
         collect()
@@ -594,8 +485,6 @@ server <- function(input, output, session) {
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept & 
                                                     DISEASE_GROUP %in% disease_choices) %>%
-                                            filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-                                                   TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                     select(PROVIDER) %>%
                                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                                     collect()
@@ -611,7 +500,7 @@ server <- function(input, output, session) {
       date_2 <- input$dateRange[2]
       
       selected_dept <- input$selectedDepartment
-      provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
         filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
@@ -619,12 +508,12 @@ server <- function(input, output, session) {
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
-      provider_unique_exam_choices <- sort(provider_unique_exam_choices$PROVIDER, na.last = T)
+      default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.last = T)
       
       updatePickerInput(session,
                         inputId = "selectedProvider2",
-                        choices = provider_unique_exam_choices,
-                        selected = provider_unique_exam_choices
+                        choices = provider_choices,
+                        selected = provider_choices
       ) 
       
       
@@ -634,13 +523,8 @@ server <- function(input, output, session) {
       # )
       
       depts <- input$selectedDepartment
-      
-      date_util1 <- input$dateRangetreat_util[1]
-      date_util2 <- input$dateRangetreat_util[2]
       provider_utlization_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% depts) %>%
-        filter(TO_DATE(date_util1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-               TO_DATE(date_util2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -760,8 +644,6 @@ server <- function(input, output, session) {
       select_dept <- input$selectedDepartment
       select_disease <- input$selectedDisease
       select_disease_detail <- input$selectedDiseaseDetail
-      first_date <- input$dateRange[1]
-      second_date <- input$dateRange[2]
       
       if(c("NA") %in% input$selectedDiseaseDetail) {
         print("disease detail has NA")
@@ -783,8 +665,6 @@ server <- function(input, output, session) {
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease &
                                                     DISEASE_GROUP_DETAIL %in% select_disease_detail) %>%
-        filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-               TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -876,21 +756,14 @@ server <- function(input, output, session) {
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
-  dataAll <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataAll <- eventReactive(list(input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    data <- groupByFilters(oncology_tbl,
+    groupByFilters(oncology_tbl,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRangedwnld[1], input$dateRangedwnld[2], input$daysOfWeek, input$excludeHolidays)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no data for these filters.")
-    )
-    
-    data
   })
   
   # [2.2] Arrived + No Show data ============================================================================================================
@@ -905,62 +778,37 @@ server <- function(input, output, session) {
   # })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived <- eventReactive(list(input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    
-    data <- groupByFilters(arrived_data,
+    groupByFilters(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-    )
-    
-    data
-    
-
-    
   })
   
-  dataArrived_unique_trend <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived_unique_trend <- eventReactive(list(input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    data <- groupByFilters_unique_trend(arrived_data,
+    groupByFilters_unique_trend(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-    )
-    
-    data
   })
   
-  dataArrived_Diag <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived_Diag <- eventReactive(list(input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
     #groupByFilters_Trend(historical.data[arrived.data.rows,],
-    data <- groupByFilters_Trend(arrived_data,
+    groupByFilters_Trend(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                    input$diag_grouper
                    )
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-    )
-    
-    data
 
   })
   
@@ -988,7 +836,7 @@ server <- function(input, output, session) {
   
   # Arrived data filtered: visitType, apptType, treatmentType ===============================================================
   
-  dataArrived_filtered <- eventReactive(list(input$update_filters,input$update_filters6, input$update_filters1),{
+  dataArrived_filtered <- eventReactive(list(input$update_filters,input$update_filters6),{
     validate(
       need(input$selectedVisitType != "", "Please select a visit type"),
       need(input$selectedApptType != "", "Please select a visit type detail"),
@@ -996,13 +844,6 @@ server <- function(input, output, session) {
     )
     data <- groupByFilters_2(dataArrived(),
                       input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-    )
-    
-    data
     
   })
   
@@ -1023,7 +864,7 @@ server <- function(input, output, session) {
 
   })
   
-  dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2, input$update_filters1),{
+  dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2),{
     validate(
       need(input$selectedDisease2 != "", "Please select a provider group"),
       need(input$selectedProvider2 != "", "Please select a provider")
@@ -1033,23 +874,16 @@ server <- function(input, output, session) {
   })
   
   # Arrived population data ============================================================================================================
-  dataArrivedPop <- eventReactive(list(input$update_filters, input$update_filters7, input$update_filters1),{
+  dataArrivedPop <- eventReactive(list(input$update_filters, input$update_filters7),{
     validate(
       need(input$selectedVisitType != "", "Please select a visit type"),
       need(input$selectedApptType != "", "Please select a visit type detail"),
       need(input$selectedTreatmentType != "", "Please select a treatment type")
     )
-    data <- groupByFilters_pop(population.data_filtered,
+    groupByFilters_pop(population.data_filtered,
                        input$selectedCampus, input$selectedDepartment,
                        input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider7,
                        input$dx_grouper_zip)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no data for these filters.")
-    )
-    
-    data
   })
   
   # Scheduling  data ============================================================================================================
@@ -1125,26 +959,17 @@ server <- function(input, output, session) {
   dataArrivedTrend <- reactive({
     
     input$update_filters
-    input$update_filters1
     
     isolate({
       validate(
         need(input$selectedCampus != "" , "Please select a Campus"),
         need(input$selectedDepartment != "", "Please select a Department")
       )
-      data  <- groupByFilters_Trend(arrived_data,
+      groupByFilters_Trend(arrived_data,
                            input$selectedCampus, input$selectedDepartment,
                            input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                            input$diag_grouper
       )
-      
-      
-      data_test <- data %>% head(n = 1L) %>% collect()
-      validate(
-        need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-        )
-      
-      data
 
     })
   })
@@ -1153,7 +978,6 @@ server <- function(input, output, session) {
   dataArrivedTrend_download <- reactive({
     
     input$update_filters
-    input$update_filters1
     
     isolate({
       data <- dataAll() %>% select(SITE, DEPARTMENT_NAME, PROVIDER, APPT_DTTM, APPT_TYPE, APPT_STATUS,
@@ -1161,34 +985,20 @@ server <- function(input, output, session) {
             rename(CAMPUS = SITE,
                DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
         relocate(CAMPUS, .before = DEPARTMENT)
-      
-      data_test <- data %>% head(n = 1L) %>% collect()
-      validate(
-        need(nrow(data_test) != 0, "There is no data for these filters.")
-      )
-      
-      data
     })
   })
   
   # Unique Patients  data ============================================================================================================
-  dataUniqueExam_system <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataUniqueExam_system <- eventReactive(list(input$update_filters),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
 
-    data <- groupByFilters_unique(arrived_data,
+    groupByFilters_unique(arrived_data,
                           input$selectedCampus, input$selectedDepartment,
                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
                           input$diag_grouper)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no arrived data for these filters.")
-    )
-    
-    data
 
   })
   # 
@@ -1353,16 +1163,9 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    data <- groupByFilters_util(utilization.data,
+    groupByFilters_util(utilization.data,
                      input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                      input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no utilization data for these filters.")
-    )
-    
-    data
   }) 
   
   
@@ -1377,13 +1180,6 @@ server <- function(input, output, session) {
                                   input$dateRangetreat_util[1], input$dateRangetreat_util[2], input$daysOfWeek, input$excludeHolidays)
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no data for these filters.")
-    )
-    
-    data
   }) 
   
   dataUtilization_Treatment_download <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
@@ -1397,13 +1193,6 @@ server <- function(input, output, session) {
                                           input$dateRangetrend[1], input$dateRangetrend[2], input$daysOfWeek, input$excludeHolidays)
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no data for these filters.")
-    )
-    
-    data
   }) 
   
   dataUtilization_provider <- eventReactive(list(input$update_filters,input$utilType,input$update_filters1),{
@@ -1411,16 +1200,9 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
-    data <- groupByFilters_util(utilization.data,
+    groupByFilters_util(utilization.data,
                         input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                         input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType1)
-    
-    data_test <- data %>% head(n = 1L) %>% collect()
-    validate(
-      need(nrow(data_test) != 0, "There is no utilization data for these filters.")
-    )
-    
-    data
   }) 
   
   # Site Volume Tab ------------------------------------------------------------------------------------------------------0

@@ -9,14 +9,14 @@ dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), form
 
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                         collect()
-campus_choices <- sort(campus_choices$SITE, na.last = T)
+campus_choices <<- sort(campus_choices$SITE, na.last = T)
 
 
 default_campus <- "MSW"
 
 #default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
 default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% 
-                                            filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+                                            filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                             select(DEPARTMENT_NAME) %>%
                                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
                                             collect()
@@ -78,7 +78,7 @@ default_TreatmentType <- sort(default_TreatmentType$ASSOCIATIONLISTT, na.last = 
 # default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"]))
 
 default_departments_disease <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived")) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
@@ -98,9 +98,8 @@ default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT
 default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 
 default_disease_group_detail <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
-                                                                DEPARTMENT_NAME %in% default_departments_disease &
-                                                          DISEASE_GROUP %in% default_disease_group) %>%
-                                                filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+                                                                DEPARTMENT_NAME %in% default_departments_disease) %>%
+                                                filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                                 select(DISEASE_GROUP_DETAIL) %>%
                                                 mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
                                                 collect()
@@ -118,7 +117,7 @@ default_disease_group_detail <- sort(default_disease_group_detail$DISEASE_GROUP_
 default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                               DEPARTMENT_NAME %in% default_departments_disease & 
                                               DISEASE_GROUP %in% default_disease_group) %>%
-                                    filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+                                    filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
                                     select(PROVIDER) %>%
                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                     collect()
@@ -186,7 +185,6 @@ dateRange_download_start <- floor_date(dateRange_max, 'month')
 
 # dateRangeunique_min <- min(historical.data[arrived.data.rows.unique,]$Appt.DateYear)
   
-default_filter_choices <- oncology_filters_tbl %>% summarise(filter = unique(FILTER_NAME)) %>% collect()
 
 header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             disable = FALSE,
@@ -194,44 +192,41 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
                             tags$li(class = "dropdown", actionButton("download10",
                                                                      label = icon("download")
                             )
-                            ),
+                            )#,
                             
-                            tags$li(class = "dropdown",
-                                    dropdown(
-                                      box(
-                                        title = "Bookmark Current Filter:",
-                                        width = 12,
-                                        height = "200px",
-                                        solidHeader = FALSE,
-                                        h5("For naming your filters please follow: 'SITE_FIRSTNAME_LASTNAME_DESC'"),#, style = "font-size:12px;"), br(),
-                                        textInput("filter_name", label = NULL),
-                                        actionButton("save_filters", "CLICK TO SAVE", width = "80%")
-                                      ), br(), br(), br(), br(), br(), br(), br(), br(),
-                                      br(), br(),
-                                      style = "material-circle", size = "lg", right = TRUE, status = "default",
-                                      icon = icon("save"), width = "300px",
-                                      inputId = "dropdownbutton4"
-                                    )
-                            ),
+                            # tags$li(class = "dropdown",
+                            #         dropdown(
+                            #           box(
+                            #             title = "Name preset input:",
+                            #             width = 12,
+                            #             height = "100px",
+                            #             solidHeader = FALSE,
+                            #             textInput("filter_name", label = NULL)
+                            #           ), br(), br(), br(), br(), br(),
+                            #           actionButton("save_filters", "CLICK TO SAVE", width = "80%"), br(), br(),
+                            #           style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            #           icon = icon("save"), width = "300px",
+                            #           inputId = "dropdownbutton4"
+                            #         )
+                            # ),
                             
-                            tags$li(class = "dropdown", dropdown(box(title = "Retrieve Previously Saved Filter:",
-                                                                     width = 12,
-                                                                     height = "100px",
-                                                                     solidHeader = FALSE,
-                                                                     pickerInput("filter_list", choices = default_filter_choices$filter, multiple = TRUE,
-                                                                                 selected = NULL, options = pickerOptions(maxOptions = 1)
-                                                                     ),
-                                                                     actionButton("update_filters1", "CLICK TO UPDATE", width = "80%")
-                            ), br(), br(), br(), br(), br(), br(),
-                            br(), br(),
+                            # tags$li(class = "dropdown", dropdown(box(title = "Select a saved preset:",
+                            #                                          width = 12,
+                            #                                          height = "100px",
+                            #                                          solidHeader = FALSE,
+                            #                                          pickerInput("filter_list", choices = NULL, multiple = TRUE,
+                            #                                                      selected = NULL, options = pickerOptions(maxOptions = 1)
+                            #                                          )
+                            # ), br(), br(), br(), br(), br(),
+                            # actionButton("update_filters0", "CLICK TO UPDATE", width = "80%"), br(), br(),br(),
                             # actionButton("remove_filters", "CLICK TO REMOVE", width = "80%"), br(), br(),
-                            style = "material-circle", size = "lg", right = TRUE, status = "default",
-                            icon = icon("star"), width = "300px",
-                            tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
-                            inputId = "dropdownbutton3"
-                            ),
-                            )
-
+                            # style = "material-circle", size = "lg", right = TRUE, status = "default",
+                            # icon = icon("star"), width = "300px",
+                            # tooltip = tooltipOptions(title = "Set additional filters for graphs/tables."),
+                            # inputId = "dropdownbutton3"
+                            # ), 
+                            # )
+                            
                             #)
                             
 )
@@ -392,14 +387,6 @@ ui <- dashboardPage(
     
     }
                     "))),
-    tags$script('
-    document.getElementById("save_filters").onclick = function() {
-      var text_dept = $("[data-id=\\"selectedDepartment\\"]").attr("title");
-      var text_diagnosis = $("[data-id=\\"diag_grouper\\"]").attr("title");
-      Shiny.onInputChange("dept_text", text_dept);
-      Shiny.onInputChange("diagnosis_text", text_diagnosis);
-    };
-  '),
     # 
     # box "status" color for Mount Sinai Grey
     tags$style(HTML("
@@ -1495,11 +1482,7 @@ ui <- dashboardPage(
         
         bsTooltip("download10", "Download (PNG) current tab.",
                   "right", options = list(container = "body")
-        ),
-        
-        tags$head(tags$style(HTML("#save_filters19 {background-color: #d80b8c;
-                                                color: #FFFFFF;
-                                                font-size: 18px}")))
+        )
         
       ), # Close Conditional Panel
       
