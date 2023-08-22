@@ -7,9 +7,9 @@ library(shinyscreenshot)
 #default_campus <- unique(historical.data$SITE)
 dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), format="%Y-%m-%d")
 
-campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
-                        collect()
-campus_choices <- sort(campus_choices$SITE, na.last = T)
+#campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
+#                        collect()
+#campus_choices <- sort(campus_choices$SITE, na.last = T)
 
 
 default_campus <- "MSW"
