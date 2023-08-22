@@ -287,8 +287,6 @@ all_provider <- all_provider[,1]
 # historical.data.site.treatment.month <- uniquePts_df_siteMonth(historical.data[arrived.data.rows.unique,], c("Treatment"))
 
 
-download_list <- c("villea04", "Walsht02")
-
 get_values <- function(x,table_name){
   
   filter_name <- x[1]
@@ -367,3 +365,5 @@ write_filters_db <- function(df) {
   })
   
 }
+download_list <- c("villea04", "portj01", "lium10", "jwallace")
+
