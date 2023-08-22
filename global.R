@@ -367,3 +367,6 @@ write_filters_db <- function(df) {
 }
 download_list <- c("villea04", "portj01", "lium10", "jwallace")
 
+campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
+                        collect()
+campus_choices <- sort(campus_choices$SITE, na.last = T)
