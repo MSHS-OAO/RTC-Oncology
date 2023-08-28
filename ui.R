@@ -102,7 +102,9 @@ ui <- dashboardPage(
                                   menuSubItem("Comparison", tabName = "volumecomparison")
                                   ),
                          menuItem("By Provider", tabName = "providerVolume",
-                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"))
+                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"),
+                                  menuSubItem("Treatment", tabName = "provvoltreatment")
+                                  )
                 ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
@@ -527,6 +529,50 @@ ui <- dashboardPage(
                        #   tableOutput("provVolumeTele_tb") %>%
                        #     withSpinner(type = 5, color = "#d80b8c")
                        # )
+                )
+        ), # Close volume Comparison
+        
+        
+        # Provider Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
+        tabItem(tabName = "provvoltreatment",
+                div("Volume Breakdown - Provider", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_provvoltreatment"),
+                tags$head(tags$style("#practiceName_provvoltreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11,
+                       boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           box(
+                             title = "Select Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedProvider_treatment",label=NULL,
+                                         choices = default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_provider)),
+                           column(5,
+                                  actionButton("update_filters_treatment", "CLICK TO UPDATE", width = "75%"),
+                                  br(),
+                                  br()
+                           )
+                         )
+                       )),
+                column(11,
+                       boxPlus(
+                         title = "Physician Treatment Visits Breakdown", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         tableOutput("provVolumeTreatment_tb") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
+                       )
                 )
         ), # Close volume Comparison
 
