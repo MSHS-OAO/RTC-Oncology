@@ -883,7 +883,7 @@ server <- function(input, output, session) {
     )
     data <- groupByFilters(oncology_tbl,
                    input$selectedCampus, input$selectedDepartment,
-                   input$dateRangedwnld[1], input$dateRangedwnld[2], input$daysOfWeek, input$excludeHolidays)
+                   input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(

@@ -1065,7 +1065,7 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment'" ,
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download'" ,
                 box(
                   title = "Select Date Range:", 
                   width = 12, 
@@ -1077,20 +1077,6 @@ ui <- dashboardPage(
                   )
               )
             ),
-            conditionalPanel(
-              condition = "input.sbm == 'download'",
-              box(
-                title = "Select Date Range:",
-                width = 12,
-                height = "100px",
-                solidHeader = FALSE,
-                dateRangeInput("dateRangedwnld", label = NULL,
-                               start = dateRange_download_start, end = dateRange_max,
-                               min = dateRangetrend_min, max = dateRange_max
-                )
-              )
-            ),
-            
             conditionalPanel(
               condition = "input.sbm == 'treat_util'",
               box(
