@@ -384,7 +384,7 @@ default_campus <- "MSW"
 
 #default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
 default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% 
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
@@ -395,7 +395,7 @@ default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
 #                                                       historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
 
 default_diag_grouper <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(DX_GROUPER) %>% mutate(DX_GROUPER = unique(DX_GROUPER)) %>%
   collect()
 default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
@@ -405,7 +405,7 @@ default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
 
 
 default_visitType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(ASSOCIATIONLISTA) %>%
   mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
   collect()
@@ -418,7 +418,7 @@ default_visitType <- sort(default_visitType$ASSOCIATIONLISTA, na.last = T)
 
 default_ApptType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
                                               ASSOCIATIONLISTA %in%  default_visitType) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(ASSOCIATIONLISTB) %>% 
   mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
   collect()
@@ -436,7 +436,7 @@ default_ApptType <- sort(default_ApptType$ASSOCIATIONLISTB, na.last = T)
 default_TreatmentType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments &
                                                    ASSOCIATIONLISTA %in% default_visitType &
                                                    ASSOCIATIONLISTB %in% default_ApptType) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(ASSOCIATIONLISTT) %>% 
   mutate(ASSOCIATIONLISTT = unique(ASSOCIATIONLISTT)) %>% 
   collect()
@@ -446,7 +446,7 @@ default_TreatmentType <- sort(default_TreatmentType$ASSOCIATIONLISTT, na.last = 
 # default_departments_disease <- sort(unique(arrivedDisease.data[arrivedDisease.data$SITE %in% default_campus, "Department"]))
 
 default_departments_disease <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived")) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
@@ -459,7 +459,7 @@ default_departments_disease <- sort(default_departments_disease$DEPARTMENT_NAME,
 
 default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% default_departments_disease) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(DISEASE_GROUP) %>%
   mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
   collect()
@@ -468,7 +468,7 @@ default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 default_disease_group_detail <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments_disease &
                                                           DISEASE_GROUP %in% default_disease_group) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(DISEASE_GROUP_DETAIL) %>%
   mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
   collect()
@@ -486,7 +486,7 @@ default_disease_group_detail <- sort(default_disease_group_detail$DISEASE_GROUP_
 default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                               DEPARTMENT_NAME %in% default_departments_disease & 
                                               DISEASE_GROUP %in% default_disease_group) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(PROVIDER) %>%
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
@@ -496,7 +496,7 @@ default_provider <- sort(default_provider$PROVIDER, na.last = T)
 default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments &
                                                           ASSOCIATIONLISTA %in% c("Exam")) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(PROVIDER) %>%
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
@@ -512,7 +512,7 @@ default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.l
 
 default_provider_utilization <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(PROVIDER) %>%
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
