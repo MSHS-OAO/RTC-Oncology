@@ -538,39 +538,49 @@ ui <- dashboardPage(
                 div("Volume Breakdown - Provider", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_provvoltreatment"),
                 tags$head(tags$style("#practiceName_provvoltreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                # column(11,
+                #        boxPlus(
+                #          title = "Analysis Customization", width = 12, status = "primary", 
+                #          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                #          fluidRow(
+                #            box(
+                #              title = "Select Provider:",
+                #              width = 4,
+                #              height = "100px",
+                #              solidHeader = FALSE,
+                #              pickerInput("selectedProvider_treatment",label=NULL,
+                #                          choices = default_provider,
+                #                          multiple=TRUE,
+                #                          options = pickerOptions(
+                #                            liveSearch = TRUE,
+                #                            actionsBox = TRUE,
+                #                            selectedTextFormat = "count > 1",
+                #                            countSelectedText = "{0}/{1} Providers",
+                #                            dropupAuto = FALSE,
+                #                            size = 10),
+                #                          selected = default_provider)),
+                #            column(5,
+                #                   actionButton("update_filters_treatment", "CLICK TO UPDATE", width = "75%"),
+                #                   br(),
+                #                   br()
+                #            )
+                #          )
+                #        )),
                 column(11,
                        boxPlus(
-                         title = "Analysis Customization", width = 12, status = "primary", 
+                         title = "Physician Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         fluidRow(
-                           box(
-                             title = "Select Provider:",
-                             width = 4,
-                             height = "100px",
-                             solidHeader = FALSE,
-                             pickerInput("selectedProvider_treatment",label=NULL,
-                                         choices = default_provider,
-                                         multiple=TRUE,
-                                         options = pickerOptions(
-                                           liveSearch = TRUE,
-                                           actionsBox = TRUE,
-                                           selectedTextFormat = "count > 1",
-                                           countSelectedText = "{0}/{1} Providers",
-                                           dropupAuto = FALSE,
-                                           size = 10),
-                                         selected = default_provider)),
-                           column(5,
-                                  actionButton("update_filters_treatment", "CLICK TO UPDATE", width = "75%"),
-                                  br(),
-                                  br()
-                           )
-                         )
-                       )),
-                column(11,
-                       boxPlus(
-                         title = "Physician Treatment Visits Breakdown", width = 12, status = "primary", 
-                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         # plotlyOutput("provVolumeTreatment_grph", height = "auto") %>%
+                         #   withSpinner(type = 5, color = "#d80b8c"), hr(),
                          tableOutput("provVolumeTreatment_tb") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       boxPlus(
+                         title = "Referring Physician Treatment Visits", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         # plotlyOutput("provVolumeTreatmentReferring_grph", height = "auto") %>%
+                         #   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                         tableOutput("provVolumeTreatmentReferring_tb") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        )
                 )
@@ -1019,7 +1029,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'provvoltreatment'",
         column(1,
           dropdown(
             br(),
@@ -1065,7 +1075,7 @@ ui <- dashboardPage(
             conditionalPanel(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload'",
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'download' | input.sbm == 'provvoltreatment'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1111,7 +1121,7 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download'" ,
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'provvoltreatment'" ,
                 box(
                   title = "Select Date Range:", 
                   width = 12, 
