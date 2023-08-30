@@ -104,6 +104,8 @@ ui <- dashboardPage(
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
+                menuItem("Equity", tabName = "equity_tab",
+                            menuItem("Ethnicity/Race", tabName = "ethnicity_and_race")),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
