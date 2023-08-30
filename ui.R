@@ -102,7 +102,9 @@ ui <- dashboardPage(
                                   menuSubItem("Comparison", tabName = "volumecomparison")
                                   ),
                          menuItem("By Provider", tabName = "providerVolume",
-                                  menuSubItem("Breakdown", tabName = "provvolbreakdown"),
+                                  menuSubItem("Breakdown", tabName = "provvolbreakdown")
+                                  ),
+                         menuItem("By Referring Provider", tabName = "referringproVol",
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
@@ -535,46 +537,49 @@ ui <- dashboardPage(
         
         # Provider Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "provvoltreatment",
-                div("Volume Breakdown - Provider", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Treatment Volume - Referring Provider", style = "color: #221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_provvoltreatment"),
                 tags$head(tags$style("#practiceName_provvoltreatment{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
-                # column(11,
-                #        boxPlus(
-                #          title = "Analysis Customization", width = 12, status = "primary", 
-                #          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                #          fluidRow(
-                #            box(
-                #              title = "Select Provider:",
-                #              width = 4,
-                #              height = "100px",
-                #              solidHeader = FALSE,
-                #              pickerInput("selectedProvider_treatment",label=NULL,
-                #                          choices = default_provider,
-                #                          multiple=TRUE,
-                #                          options = pickerOptions(
-                #                            liveSearch = TRUE,
-                #                            actionsBox = TRUE,
-                #                            selectedTextFormat = "count > 1",
-                #                            countSelectedText = "{0}/{1} Providers",
-                #                            dropupAuto = FALSE,
-                #                            size = 10),
-                #                          selected = default_provider)),
-                #            column(5,
-                #                   actionButton("update_filters_treatment", "CLICK TO UPDATE", width = "75%"),
-                #                   br(),
-                #                   br()
-                #            )
-                #          )
-                #        )),
                 column(11,
                        boxPlus(
-                         title = "Physician Treatment Visits", width = 12, status = "primary", 
+                         title = "Analysis Customization", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         # plotlyOutput("provVolumeTreatment_grph", height = "auto") %>%
-                         #   withSpinner(type = 5, color = "#d80b8c"), hr(),
-                         tableOutput("provVolumeTreatment_tb") %>%
-                           withSpinner(type = 5, color = "#d80b8c")
-                       ),
+                         fluidRow(
+                           box(
+                             title = "Select Referring Provider:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selected_referring_provider_treatment",label=NULL,
+                                         choices = default_referring_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Providers",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = default_referring_provider)),
+                           column(5,
+                                  br(),
+                                  br(),
+                                  br(),
+                                  actionButton("update_filters_treatment", "CLICK TO UPDATE", width = "75%"),
+                                  br(),
+                                  br()
+                           )
+                         )
+                       )),
+                column(11,
+                       # boxPlus(
+                       #   title = "Physician Treatment Visits", width = 12, status = "primary", 
+                       #   solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                       #   # plotlyOutput("provVolumeTreatment_grph", height = "auto") %>%
+                       #   #   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                       #   tableOutput("provVolumeTreatment_tb") %>%
+                       #     withSpinner(type = 5, color = "#d80b8c")
+                       # ),
                        boxPlus(
                          title = "Referring Physician Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
@@ -992,6 +997,10 @@ ui <- dashboardPage(
                                                 top: 53px;
                                                 height 85%}"))),
       tags$head(tags$style(HTML("#update_filters1 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_treatment {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),

@@ -2756,7 +2756,7 @@ server <- function(input, output, session) {
     data <- dataArrivedTrend()
     
     treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
-      group_by(REF_PROVIDER, APPT_MONTH_YEAR) %>%
+      group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect() %>%
       `colnames<-` (c("Referring Provider", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
