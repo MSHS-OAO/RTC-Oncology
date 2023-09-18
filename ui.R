@@ -104,7 +104,15 @@ ui <- dashboardPage(
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown"))
                 ),
-                menuItem("Equity", tabName = "equity_tab",
+                menuItem("Equity", tabName = "equity_tab", #icon = icon(name = NULL,
+                #   style = "background: url('www/scale-balanced-solid.svg');
+                #    background-size: contain;
+                # background-position: center;
+                # background-repeat: no-repeat;
+                # height: 32px;
+                # width: 32px;
+                # display: block;"
+                # ),
                             menuItem("Ethnicity/Race", tabName = "ethnicity_and_race")),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
@@ -706,6 +714,26 @@ ui <- dashboardPage(
                 )
                 
         ), #Close Unique Patients by Provider - Exam Visits tab
+        
+        tabItem(
+          tabName = "ethnicity_and_race",
+            div("Ethnicity and Race", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+              column(11,
+                      boxPlus(
+                        title = "Race and Ethnicity Analysis", width = 12, status = "primary",
+                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                        plotlyOutput("system_ethnicity_and_race_unknown") %>%
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
+                          uiOutput("ethnicity_and_race_unknown") %>%
+                          # plotlyOutput("ethnicity_and_race_unknown_plots") %>%
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
+                        plotlyOutput("race_heatmap") %>%
+                          withSpinner(type = 5, color = "#d80b8c")
+                        
+                      )
+                     )
+          
+        ),
 
         # Utilization Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "utilization",
@@ -975,7 +1003,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race'",
         column(1,
           dropdown(
             br(),
@@ -1067,7 +1095,7 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download'" ,
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race'" ,
                 box(
                   title = "Select Date Range:", 
                   width = 12, 

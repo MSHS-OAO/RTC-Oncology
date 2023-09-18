@@ -1427,7 +1427,7 @@ server <- function(input, output, session) {
   # Volume Trend Tab ------------------------------------------------------------------------------------------------------    
   output$trend_totalvisitsgraph <- renderPlotly({
     data <- dataArrivedTrend()
-    #data <<- data_test
+    # data_testing <<- data
     
     # min_date <- min(data$Appt.DateYear)
     # max_date <- max(data$Appt.DateYear)
@@ -5942,6 +5942,191 @@ print("2")
       write.csv(dataArrivedTrend_download(),file, row.names = F)
     }
   )
+  
+  # system_date_range <- eventReactive(input$update_filters, {
+  #   date_1 <- input$dateRange[1]
+  #   date_2 <- input$dateRange[2]
+  # 
+  #   date_list <- list(date_1, date_2)
+  #   
+  #   date_list
+  # },
+  # ignoreNULL = FALSE,
+  # ignoreInit = TRUE)
+  
+  system_date_range <- reactive({
+    input$update_filters
+
+      date_1 <- isolate(input$dateRange[1])
+      date_2 <- isolate(input$dateRange[2])
+
+      date_list <- list(date_1, date_2)
+      
+      date_list
+  })
+  output$system_ethnicity_and_race_unknown <- renderPlotly({
+    date_range <- system_date_range()
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- date_range[[2]]
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    
+    unique_patients <- data %>% select(MRN,APPT_MONTH_YEAR) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n())
+    
+    unknown_race_count <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(RACE_GROUPER == 'BLANK/UNKNOWN')%>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    null_race_count <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(is.null(RACE_GROUPER)) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    unknown_and_null_race_count <- bind_rows(unknown_race_count, null_race_count) %>% group_by(APPT_MONTH_YEAR) %>% summarise(race_unkown_total = sum(total))
+    
+    unique_patients_combined <- inner_join(unique_patients, unknown_and_null_race_count)
+    unique_patients_combined <- unique_patients_combined %>% group_by(APPT_MONTH_YEAR) %>% mutate(perc_race_unknown = (race_unkown_total/total)) 
+    
+    
+    plot_ly(unique_patients_combined, x = ~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Unique MRN",
+            marker = list(color = "#212070")) %>%
+      add_trace(unique_patients_combined, x=~APPT_MONTH_YEAR, y = ~perc_race_unknown, yaxis = "y2",type = "scatter", mode = 'line', name = "Race % Blank/Unk",line = list(color = "#00aeef"), marker = list(color = "#00aeef")) %>%
+      layout(yaxis2 = list(overlaying = "y", side = "right", tickformat = ".2%", range = c(0,round_any(2.5*max(unique_patients_combined$perc_race_unknown),0.05, ceiling)), 
+                           automargin = T)) %>%
+      layout(legend = list(x = 1.10, y = 1), title = "System") %>%
+      layout(xaxis = list(title = NA),
+             yaxis = list(title = NA))
+    
+  })
+  
+  plotCount <- reactive({
+    input$update_filters
+    as.numeric(length(isolate(input$selectedCampus)))
+  })
+  
+  plotHeight <- reactive(350 * plotCount())    
+  output$ethnicity_and_race_unknown_plots <- renderPlotly({
+    data <- dataArrivedTrend()
+
+    # unknow_ethnicity_count <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% filter(ETHNICITY_GROUPER == 'UNKNOWN')%>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+    #                             group_by(APPT_MONTH_YEAR) %>% summarise(total = n())
+    # 
+    # null_ethnicity_count <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% filter(is.null(ETHNICITY_GROUPER)) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+    #                           group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    # 
+    # unknown_and_null_ethnicity_count <- bind_rows(unknow_ethnicity_count, null_ethnicity_count) %>% group_by(APPT_MONTH_YEAR) %>% summarise(ethnicity_unknown_total = sum(total))
+    # 
+    # uknown_counts_combined <- inner_join(unknown_and_null_race_count, unknown_and_null_ethnicity_count)
+  
+    unique_patients <- data %>% select(SITE, MRN,APPT_MONTH_YEAR) %>% group_by(SITE, MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+                        group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n())
+    
+    unknown_race_count <- data %>% select(SITE, MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(RACE_GROUPER == 'BLANK/UNKNOWN')%>% group_by(SITE, MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+                            group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    null_race_count <- data %>% select(SITE,MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(is.null(RACE_GROUPER)) %>% group_by(SITE,MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    unknown_and_null_race_count <- bind_rows(unknown_race_count, null_race_count) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(race_unkown_total = sum(total))
+    
+    # unknow_ethnicity_count <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% filter(ETHNICITY_GROUPER == 'UNKNOWN')%>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+    #                             group_by(APPT_MONTH_YEAR) %>% summarise(total = n())
+    # 
+    # null_ethnicity_count <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% filter(is.null(ETHNICITY_GROUPER)) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+    #                           group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    # 
+    # unknown_and_null_ethnicity_count <- bind_rows(unknow_ethnicity_count, null_ethnicity_count) %>% group_by(APPT_MONTH_YEAR) %>% summarise(ethnicity_unknown_total = sum(total))
+    # 
+    # uknown_counts_combined <- inner_join(unknown_and_null_race_count, unknown_and_null_ethnicity_count)
+    
+    unique_patients_combined <- inner_join(unique_patients, unknown_and_null_race_count)
+    unique_patients_combined <- unique_patients_combined %>% group_by(SITE, APPT_MONTH_YEAR) %>% mutate(perc_race_unknown = (race_unkown_total/total)) 
+
+    unique_patients_combined_test <<- unique_patients_combined
+    site_unique_plotly_graph(unique_patients_combined)
+    
+  
+    
+                          
+    
+  })
+  
+  output$ethnicity_and_race_unknown <- renderUI({
+    plotlyOutput("ethnicity_and_race_unknown_plots", height = plotHeight()) %>%
+      withSpinner(type = 5, color = "#d80b8c")
+  })
+  
+  output$race_heatmap <- renderPlotly({
+    date_range <- system_date_range()
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- date_range[[2]]
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    
+    unique_patients <- data %>% select(MRN,APPT_MONTH_YEAR) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n())
+    
+    unknown_race_count <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(RACE_GROUPER == 'BLANK/UNKNOWN')%>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    null_race_count <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(is.null(RACE_GROUPER)) %>% group_by(MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    unknown_and_null_race_count <- bind_rows(unknown_race_count, null_race_count) %>% group_by(APPT_MONTH_YEAR) %>% summarise(race_unkown_total = sum(total))
+    
+    unique_patients_combined <- inner_join(unique_patients, unknown_and_null_race_count)
+    unique_patients_combined <- unique_patients_combined %>% group_by(APPT_MONTH_YEAR) %>% mutate(perc_race_unknown = round(race_unkown_total/total*100, 1)) 
+    unique_patients_combined_system <- unique_patients_combined %>% mutate(SITE = "System")
+    data <- dataArrivedTrend()
+    
+    unique_patients <- data %>% select(SITE, MRN,APPT_MONTH_YEAR) %>% group_by(SITE, MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n())
+    
+    unknown_race_count <- data %>% select(SITE, MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(RACE_GROUPER == 'BLANK/UNKNOWN')%>% group_by(SITE, MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    null_race_count <- data %>% select(SITE,MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% filter(is.null(RACE_GROUPER)) %>% group_by(SITE,MRN,APPT_MONTH_YEAR) %>% distinct() %>% collect() %>%
+      group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) 
+    
+    unknown_and_null_race_count <- bind_rows(unknown_race_count, null_race_count) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(race_unkown_total = sum(total))
+    
+    unique_patients_combined <- inner_join(unique_patients, unknown_and_null_race_count)
+    unique_patients_combined <- unique_patients_combined %>% group_by(SITE, APPT_MONTH_YEAR) %>% mutate(perc_race_unknown = round((race_unkown_total/total) *100, 1))
+    
+    unique_patients_combined_all <- bind_rows(unique_patients_combined_system, unique_patients_combined)
+    
+    table_testing <<- unique_patients_combined_all
+    
+    table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
+              geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
+              labs(x=NULL, y=NULL,
+                   title = "Race % Blank/Unknown")+
+      scale_fill_gradient(low = "green", high = "red", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
+      scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
+      geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
+      scale_x_discrete(position = "top") +
+      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.key.size = unit(0.7,"cm"),
+            legend.text = element_text(size="12"),
+            axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+            axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
+            axis.text.y = element_text(color= "black", margin = margin(r=15)),
+            axis.text = element_text(size="14"),
+            panel.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            plot.margin = margin(30,30,30,30))
+    
+    
+    ggplotly(table) %>%
+      layout(xaxis = list(side ="top" )) 
+  })
 
 
 } # Close Server
