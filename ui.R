@@ -113,7 +113,9 @@ ui <- dashboardPage(
                 # width: 32px;
                 # display: block;"
                 # ),
-                            menuItem("Ethnicity/Race", tabName = "ethnicity_and_race")),
+                            menuItem("Ethnicity/Race Capture", tabName = "ethnicity_and_race"),
+                            menuItem("My Chart Activation", tabName = "my_chart_activation")
+                ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
@@ -717,10 +719,10 @@ ui <- dashboardPage(
         
         tabItem(
           tabName = "ethnicity_and_race",
-            div("Ethnicity and Race", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+            div("Ethnicity and Race Capture", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
               column(11,
                       boxPlus(
-                        title = "Race and Ethnicity Analysis", width = 12, status = "primary",
+                        title = "Race/Ethnicity Capture Analysis", width = 12, status = "primary",
                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                         plotlyOutput("system_ethnicity_and_race_unknown") %>%
                           withSpinner(type = 5, color = "#d80b8c"), hr(),
@@ -732,6 +734,32 @@ ui <- dashboardPage(
                         
                       )
                      )
+          
+        ),
+        
+        tabItem(
+          tabName = "my_chart_activation",
+          div("My Chart Activation", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+          column(11,
+                 boxPlus(
+                   title = "System My Chart Activation Analysis", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                   plotlyOutput("system_my_chart_activation") %>%
+                     withSpinner(type = 5, color = "#d80b8c")
+                   
+                 ),
+                 boxPlus(
+                   title = "Site My Chart Activation Analysis", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                   plotlyOutput("site_my_chart_activation_white") %>%
+                     withSpinner(type = 5, color = "#d80b8c") , hr(),
+                     plotlyOutput("site_my_chart_activation_african_american") %>%
+                     withSpinner(type = 5, color = "#d80b8c"), hr(),
+                     plotlyOutput("site_my_chart_activation_asian") %>%
+                     withSpinner(type = 5, color = "#d80b8c")
+                   
+                 )
+          )
           
         ),
 
