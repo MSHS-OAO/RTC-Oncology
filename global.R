@@ -610,4 +610,4 @@ header$children[[2]]$children[[2]] <- header$children[[2]]$children[[1]]
 header$children[[2]]$children[[1]] <-  tags$a(href='https://peak.mountsinai.org/',
                                               tags$img(src='Sinai_logo_white.png',height='100%',width='30%'))
 
-download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03")
+download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17")
