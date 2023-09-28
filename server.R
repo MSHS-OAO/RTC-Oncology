@@ -6012,7 +6012,7 @@ print("2")
       add_trace(unique_patients_combined, x=~APPT_MONTH_YEAR, y = ~ethnicity_race_unknown, yaxis = "y2",type = "scatter", mode = 'line', name = "Ethnicity % Blank/Unk",line = list(color = "#d80b8c"), marker = list(color = "#d80b8c")) %>%
       layout(yaxis2 = list(overlaying = "y", side = "right", tickformat = ".2%", range = c(0,round_any(2.5*max(unique_patients_combined$ethnicity_race_unknown),0.05, ceiling)), 
                            automargin = T)) %>%
-      layout(legend = list(x = 1.10, y = 1), title = "System") %>%
+      layout(legend = list(x = 1.10, y = 1), title = "System Race and Ethnicity % Blank/Unknown") %>%
       layout(xaxis = list(title = NA),
              yaxis = list(title = NA))
     
@@ -6112,7 +6112,7 @@ print("2")
       add_trace(unique_patients_combined, x=~APPT_MONTH_YEAR, y = ~ethnicity_race_unknown, yaxis = "y2",type = "scatter", mode = 'line', name = "Ethnicity % Blank/Unk",line = list(color = "#d80b8c"), marker = list(color = "#d80b8c")) %>%
       layout(yaxis2 = list(overlaying = "y", side = "right", tickformat = ".2%", range = c(0,round_any(2.5*max(unique_patients_combined$ethnicity_race_unknown),0.05, ceiling)), 
                            automargin = T)) %>%
-      layout(legend = list(x = 1.10, y = 1), title = title_plot) %>%
+      layout(legend = list(x = 1.10, y = 1), title = paste0(title_plot, " Race and Ethnicity % Blank/Unknown")) %>%
       layout(xaxis = list(title = NA),
              yaxis = list(title = NA))
   })
