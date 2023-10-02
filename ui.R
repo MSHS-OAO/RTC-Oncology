@@ -108,6 +108,18 @@ ui <- dashboardPage(
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
+                menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
+                #   style = "background: url('www/scale-balanced-solid.svg');
+                #    background-size: contain;
+                # background-position: center;
+                # background-repeat: no-repeat;
+                # height: 32px;
+                # width: 32px;
+                # display: block;"
+                # ),
+                            menuItem("Ethnicity/Race Capture", tabName = "ethnicity_and_race"),
+                            menuItem("MyChart Activation", tabName = "my_chart_activation")
+                ),
                 menuItem("Utilization", tabName = "util", icon = icon("percent"),
                          #menuItem("Exam Utilization", tabName = "utilization"),
                          #menuItem("Provider Utilization", tabName = "prov_util"),
@@ -765,6 +777,108 @@ ui <- dashboardPage(
                 )
                 
         ), #Close Unique Patients by Provider - Exam Visits tab
+        
+        tabItem(
+          tabName = "ethnicity_and_race",
+            div("Ethnicity and Race Capture", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+              column(11,
+                     # boxPlus(
+                     #   title = "Analysis Customization", width = 12, status = "primary",
+                     #   solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                     #   fluidRow(
+                     #     box(
+                     #       title = "Select Race Grouper",
+                     #       width = 4,
+                     #       height = "100px",
+                     #       solidHeader = FALSE,
+                     #       pickerInput("race_grouper",
+                     #                   choices = race_grouper_choices,
+                     #                   multiple = TRUE,
+                     #                   options = pickerOptions(
+                     #                     liveSearch = TRUE,
+                     #                     actionsBox = TRUE,
+                     #                     selectedTextFormat = "count > 1",
+                     #                     countSelectedText = "{0}/{1} Selected",
+                     #                     dropupAuto = FALSE),
+                     #                   selected = race_grouper_choices)
+                     #     ),
+                     #     br(),
+                     #     br(),
+                     #     column(3,
+                     #            actionButton("update_filters_race", "CLICK TO UPDATE", width = "75%"))
+                     #   )
+                     # ),
+                      boxPlus(
+                        title = "Race/Ethnicity Capture Analysis", width = 12, status = "primary",
+                        solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                        plotlyOutput("system_ethnicity_and_race_unknown") %>%
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
+                          #uiOutput("ethnicity_and_race_unknown") %>%
+                          plotlyOutput("ethnicity_and_race_unknown_plots_single") %>%
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
+                        plotlyOutput("race_heatmap") %>%
+                          withSpinner(type = 5, color = "#d80b8c"), hr(),
+                        plotlyOutput("ethnicity_heatmap") %>%
+                          withSpinner(type = 5, color = "#d80b8c")
+                        
+                      )
+                     )
+          
+        ),
+        
+        tabItem(
+          tabName = "my_chart_activation",
+          div("MyChart Activation", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+          column(11,
+                 boxPlus(
+                   title = "Analysis Customization", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                   fluidRow(
+                     box(
+                       title = "Select Race Grouper",
+                       width = 4,
+                       height = "100px",
+                       solidHeader = FALSE,
+                       pickerInput("race_grouper_mychart",
+                                   choices = race_grouper_choices,
+                                   multiple = TRUE,
+                                   options = pickerOptions(
+                                     liveSearch = TRUE,
+                                     actionsBox = TRUE,
+                                     selectedTextFormat = "count > 1",
+                                     countSelectedText = "{0}/{1} Selected",
+                                     dropupAuto = FALSE),
+                                   selected = race_grouper_choices)
+                     ),
+                     br(),
+                     br(),
+                     column(3,
+                            actionButton("update_filters_mychart", "CLICK TO UPDATE", width = "75%"))
+                   )
+                 ),
+                 boxPlus(
+                   title = "System MyChart Activation Analysis", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                   plotlyOutput("system_my_chart_activation") %>%
+                     withSpinner(type = 5, color = "#d80b8c")
+                   
+                 ),
+                 boxPlus(
+                   title = "Site MyChart Activation Analysis", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                   plotlyOutput("site_my_chart_activation") %>%
+                     withSpinner(type = 5, color = "#d80b8c")
+                   # plotlyOutput("site_my_chart_activation_white") %>%
+                   #   withSpinner(type = 5, color = "#d80b8c") , hr(),
+                   #   plotlyOutput("site_my_chart_activation_african_american") %>%
+                   #   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                   #   plotlyOutput("site_my_chart_activation_asian") %>%
+                   #   withSpinner(type = 5, color = "#d80b8c")
+                   
+                 )
+          )
+          
+        ),
 
         # Utilization Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "utilization",
@@ -1028,7 +1142,15 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
+      tags$head(tags$style(HTML("#update_filters_mychart {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}}"))),
       
+      tags$head(tags$style(HTML("#update_filters_race {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}}"))),
       
       # Conditional Filters ------------------------------------------------------------------------------------------------------  
       
@@ -1038,7 +1160,7 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'provvoltreatment'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'",
         column(1,
           dropdown(
             br(),
@@ -1084,7 +1206,7 @@ ui <- dashboardPage(
             conditionalPanel(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'download' | input.sbm == 'provvoltreatment'",
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1130,8 +1252,7 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'provvoltreatment'" ,
-                box(
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'" ,                box(
                   title = "Select Date Range:", 
                   width = 12, 
                   height = "100px",
