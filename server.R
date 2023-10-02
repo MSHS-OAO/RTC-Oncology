@@ -913,7 +913,7 @@ server <- function(input, output, session) {
     
     data <- groupByFilters(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+                   input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
@@ -2699,6 +2699,98 @@ server <- function(input, output, session) {
       column_spec(1, bold = T) %>%
       collapse_rows(c(1,2,3), valign = "top") %>%
       add_indent(indent_rows, level_of_indent = 2) %>%
+      gsub("NA", " ", .)
+  }
+  
+  
+  output$provVolumeTreatment_grph <- renderPlotly({
+    data <- dataArrivedTrend()
+  })
+  
+  output$provVolumeTreatment_tb <- function(){
+  
+    data <- dataArrivedTrend()
+
+    treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
+                      group_by(PROVIDER, APPT_MONTH_YEAR) %>%
+                     summarise(total = n())  %>% collect() %>%
+      `colnames<-` (c("Provider", "Appt.MonthYear", "Total")) %>%
+      pivot_wider(names_from = Appt.MonthYear,
+                  values_from = Total,
+                  values_fill = 0)
+    treatment_data$Total <- rowSums(treatment_data[2:length(treatment_data)])
+    
+    months_sorted <- sort(colnames(treatment_data)[2:(length(treatment_data)- 1)])
+    col_order <- c(colnames(treatment_data)[1], months_sorted, colnames(treatment_data)[length(treatment_data)])
+    treatment_data <- treatment_data[, col_order]
+    
+    treatment_data <- treatment_data[order(treatment_data$Provider),]
+    
+    site_selected <- isolate(input$selectedCampus)
+    
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(treatment_data))
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    
+    treatment_data %>% 
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Physician Treatment Visits Breakdown" = length(treatment_data)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      # add_indent(indent_rows, level_of_indent = 2) %>%
+      gsub("NA", " ", .)
+  }
+  
+  
+  output$provVolumeTreatmentReferring_tb <- function(){
+    
+    data <- dataArrivedTrend()
+    
+    treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
+      group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR) %>%
+      summarise(total = n())  %>% collect() %>%
+      `colnames<-` (c("Referring Provider", "Appt.MonthYear", "Total")) %>%
+      pivot_wider(names_from = Appt.MonthYear,
+                  values_from = Total,
+                  values_fill = 0)
+    treatment_data$Total <- rowSums(treatment_data[2:length(treatment_data)])
+    
+    months_sorted <- sort(colnames(treatment_data)[2:(length(treatment_data)- 1)])
+    col_order <- c(colnames(treatment_data)[1], months_sorted, colnames(treatment_data)[length(treatment_data)])
+    treatment_data <- treatment_data[, col_order]
+    
+    treatment_data <- treatment_data[order(treatment_data$`Referring Provider`),]
+    
+    site_selected <- isolate(input$selectedCampus)
+    
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(treatment_data))
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    
+    treatment_data %>% 
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Physician Treatment Visits Breakdown" = length(treatment_data)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      # add_indent(indent_rows, level_of_indent = 2) %>%
       gsub("NA", " ", .)
   }
   
