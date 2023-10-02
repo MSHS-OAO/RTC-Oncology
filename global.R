@@ -384,7 +384,7 @@ default_campus <- "MSW"
 
 #default_departments <- sort(unique(historical.data[historical.data$SITE %in% default_campus, "Department"])) 
 default_departments <- oncology_tbl %>% filter(SITE %in% default_campus) %>% 
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
   select(DEPARTMENT_NAME) %>%
   mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
   collect()
@@ -395,7 +395,7 @@ default_departments <- sort(default_departments$DEPARTMENT_NAME, na.last = T)
 #                                                       historical.data$Department %in% default_departments, "Dx.Grouper"]), na.last = TRUE) 
 
 default_diag_grouper <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTMENT_NAME %in% default_departments) %>%
-  filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
   select(DX_GROUPER) %>% mutate(DX_GROUPER = unique(DX_GROUPER)) %>%
   collect()
 default_diag_grouper <- sort(default_diag_grouper$DX_GROUPER, na.last = T)
@@ -624,4 +624,4 @@ race_grouper_choices <- c("AFRICAN-AMERICAN", "ASIAN", "WHITE")
 # race_grouper_choices <- oncology_tbl %>% select(RACE_GROUPER) %>%  distinct() %>% collect()
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
-download_list <- c("villea04", "portj01", "lium10", "jwallace")
+download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02")
