@@ -607,6 +607,24 @@ server <- function(input, output, session) {
                         inputId = "selectedProvider",
                         choices = provider_choices,
                         selected = provider_choices
+      )
+      
+      
+      
+      provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                    DEPARTMENT_NAME %in% selected_dept &
+                                                      ASSOCIATIONLISTA %in% c("Treatment")) %>%
+        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+        select(REFERRING_PROVIDER) %>%
+        mutate(REFERRING_PROVIDER = unique(REFERRING_PROVIDER)) %>%
+        collect()
+      provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
+      
+      updatePickerInput(session,
+                        inputId = "selected_referring_provider_treatment",
+                        choices = provider_choices_volume_treatment,
+                        selected = provider_choices_volume_treatment
       )  
       
       date_1 <- input$dateRange[1]
