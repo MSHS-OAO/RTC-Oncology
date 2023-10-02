@@ -2770,10 +2770,22 @@ server <- function(input, output, session) {
       gsub("NA", " ", .)
   }
   
+  dataArrivedTrend_provider_volume <- reactive({
+    input$update_filters_treatment
+    selected_referring_provider <- isolate(input$selected_referring_provider_treatment)
+    
+    if(length(selected_referring_provider) > 1000) {
+      data <- dataArrivedTrend()
+    } else {
+      data <- dataArrivedTrend() %>% filter(REFERRING_PROVIDER %in% selected_referring_provider)
+      
+    }
+  })
+  
   
   output$provVolumeTreatmentReferring_tb <- function(){
     
-    data <- dataArrivedTrend()
+    data <- dataArrivedTrend_provider_volume()
     
     treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
       group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR) %>%
@@ -2805,7 +2817,7 @@ server <- function(input, output, session) {
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("Physician Treatment Visits Breakdown" = length(treatment_data)),
+      add_header_above(c("Referring Physician Treatment Visits" = length(treatment_data)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
