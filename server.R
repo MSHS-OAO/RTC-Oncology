@@ -2783,6 +2783,21 @@ server <- function(input, output, session) {
   })
   
   
+  output$provVolumeTreatmentReferring_grph <- renderPlotly({
+    data <- dataArrivedTrend_provider_volume()
+
+    treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
+      group_by(APPT_MONTH_YEAR) %>%
+      summarise(total = n())  %>% collect()
+    
+    plot_ly(treatment_data, x=~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Treatment Visits",
+              marker = list(color = "#212070")) %>%
+    layout(xaxis = list(title = "Month"),
+           yaxis = list(title = "Treatment Visits"))
+    
+  })
+  
+  
   output$provVolumeTreatmentReferring_tb <- function(){
     
     data <- dataArrivedTrend_provider_volume()

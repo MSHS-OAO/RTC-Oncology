@@ -595,8 +595,8 @@ ui <- dashboardPage(
                        boxPlus(
                          title = "Referring Physician Treatment Visits", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
-                         # plotlyOutput("provVolumeTreatmentReferring_grph", height = "auto") %>%
-                         #   withSpinner(type = 5, color = "#d80b8c"), hr(),
+                         plotlyOutput("provVolumeTreatmentReferring_grph") %>%
+                           withSpinner(type = 5, color = "#d80b8c"), hr(),
                          tableOutput("provVolumeTreatmentReferring_tb") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        )
