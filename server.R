@@ -1661,7 +1661,7 @@ server <- function(input, output, session) {
       visits_tb_yearly <- data %>%
         group_by(APPT_YEAR) %>% summarise(total = n()) %>% collect() %>%
         spread(APPT_YEAR, total)
-      visits_tb_yearly$APPT_MONTH <- "Total Annual Comparison"
+      visits_tb_yearly$APPT_MONTH <- "Total YTD Comparison"
       visits_tb_yearly <- visits_tb_yearly %>% relocate(APPT_MONTH)
       
       #get the total patients per year per month
@@ -1677,7 +1677,7 @@ server <- function(input, output, session) {
         filter(ASSOCIATIONLISTA %in% filter) %>%
         group_by(APPT_YEAR) %>% summarise(total = n()) %>% collect() %>%
         spread(APPT_YEAR, total)
-      visits_tb_yearly$APPT_MONTH <- paste0("Total ",input$annualVolSummary,"\nAnnual Comparison")
+      visits_tb_yearly$APPT_MONTH <- paste0("Total ",input$annualVolSummary,"\n YTD Comparison")
       visits_tb_yearly <- visits_tb_yearly %>% relocate(APPT_MONTH)
       
       #get the total patients per year per month
@@ -1810,6 +1810,12 @@ server <- function(input, output, session) {
       
     } else {print("Please select <= 3 years")}
     
+    visits_tb_total <- visits_tb_total[!is.na(visits_tb_total[,2]),]
+    
+    total_row <- nrow(visits_tb_total)
+    
+    visits_tb_total$APPT_MONTH <- gsub("Ytd", "YTD", visits_tb_total$APPT_MONTH)
+    
     visits_tb_total %>%
       kable(escape = F, align = "c",
             col.names = column_names) %>%
@@ -1818,7 +1824,7 @@ server <- function(input, output, session) {
       column_spec(column = column_border, border_right = "thin solid lightgray", width_min = "125px") %>%
       column_spec(column = 1, bold = T) %>%
       row_spec(row = 0, font_size = 18, bold=TRUE, background = "#d80b8c", color = "white") %>%
-      row_spec(row = 13, bold = TRUE, background = "#d80b8c", color = "white") #%>%
+      row_spec(row = total_row, bold = TRUE, background = "#d80b8c", color = "white") #%>%
       #row_spec(row = 13, bold = TRUE, background = "#dddedd")
     
   }
