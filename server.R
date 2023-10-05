@@ -1645,7 +1645,17 @@ server <- function(input, output, session) {
     # data <- historical.data[arrived.data.rows.trend,] %>% filter(Appt.DateYear >= "2019-04-01")
     #created an if statement to include another table for all of the visit types
     #to show the total volume and the variance per month per year.
-    
+     
+     date_2 <- isolate(as.Date(input$dateRange[2]))
+     #date_2 <- as.Date("2023-09-30")
+     max_month_abb <- format(date_2, "%b")
+     
+     index <- which(max_month_abb == month.abb)
+     month_vector <-toupper(month.abb[1:index])
+     
+     data <- data %>% filter(APPT_MONTH %in% month_vector)
+     
+
     #get the total patients per year
     if(input$annualVolSummary == "Total"){
       visits_tb_yearly <- data %>%
@@ -1729,18 +1739,16 @@ server <- function(input, output, session) {
       year1 <- colnames(visits_tb_total)[2]
       year2 <- colnames(visits_tb_total)[3]
       
-      visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4])
-      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),5])
-      #visits_variance_only <- as.data.frame(visits_tb_total[1:3,4])
-      #visits_variance_percentage <- as.data.frame(visits_tb_total[1:3,5])
-      
-      visits_variance_only[is.na(visits_variance_only),] <- 0
-      visits_variance_percentage[is.na(visits_variance_percentage),] <- 0
-      visits_variance_only <- as.data.frame(colSums(visits_variance_only))
-      visits_variance_percentage <- as.data.frame(colSums(visits_variance_percentage))
-      visits_tb_total <- as.data.frame(visits_tb_total)
-      visits_tb_total[13,4] <- visits_variance_only[1,1]
-      visits_tb_total[13,5] <- visits_variance_percentage[1,1]
+      # visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4])
+      # visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),5])
+      # 
+      # visits_variance_only[is.na(visits_variance_only),] <- 0
+      # visits_variance_percentage[is.na(visits_variance_percentage),] <- 0
+      # visits_variance_only <- as.data.frame(colSums(visits_variance_only))
+      # visits_variance_percentage <- as.data.frame(colSums(visits_variance_percentage))
+      # visits_tb_total <- as.data.frame(visits_tb_total)
+      # visits_tb_total[13,4] <- visits_variance_only[1,1]
+      # visits_tb_total[13,5] <- visits_variance_percentage[1,1]
       
       
       #######
@@ -1777,22 +1785,14 @@ server <- function(input, output, session) {
       year3 <- colnames(visits_tb_total)[4]
       
       
-      visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4:5])
-      visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),6])
-      
-      # visits_variance_only <- as.data.frame(visits_tb_total[1:month(max(data$Appt.DateYear)),4:5])
-      # visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(max(data$Appt.DateYear)),6])
-      #visits_variance_only <- as.data.frame(visits_tb_total[1:3,4:5])
-      #visits_variance_percentage <- as.data.frame(visits_tb_total[1:3,6])
-      
-      
-      #visits_variance_only[is.na(visits_variance_only)] <- 0
-      #visits_variance_percentage[is.na(visits_variance_percentage)] <- 0
-      visits_variance_only <- t(as.data.frame(colSums(visits_variance_only, na.rm = TRUE)))
-      visits_variance_percentage <- as.data.frame(colSums(visits_variance_percentage, na.rm = TRUE))
-      visits_tb_total <- as.data.frame(visits_tb_total)
-      visits_tb_total[13,4:5] <- visits_variance_only[1,1:2]
-      visits_tb_total[13,6] <- visits_variance_percentage[1,1]
+      # visits_variance_only <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),4:5])
+      # visits_variance_percentage <- as.data.frame(visits_tb_total[1:month(isolate(input$dateRange[2])),6])
+      # 
+      # visits_variance_only <- t(as.data.frame(colSums(visits_variance_only, na.rm = TRUE)))
+      # visits_variance_percentage <- as.data.frame(colSums(visits_variance_percentage, na.rm = TRUE))
+      # visits_tb_total <- as.data.frame(visits_tb_total)
+      # visits_tb_total[13,4:5] <- visits_variance_only[1,1:2]
+      # visits_tb_total[13,6] <- visits_variance_percentage[1,1]
       
       #######
       
