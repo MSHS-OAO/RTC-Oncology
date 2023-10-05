@@ -103,10 +103,10 @@ ui <- dashboardPage(
                                   ),
                          menuItem("By Provider", tabName = "providerVolume",
                                   menuSubItem("Breakdown", tabName = "provvolbreakdown")
-                                  ),
-                         menuItem("By Referring Provider", tabName = "referringproVol",
-                                  menuSubItem("Treatment", tabName = "provvoltreatment")
-                                  )
+                                  )#,
+                         # menuItem("By Referring Provider", tabName = "referringproVol",
+                         #          menuSubItem("Treatment", tabName = "provvoltreatment")
+                         #          )
                 ),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
                 #   style = "background: url('www/scale-balanced-solid.svg');
