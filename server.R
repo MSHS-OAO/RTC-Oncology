@@ -6120,7 +6120,7 @@ print("2")
     date_range <- system_date_range()
     format <- "YYYY-MM-DD HH24:MI:SS"
     date_1 <- date_range[[1]]
-    date_2 <- date_range[[2]]
+    date_2 <- as.Date(date_range[[2]]) + 1
     data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
                                     TO_DATE(date_1, format) <= APPT_DTTM, 
                                     TO_DATE(date_2, format) > APPT_DTTM)
@@ -6266,7 +6266,7 @@ print("2")
     date_range <- system_date_range()
     format <- "YYYY-MM-DD HH24:MI:SS"
     date_1 <- date_range[[1]]
-    date_2 <- date_range[[2]]
+    date_2 <- as.Date(date_range[[2]]) + 1
     data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
                                     TO_DATE(date_1, format) <= APPT_DTTM, 
                                     TO_DATE(date_2, format) > APPT_DTTM)
@@ -6338,7 +6338,7 @@ print("2")
     date_range <- system_date_range()
     format <- "YYYY-MM-DD HH24:MI:SS"
     date_1 <- date_range[[1]]
-    date_2 <- date_range[[2]]
+    date_2 <- as.Date(date_range[[2]]) + 1
     data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
                                     TO_DATE(date_1, format) <= APPT_DTTM, 
                                     TO_DATE(date_2, format) > APPT_DTTM)
@@ -6415,32 +6415,33 @@ print("2")
   
   output$system_my_chart_activation <- renderPlotly({
     date_range <- system_date_range()
+    date_range_test <<- date_range
     format <- "YYYY-MM-DD HH24:MI:SS"
     date_1 <- date_range[[1]]
-    date_2 <- date_range[[2]]
+    date_2 <- as.Date(date_range[[2]]) + 1
     data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
                                     TO_DATE(date_1, format) <= APPT_DTTM, 
                                     TO_DATE(date_2, format) > APPT_DTTM)
     race_grouper <- my_chart_race_grouper_selected()
-    
+
     
     activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper) %>% 
                       #group_by(MRN,APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% distinct() %>% collect() %>%
                       group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% summarise(total = n()) %>% collect() %>%
                       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
-                      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Arrived` = round(total/total_race_group,2)) %>%
+                      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
                       rename(`Appt Month` = APPT_MONTH_YEAR)
     
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
-    plot <-   ggplot(activated_percent, aes(y = `Percent Arrived`, x= `Appt Month`, fill = RACE_GROUPER))+
+    plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = RACE_GROUPER))+
               geom_bar(position='dodge', stat= "identity") +
               scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
               scale_y_continuous(labels = scales::percent, limits = c(0,1))+
               labs(title = "System MyChart Activation by Race/Ethnicity", x=NULL)+
               theme(plot.title = element_text(hjust = 0.5),
                     legend.position = "top")+
-              geom_text(aes(label=`Percent Arrived`*100, y = `Percent Arrived`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+              geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6456,13 +6457,13 @@ print("2")
   output$site_my_chart_activation <- renderPlotly({
     
     data <- dataArrivedTrend()
-    
+
     race_grouper <- my_chart_race_grouper_selected()
     
     activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper) %>%
       group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% summarise(total = n()) %>% collect() %>%
       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
-      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Arrived` = round(total/total_race_group,2)) %>%
+      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = RACE_GROUPER)
     
@@ -6470,14 +6471,14 @@ print("2")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
-    plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Arrived`, x= `Appt Month`))+
+    plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Activated`, x= `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title," MyChart Activation by Race/Ethnicity"), x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
-      geom_text(aes(label=`Percent Arrived`*100, y = `Percent Arrived`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+      geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6492,20 +6493,20 @@ print("2")
     activation_data <- data %>% filter(RACE_GROUPER %in% c("WHITE")) %>% 
       group_by(SITE, APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER) %>% summarise(total = n()) %>% collect() %>%
       group_by(SITE, APPT_MONTH_YEAR) %>% mutate(total_race_group = sum(total)) %>%
-      group_by(SITE, APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Arrived` = round(total/total_race_group,2)) %>%
+      group_by(SITE, APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
       rename(`Appt Month` = APPT_MONTH_YEAR)
     
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     manual_colours <- c("#212070","#7f7f7f", "#d80b8c", "#c9f0ff", "#ffc000", "#fcc9e9", "#dddedd", "#5cd3ff")
     
-    plot <-   ggplot(activated_percent, aes(fill = SITE, y = `Percent Arrived`, x= `Appt Month`))+
+    plot <-   ggplot(activated_percent, aes(fill = SITE, y = `Percent Activated`, x= `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = manual_colours[1:length(sort(unique(activated_percent$SITE)))])+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = "Site MyChart Activation by Race/Ethnicity - White", x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
-      geom_text(aes(label=`Percent Arrived`*100, y = `Percent Arrived`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+      geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
