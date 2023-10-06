@@ -1773,7 +1773,7 @@ server <- function(input, output, session) {
       
       visits_tb_total$variance_2 <- visits_tb_total %>% select(length(visits_tb_total)-2) - visits_tb_total %>% select(length(visits_tb_total)-3)
       
-      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-3)
+      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-4)
       
       #######
       
