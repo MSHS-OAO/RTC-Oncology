@@ -502,6 +502,15 @@ default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus
   collect()
 default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.last = T)
 
+default_referring_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                                        DEPARTMENT_NAME %in% default_departments &
+                                                        ASSOCIATIONLISTA %in% c("Treatment")) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  select(REFERRING_PROVIDER) %>%
+  mutate(REFERRING_PROVIDER = unique(REFERRING_PROVIDER)) %>%
+  collect()
+default_referring_provider <- sort(default_referring_provider$REFERRING_PROVIDER, na.last = T)
+
 
 
 # default_provider_utilization <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% default_campus &
@@ -609,5 +618,10 @@ header <-   dashboardHeader(title = HTML("Oncology Analytics Tool"),
 header$children[[2]]$children[[2]] <- header$children[[2]]$children[[1]]
 header$children[[2]]$children[[1]] <-  tags$a(href='https://peak.mountsinai.org/',
                                               tags$img(src='Sinai_logo_white.png',height='100%',width='30%'))
+
+race_grouper_choices <- c("AFRICAN-AMERICAN", "ASIAN", "WHITE")
+
+# race_grouper_choices <- oncology_tbl %>% select(RACE_GROUPER) %>%  distinct() %>% collect()
+# race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
 download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02")

@@ -734,3 +734,85 @@ ggplot_bar_table <- function(df, x_data, y_data, label, hline_y) {
   ggplotly(table, tooltip = NULL)
   
 }
+
+
+site_unique_plotly_graph <- function (data) {
+  unique_patients_combined <- data
+  
+  if(length(unique(unique_patients_combined$SITE)) == 1) {
+    plot_out <- plot_ly(unique_patients_combined, x = ~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Unique MRN",
+            marker = list(color = "#212070")) %>%
+      add_trace(unique_patients_combined, x=~APPT_MONTH_YEAR, y = ~perc_race_unknown, yaxis = "y2",type = "scatter", mode = 'line', name = "Race % Blank/Unk",line = list(color = "#00aeef"), marker = list(color = "#00aeef")) %>%
+      layout(yaxis2 = list(overlaying = "y", side = "right", tickformat = ".0%", range = c(0,round_any(2.5*max(unique_patients_combined$perc_race_unknown),0.05, ceiling)), 
+                           automargin = T)) %>%
+      layout(legend = list(x = 1.10, y = 1), title = unique(unique_patients_combined$SITE)) %>%
+      layout(xaxis = list(title = NA),
+             yaxis = list(title = NA))
+  } else {
+    n = length(unique(unique_patients_combined$SITE))
+    plot_list <- vector("list", n)
+    anotation_list <- vector("list", n)
+    unique_sites <- (unique(unique_patients_combined$SITE))
+    site_list <- as.vector(unique_sites, "list")
+    
+    for (i in 1:n){
+      single_site_unique <- unique_patients_combined %>% filter(SITE == site_list[[i]])
+      if(i == 1) {
+        y_var <- "y"
+      } else {
+        number <- 2*i-1
+        y_var <- paste0("y",number)
+      }
+      
+      if(i == 1) {
+      
+      plot <-  plot_ly(single_site_unique, x = ~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Unique MRN", legendgroup=~"group1", showlegend=T,
+                       marker = list(color = "#212070"), yaxis="y") %>%
+        add_trace(single_site_unique, x=~APPT_MONTH_YEAR, y = ~perc_race_unknown, yaxis = "y2",type = "scatter", legendgroup=~"group2", mode = 'line', name = "Race % Blank/Unk",line = list(color = "#00aeef"), marker = list(color = "#00aeef")) %>%
+        layout(xaxis = list(title = NA),
+               yaxis = list(title = NA),
+               legend = list(x = 1.10, y = 1),
+               yaxis2 = list(overlaying = y_var, side = "right", tickformat = ".2%", range = c(0,round_any(2.5*max(single_site_unique$perc_race_unknown),0.05, ceiling)),
+                             automargin = T)
+        )
+      
+        plot_list[[i]] <- plot %>% layout(annotations = list(text = site_list[[i]], 
+                                                             x = 0.5,
+                                                             y = 1,
+                                                             yref = "paper",
+                                                             xref = "paper",
+                                                             xanchor = "left",
+                                                             yanchor = "top",
+                                                             yshift = 20,
+                                                             showarrow = FALSE,
+                                                             font = list(size = 15)
+                                                             )
+                                          )
+      } else {
+        plot <-  plot_ly(single_site_unique, x = ~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Unique MRN", legendgroup=~"group1", showlegend=F,
+                         marker = list(color = "#212070"), yaxis="y") %>%
+          add_trace(single_site_unique, x=~APPT_MONTH_YEAR, y = ~perc_race_unknown, yaxis = "y2",type = "scatter", legendgroup=~"group2", mode = 'line', name = "Race % Blank/Unk",line = list(color = "#00aeef"), marker = list(color = "#00aeef")) %>%
+          layout(xaxis = list(title = NA),
+                 yaxis = list(title = NA),
+                 yaxis2 = list(overlaying = y_var, side = "right", tickformat = ".2%", range = c(0,round_any(2.5*max(single_site_unique$perc_race_unknown),0.05, ceiling)),
+                               automargin = T)
+          )
+        plot_list[[i]] <- plot %>% layout(annotations = list(text = site_list[[i]], 
+                                                             x = 0.5,
+                                                             y = 1.05,
+                                                             yref = "paper",
+                                                             xref = "paper",
+                                                             xanchor = "center",
+                                                             yanchor = "bottom",
+                                                             showarrow = FALSE,
+                                                             font = list(size = 15))) 
+      }
+      
+     
+    }
+    plot_out <- subplot(plot_list, nrows = n, margin = 0.05) %>% layout(title = NA)
+  }
+  
+  return(plot_out)
+}
+
