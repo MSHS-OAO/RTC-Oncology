@@ -1764,8 +1764,6 @@ server <- function(input, output, session) {
       column_border <- c(1, 3, 5)
       
     } else if (length(visits_tb_total)-1 == 3){
-      visits_tb_total_testing <<- visits_tb_total
-      print("3")
       
       visits_tb_total$variance_1 <- visits_tb_total %>% select(length(visits_tb_total)-1) - visits_tb_total %>% select(length(visits_tb_total)-2)
       
@@ -1775,7 +1773,7 @@ server <- function(input, output, session) {
       
       visits_tb_total$variance_2 <- visits_tb_total %>% select(length(visits_tb_total)-2) - visits_tb_total %>% select(length(visits_tb_total)-3)
       
-      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-3)
+      visits_tb_total$variance_percentage_2 <- visits_tb_total %>% select(length(visits_tb_total)) / visits_tb_total %>% select(length(visits_tb_total)-4)
       
       #######
       
