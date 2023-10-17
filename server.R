@@ -2658,9 +2658,9 @@ server <- function(input, output, session) {
     #   filter(AssociationListB == "Telehealth Visit", SITE %in% c("DBC"))
     
     prov_tb <- data %>% 
-      group_by(DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER, ASSOCIATIONLISTB,  APPT_MONTH_YEAR) %>%
+      group_by(DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER,SITE, ASSOCIATIONLISTB,  APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect() %>%
-      `colnames<-` (c("Disease", "Disease Detail", "Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
+      `colnames<-` (c("Disease", "Disease Detail", "Provider", "Site", "Appointment Type", "Appt.MonthYear", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
                   values_fill = 0) %>%
@@ -2674,9 +2674,9 @@ server <- function(input, output, session) {
       fill(`Disease Detail`, .direction = "down")
     
     tele_tb <- tele_data %>% 
-      group_by(DISEASE_GROUP,DISEASE_GROUP_DETAIL,  PROVIDER, APPT_TYPE, APPT_MONTH_YEAR) %>%
+      group_by(DISEASE_GROUP,DISEASE_GROUP_DETAIL,  PROVIDER,SITE, APPT_TYPE, APPT_MONTH_YEAR) %>%
       summarise(total = n()) %>% collect() %>%
-      `colnames<-` (c("Disease", "Disease Detail","Provider", "Appointment Type", "Appt.MonthYear", "Total")) %>%
+      `colnames<-` (c("Disease", "Disease Detail","Provider", "Site", "Appointment Type", "Appt.MonthYear","Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
                   values_fill = 0)
@@ -2694,7 +2694,7 @@ server <- function(input, output, session) {
     appt_order <- c("Exam Total",c("Established Visit", "New Visit", "Telehealth Visit"), as.vector(unique(tele_tb$`Appointment Type`)))
     
     final_df <- bind_rows(prov_tb, tele_tb)
-    final_df <- final_df[order(match(final_df$`Appointment Type`, appt_order)), ]
+    final_df <- final_df[order(final_df$Disease, final_df$`Disease Detail`, final_df$Provider, final_df$Site,match(final_df$`Appointment Type`, appt_order)), ]
     final_df <- final_df %>%
       arrange(Disease, `Disease Detail`, Provider) %>%
       adorn_totals("col", fill = "-", na.rm = TRUE, name = "Total") 
@@ -2705,11 +2705,13 @@ server <- function(input, output, session) {
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
     
-    months_sorted <- sort(colnames(final_df)[5:(length(final_df)-1)])
-    col_order <- c(colnames(final_df)[1:4], months_sorted, colnames(final_df)[length(final_df)])
+    months_sorted <- sort(colnames(final_df)[6:(length(final_df)-1)])
+    col_order <- c(colnames(final_df)[1:5], months_sorted, colnames(final_df)[length(final_df)])
     final_df <- final_df[, col_order]
     final_df$Disease = ifelse(duplicated(final_df$Disease),"",final_df$Disease)
     final_df$Provider = ifelse(duplicated(final_df$Provider),"",final_df$Provider)
+    #final_df$Site = ifelse(duplicated(final_df$Site),"",final_df$Site)
+    
     
     final_df %>%
       mutate(`Appointment Type` = cell_spec(`Appointment Type`, italic = ifelse(row_number() %in% indent_rows, T, F), 
@@ -2723,7 +2725,7 @@ server <- function(input, output, session) {
       row_spec(which(final_df$`Appointment Type` == "Exam Total"), bold = T) %>%
       column_spec(length(final_df), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
-      collapse_rows(c(1,2,3), valign = "top") %>%
+      collapse_rows(c(1,2,3,4), valign = "top") %>%
       add_indent(indent_rows, level_of_indent = 2) %>%
       gsub("NA", " ", .)
   }
