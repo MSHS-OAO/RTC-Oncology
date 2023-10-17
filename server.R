@@ -6436,9 +6436,23 @@ print("2")
     
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
+    activated_percent_test <<- activated_percent
+    
+    if("COMBINED" %in% race_grouper) {
+      combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
+                                                                                  total_race_group = sum(total_race_group))
+      
+      combined_grouper <- combined_grouper %>% group_by(`Appt Month`, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>% mutate(RACE_GROUPER = "COMBINED")
+      
+      activated_percent <- rbind(activated_percent, combined_grouper)
+    }
+    
+    activated_percent$RACE_GROUPER <- factor(activated_percent$RACE_GROUPER, levels = race_grouper_choices)
+    
+    
     plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = RACE_GROUPER))+
               geom_bar(position='dodge', stat= "identity") +
-              scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+              scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
               scale_y_continuous(labels = scales::percent, limits = c(0,1))+
               labs(title = "System MyChart Activation by Race/Ethnicity", x=NULL)+
               theme(plot.title = element_text(hjust = 0.5),
@@ -6473,9 +6487,20 @@ print("2")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
+    if("COMBINED" %in% race_grouper) {
+      combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
+                                                                                                            total_race_group = sum(total_race_group))
+      
+      combined_grouper <- combined_grouper %>% group_by(`Appt Month`, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>% mutate(Race = "COMBINED")
+      
+      activated_percent <- rbind(activated_percent, combined_grouper)
+    }
+    
+    activated_percent$Race <- factor(activated_percent$Race, levels = race_grouper_choices)
+    
     plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Activated`, x= `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title," MyChart Activation by Race/Ethnicity"), x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
