@@ -6427,7 +6427,7 @@ print("2")
     race_grouper <- my_chart_race_grouper_selected()
 
     
-    activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper) %>% 
+    activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper_choices) %>% 
                       #group_by(MRN,APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% distinct() %>% collect() %>%
                       group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% summarise(total = n()) %>% collect() %>%
                       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
@@ -6446,6 +6446,9 @@ print("2")
       
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
+    
+    activated_percent <- activated_percent %>% filter(RACE_GROUPER %in% race_grouper)
+    
     
     activated_percent$RACE_GROUPER <- factor(activated_percent$RACE_GROUPER, levels = race_grouper_choices)
     
@@ -6476,7 +6479,7 @@ print("2")
 
     race_grouper <- my_chart_race_grouper_selected()
     
-    activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper) %>%
+    activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper_choices) %>%
       group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% summarise(total = n()) %>% collect() %>%
       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
       group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
@@ -6495,6 +6498,9 @@ print("2")
       
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
+    
+    activated_percent <- activated_percent %>% filter(Race %in% race_grouper)
+    
     
     activated_percent$Race <- factor(activated_percent$Race, levels = race_grouper_choices)
     
