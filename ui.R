@@ -269,6 +269,7 @@ ui <- dashboardPage(
                                            title = p("Data Sources", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
                                            p("Oncology Analytics Tool is developed based on the following data from EPIC Clarity:", style = "font-size:22px; font-weight: bold"),
                                            p("1. ", strong("Scheduling Data"), " provides scheduling details on arrived appointments.", style = "font-size:22px"),
+                                           p("2. ", strong("Race/Ethnicity Data"), " provides capture analysis and MyChart activation breakdown.", style = "font-size:22px"),
                                            # p("2. ", strong("Slot Availability Data"), " provides slot level details inlcuding booked and filled hours and slots.", style = "font-size:22px"),
                                          ))),
                          
@@ -609,11 +610,28 @@ ui <- dashboardPage(
                 tags$head(tags$style("#practiceName_systemuniqueOffice{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11,
                        boxPlus(
+                         title = "Metirc Definitions", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         column(6,
+                                box(
+                                  title = p("Total System Unique Patients", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system).", style = "font-size:22px")
+                                )),
+                         column(6,
+                                box(
+                                  title = p("System Unique Patients by Month", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Total count of unique patients who had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month).", style = "font-size:22px")
+                                )
+                                )
+                       ),
+                       boxPlus(
                          title = "Exam Unique Patients by Site", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          fluidRow(valueBoxOutput("uniqueOfficeSystem", width=4) %>%
-                                    withSpinner(type = 5, color = "#d80b8c")), hr(),
+                                    withSpinner(type = 5, color = "#d80b8c")
+                                  ), hr(),
                          column(12,
                                 plotlyOutput("uniqueOfficeMonthSystem") %>%
                                   withSpinner(type = 5, color = "#d80b8c")) 
@@ -1459,28 +1477,28 @@ ui <- dashboardPage(
       
       
       # Info Button for System Unique Patients Tab ----------
-      conditionalPanel(
-        condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment'",
-        br(),
-        dropdown(
-          box(
-            title = NULL,
-            width = 20,
-            height = "600px",
-            solidHeader = FALSE,
-            h3("TOTAL SYSTEM UNIQUE PATIENTS:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system)."),
-            # h3("SYSTEM UNIQUE PATIENTS OVER TIME:"),h4("TOTAL SYSTEM UNIQUE PATIENTS by month."),
-            h3("SYSTEM UNIQUE PATIENTS BY MONTH:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month).")
-          ),
-          
-          style = "material-circle", size = "lg", right = TRUE, status = "default",
-          icon = icon("info"), width = "600px",
-          
-          tooltip = tooltipOptions(title = "Click for additional info on the system unique patient analysis."),
-          inputId = "dropdownUnique1"
-          
-        ) # Close Drop Down Button
-      ), # Close Conditional Panel
+      # conditionalPanel(
+      #   condition = "input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment'",
+      #   br(),
+      #   dropdown(
+      #     box(
+      #       title = NULL,
+      #       width = 20,
+      #       height = "600px",
+      #       solidHeader = FALSE,
+      #       h3("TOTAL SYSTEM UNIQUE PATIENTS:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system)."),
+      #       # h3("SYSTEM UNIQUE PATIENTS OVER TIME:"),h4("TOTAL SYSTEM UNIQUE PATIENTS by month."),
+      #       h3("SYSTEM UNIQUE PATIENTS BY MONTH:"),h4("Total count of unique patients who had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month).")
+      #     ),
+      #     
+      #     style = "material-circle", size = "lg", right = TRUE, status = "default",
+      #     icon = icon("info"), width = "600px",
+      #     
+      #     tooltip = tooltipOptions(title = "Click for additional info on the system unique patient analysis."),
+      #     inputId = "dropdownUnique1"
+      #     
+      #   ) # Close Drop Down Button
+      # ), # Close Conditional Panel
       
       # Info Button for Zip Code Analysis Tab ----------
       conditionalPanel(
@@ -1504,29 +1522,29 @@ ui <- dashboardPage(
         ) # Close Drop Down Button
       ), # Close Conditional Panel
       
-      conditionalPanel(
-        condition = "input.sbm == 'treat_util'",
-        br(),
-          column(1,
-          dropdown(
-            box(
-              title = NULL,
-              width = 20,
-              height = "600px",
-              solidHeader = FALSE,
-              h3("Treatment Space Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment"),
-              h3("Nurse Capacity Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Nurse Capacity  (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated"),
-              h3("Effective Infusion Capacity Utilization:"),h4("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month patients were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.")),
-            
-            style = "material-circle", size = "lg", right = TRUE, status = "default",
-            icon = icon("info"), width = "600px",
-            
-            tooltip = tooltipOptions(title = "Click for additional info on the utilization analysis."),
-            inputId = "dropdown_treatment_utilization"
-            
-          ) # Close Drop Down Button
-        )
-      ), # Close Conditional Panel
+      # conditionalPanel(
+      #   condition = "input.sbm == 'treat_util'",
+      #   br(),
+      #     column(1,
+      #     dropdown(
+      #       box(
+      #         title = NULL,
+      #         width = 20,
+      #         height = "600px",
+      #         solidHeader = FALSE,
+      #         h3("Treatment Space Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment"),
+      #         h3("Nurse Capacity Utilization:"),h4("Total Duration of arrived Tx volume in minutes over Nurse Capacity  (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated"),
+      #         h3("Effective Infusion Capacity Utilization:"),h4("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily  count, then x # of days in month patients were treated  for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.")),
+      #       
+      #       style = "material-circle", size = "lg", right = TRUE, status = "default",
+      #       icon = icon("info"), width = "600px",
+      #       
+      #       tooltip = tooltipOptions(title = "Click for additional info on the utilization analysis."),
+      #       inputId = "dropdown_treatment_utilization"
+      #       
+      #     ) # Close Drop Down Button
+      #   )
+      # ), # Close Conditional Panel
       conditionalPanel(
         condition = "input.sbm == 'volumetrend'",
         br(),
