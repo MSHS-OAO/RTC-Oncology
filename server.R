@@ -6333,6 +6333,33 @@ print("2")
     
     ggplotly(table) %>%
       layout(xaxis = list(side ="top" )) 
+    
+    
+    plot_ly(z = ~unique_patients_combined_all$perc_race_unknown,
+            y = ~unique_patients_combined_all$SITE,
+            x = ~unique_patients_combined_all$APPT_MONTH_YEAR,
+            colors = "RdYlGn",
+            type = "heatmap",
+            reversescale=TRUE) %>%
+      add_annotations(x = unique_patients_combined_all$APPT_MONTH_YEAR,
+                      y = unique_patients_combined_all$SITE,
+                      text = ifelse(is.na(unique_patients_combined_all$perc_race_unknown),"",paste0("<b>",unique_patients_combined_all$perc_race_unknown,"%", "</b>")), 
+                      font = list(size = 15, color = "black"),
+                      showarrow = FALSE,
+                      ax = 20,
+                      ay = -20) %>%
+      colorbar(title = "%Blank/Unknown") %>%
+      layout(xaxis = list(title = NA, tickangle = 0, tickfont = list(size = 14),
+                          ticks = NA#,
+                          #side = "top"
+      ),
+      yaxis = list(title = NA,
+                   tickfont = list(size = 14)),
+      title = list(text = "<b>Race % Blank/Unknown</b>",
+                   font = list(color = "black", size = 17))
+      #,
+      #margin = mrg
+      )
   })
   
   
@@ -6378,33 +6405,64 @@ print("2")
     unique_patients_combined_all <- bind_rows(unique_patients_combined_system, unique_patients_combined)
     
 
-    table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
-      geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
-      labs(x=NULL, y=NULL,
-           title = "Ethnicity % Blank/Unknown")+
-      scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
-      scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
-      geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
-      scale_x_discrete(position = "top") +
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(0.7,"cm"),
-            legend.text = element_text(size="12"),
-            axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(30,30,30,30))
+    # table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
+    #   geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
+    #   labs(x=NULL, y=NULL,
+    #        title = "Ethnicity % Blank/Unknown")+
+    #   scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
+    #   scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
+    #   geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
+    #   scale_x_discrete(position = "top") +
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(0.7,"cm"),
+    #         legend.text = element_text(size="12"),
+    #         axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #         plot.margin = margin(30,30,30,30))
+    # 
+    # 
+    # ggplotly(table) %>%
+    #   layout(xaxis = list(side ="top" )) 
+    
+    mrg <- list(l = 50, r = 50,
+                b = 50, t = 50,
+                pad = 20)
     
     
-    ggplotly(table) %>%
-      layout(xaxis = list(side ="top" )) 
+    plot_ly(z = ~unique_patients_combined_all$perc_race_unknown,
+            y = ~unique_patients_combined_all$SITE,
+            x = ~unique_patients_combined_all$APPT_MONTH_YEAR,
+            colors = "RdYlGn",
+            type = "heatmap",
+            reversescale=TRUE) %>%
+      add_annotations(x = unique_patients_combined_all$APPT_MONTH_YEAR,
+                      y = unique_patients_combined_all$SITE,
+                      text = ifelse(is.na(unique_patients_combined_all$perc_race_unknown),"",paste0("<b>",unique_patients_combined_all$perc_race_unknown,"%", "</b>")), 
+                      font = list(size = 15, color = "black"),
+                      showarrow = FALSE,
+                      ax = 20,
+                      ay = -20) %>%
+      colorbar(title = "%Blank/Unknown") %>%
+      layout(xaxis = list(title = NA, tickangle = 0, tickfont = list(size = 14),
+                          ticks = NA#,
+                          #side = "top"
+                          ),
+             yaxis = list(title = NA,
+                          tickfont = list(size = 14)),
+             title = list(text = "<b>Ethnicity % Blank/Unknown</b>",
+                          font = list(color = "black", size = 17))
+             #,
+             #margin = mrg
+      )
   })
   
   my_chart_race_grouper_selected <- reactive({
