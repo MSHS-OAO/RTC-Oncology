@@ -868,6 +868,24 @@ ui <- dashboardPage(
                                      dropupAuto = FALSE),
                                    selected = race_grouper_choices)
                      ),
+                     
+                     box(
+                       title = "Select Ethnicity Grouper",
+                       width = 4,
+                       height = "100px",
+                       solidHeader = FALSE,
+                       pickerInput("ethnicity_grouper_mychart",
+                                   choices = ethnicity_grouper_choices,
+                                   multiple = TRUE,
+                                   options = pickerOptions(
+                                     liveSearch = TRUE,
+                                     actionsBox = TRUE,
+                                     selectedTextFormat = "count > 1",
+                                     countSelectedText = "{0}/{1} Selected",
+                                     dropupAuto = FALSE),
+                                   selected = ethnicity_grouper_choices)
+                     ),
+                     
                      br(),
                      br(),
                      column(3,
@@ -878,6 +896,8 @@ ui <- dashboardPage(
                    title = "System MyChart Activation Analysis", width = 12, status = "primary",
                    solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                    plotlyOutput("system_my_chart_activation") %>%
+                     withSpinner(type = 5, color = "#d80b8c"),
+                   plotlyOutput("system_my_chart_activation_ethnicity") %>%
                      withSpinner(type = 5, color = "#d80b8c")
                    
                  ),
@@ -885,6 +905,8 @@ ui <- dashboardPage(
                    title = "Site MyChart Activation Analysis", width = 12, status = "primary",
                    solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                    plotlyOutput("site_my_chart_activation") %>%
+                     withSpinner(type = 5, color = "#d80b8c"),
+                   plotlyOutput("site_my_chart_activation_ethnicity") %>%
                      withSpinner(type = 5, color = "#d80b8c")
                    # plotlyOutput("site_my_chart_activation_white") %>%
                    #   withSpinner(type = 5, color = "#d80b8c") , hr(),
