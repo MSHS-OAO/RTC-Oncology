@@ -6634,7 +6634,7 @@ print("2")
               geom_bar(position='dodge', stat= "identity") +
               scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
               scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-              labs(title = "System MyChart Activation by Race/Ethnicity", x=NULL)+
+              labs(title = "System MyChart Activation by Race", x=NULL)+
               theme(plot.title = element_text(hjust = 0.5),
                     legend.position = "top")+
               geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
