@@ -2802,10 +2802,13 @@ server <- function(input, output, session) {
       group_by(APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect()
     
+    site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    
     plot_ly(treatment_data, x=~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Treatment Visits",
               marker = list(color = "#212070")) %>%
     layout(xaxis = list(title = "Month"),
-           yaxis = list(title = "Treatment Visits"))
+           yaxis = list(title = "Treatment Visits"),
+           title = paste0(site, " Referring Physician Treatment Visits"))
     
   })
   
