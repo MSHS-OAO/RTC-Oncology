@@ -619,8 +619,10 @@ server <- function(input, output, session) {
         distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
         collect()
       
+      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      
       provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
-      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus,SITE_REFERRING))
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
       
       
       
