@@ -6318,33 +6318,60 @@ print("2")
     unique_patients_combined_all <- bind_rows(unique_patients_combined_system, unique_patients_combined)
     
 
-    table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
-              geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
-              labs(x=NULL, y=NULL,
-                   title = "Race % Blank/Unknown")+
-      scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
-      scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
-      geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
-      scale_x_discrete(position = "top") +
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(0.7,"cm"),
-            legend.text = element_text(size="12"),
-            axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(30,30,30,30))
+    # table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
+    #           geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
+    #           labs(x=NULL, y=NULL,
+    #                title = "Race % Blank/Unknown")+
+    #   scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
+    #   scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
+    #   geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
+    #   scale_x_discrete(position = "top") +
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(0.7,"cm"),
+    #         legend.text = element_text(size="12"),
+    #         axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #         plot.margin = margin(30,30,30,30))
+    # 
+    # 
+    # ggplotly(table) %>%
+    #   layout(xaxis = list(side ="top" )) 
     
     
-    ggplotly(table) %>%
-      layout(xaxis = list(side ="top" )) 
+    plot_ly(z = ~unique_patients_combined_all$perc_race_unknown,
+            y = ~unique_patients_combined_all$SITE,
+            x = ~unique_patients_combined_all$APPT_MONTH_YEAR,
+            colors = "RdYlGn",
+            type = "heatmap",
+            reversescale=TRUE) %>%
+      add_annotations(x = unique_patients_combined_all$APPT_MONTH_YEAR,
+                      y = unique_patients_combined_all$SITE,
+                      text = ifelse(is.na(unique_patients_combined_all$perc_race_unknown),"",paste0("<b>",unique_patients_combined_all$perc_race_unknown,"%", "</b>")), 
+                      font = list(size = 15, color = "black"),
+                      showarrow = FALSE,
+                      ax = 20,
+                      ay = -20) %>%
+      colorbar(title = "%Blank/Unknown") %>%
+      layout(xaxis = list(title = NA, tickangle = 0, tickfont = list(size = 14),
+                          ticks = NA#,
+                          #side = "top"
+      ),
+      yaxis = list(title = NA,
+                   tickfont = list(size = 14)),
+      title = list(text = "<b>Race % Blank/Unknown</b>",
+                   font = list(color = "black", size = 17))
+      #,
+      #margin = mrg
+      )
   })
   
   
@@ -6390,42 +6417,76 @@ print("2")
     unique_patients_combined_all <- bind_rows(unique_patients_combined_system, unique_patients_combined)
     
 
-    table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
-      geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
-      labs(x=NULL, y=NULL,
-           title = "Ethnicity % Blank/Unknown")+
-      scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
-      scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
-      geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
-      scale_x_discrete(position = "top") +
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
-            plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.key.size = unit(0.7,"cm"),
-            legend.text = element_text(size="12"),
-            axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
-            axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
-            axis.text.y = element_text(color= "black", margin = margin(r=15)),
-            axis.text = element_text(size="14"),
-            panel.background = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.margin = margin(30,30,30,30))
+    # table <- ggplot(unique_patients_combined_all, aes(x= APPT_MONTH_YEAR, y = SITE)) +
+    #   geom_tile(aes(fill=perc_race_unknown), colour = "black", size=0.5) +
+    #   labs(x=NULL, y=NULL,
+    #        title = "Ethnicity % Blank/Unknown")+
+    #   scale_fill_gradient(low = "#63BE7B", high = "#F8696B", space = "Lab", na.value = "#dddedd", guide = "colourbar", name="% Blank/Unknown")+
+    #   scale_y_discrete(limits = unique(sort(unique_patients_combined_all$SITE))) +
+    #   geom_text(aes(label= ifelse(is.na(perc_race_unknown),"",paste0(perc_race_unknown,"%"))), color="black", size=5, fontface="bold")+
+    #   scale_x_discrete(position = "top") +
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         plot.subtitle = element_text(hjust=0.5, size = 14, face = "italic"),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(0.7,"cm"),
+    #         legend.text = element_text(size="12"),
+    #         axis.title.x = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_text(color="black", vjust=0.5, hjust = 0.5, margin = margin(b=15, t=100)),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #         plot.margin = margin(30,30,30,30))
+    # 
+    # 
+    # ggplotly(table) %>%
+    #   layout(xaxis = list(side ="top" )) 
+    
+    mrg <- list(l = 50, r = 50,
+                b = 50, t = 50,
+                pad = 20)
     
     
-    ggplotly(table) %>%
-      layout(xaxis = list(side ="top" )) 
+    plot_ly(z = ~unique_patients_combined_all$perc_race_unknown,
+            y = ~unique_patients_combined_all$SITE,
+            x = ~unique_patients_combined_all$APPT_MONTH_YEAR,
+            colors = "RdYlGn",
+            type = "heatmap",
+            reversescale=TRUE) %>%
+      add_annotations(x = unique_patients_combined_all$APPT_MONTH_YEAR,
+                      y = unique_patients_combined_all$SITE,
+                      text = ifelse(is.na(unique_patients_combined_all$perc_race_unknown),"",paste0("<b>",unique_patients_combined_all$perc_race_unknown,"%", "</b>")), 
+                      font = list(size = 15, color = "black"),
+                      showarrow = FALSE,
+                      ax = 20,
+                      ay = -20) %>%
+      colorbar(title = "%Blank/Unknown") %>%
+      layout(xaxis = list(title = NA, tickangle = 0, tickfont = list(size = 14),
+                          ticks = NA#,
+                          #side = "top"
+                          ),
+             yaxis = list(title = NA,
+                          tickfont = list(size = 14)),
+             title = list(text = "<b>Ethnicity % Blank/Unknown</b>",
+                          font = list(color = "black", size = 17))
+             #,
+             #margin = mrg
+      )
   })
   
   my_chart_race_grouper_selected <- reactive({
     input$update_filters_mychart
     selected <- isolate(input$race_grouper_mychart)
-
-    
-    
   })
+  
+  my_chart_ethnicity_grouper_selected <- reactive({
+    input$update_filters_mychart
+    selected <- isolate(input$ethnicity_grouper_mychart)
+  })
+  
   
   output$system_my_chart_activation <- renderPlotly({
     date_range <- system_date_range()
@@ -6469,7 +6530,123 @@ print("2")
               geom_bar(position='dodge', stat= "identity") +
               scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
               scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-              labs(title = "System MyChart Activation by Race/Ethnicity", x=NULL)+
+              labs(title = "System MyChart Activation by Race", x=NULL)+
+              theme(plot.title = element_text(hjust = 0.5),
+                    legend.position = "top")+
+              geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+      #                                   xanchor = "center",  # use center of legend as anchor
+      #                                   x = 0.5))             # put legend
+    
+    
+    
+    
+  })
+  
+  output$system_my_chart_activation_ethnicity <- renderPlotly({
+    date_range <- system_date_range()
+    date_range_test <<- date_range
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- as.Date(date_range[[2]]) + 1
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    ethnicity_grouper <- my_chart_ethnicity_grouper_selected()
+    
+    
+    activation_data <- data %>% filter(ETHNICITY_GROUPER %in% ethnicity_grouper_choices) %>% 
+      #group_by(MRN,APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, ETHNICITY_GROUPER) %>% summarise(total = n()) %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
+      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, ETHNICITY_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR)
+    
+    activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
+    
+    activated_percent_test <<- activated_percent
+    
+    if("COMBINED" %in% ethnicity_grouper) {
+      combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
+                                                                                                            total_race_group = sum(total_race_group))
+      
+      combined_grouper <- combined_grouper %>% group_by(`Appt Month`, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>% mutate(ETHNICITY_GROUPER = "COMBINED")
+      
+      activated_percent <- rbind(activated_percent, combined_grouper)
+    }
+    
+    activated_percent <- activated_percent %>% filter(ETHNICITY_GROUPER %in% ethnicity_grouper)
+    
+    
+    activated_percent$ETHNICITY_GROUPER <- factor(activated_percent$ETHNICITY_GROUPER, levels = ethnicity_grouper_choices)
+    
+    
+    plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = ETHNICITY_GROUPER))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = "System MyChart Activation by Ethnicity", x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    #                                   xanchor = "center",  # use center of legend as anchor
+    #                                   x = 0.5))             # put legend
+    
+    
+    
+    
+  })
+  
+    output$system_my_chart_activation <- renderPlotly({
+    date_range <- system_date_range()
+    date_range_test <<- date_range
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- as.Date(date_range[[2]]) + 1
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    race_grouper <- my_chart_race_grouper_selected()
+
+    
+    activation_data <- data %>% filter(RACE_GROUPER %in% race_grouper_choices) %>% 
+                      #group_by(MRN,APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% distinct() %>% collect() %>%
+                      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% summarise(total = n()) %>% collect() %>%
+                      group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
+                      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, RACE_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
+                      rename(`Appt Month` = APPT_MONTH_YEAR)
+    
+    activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
+    
+    activated_percent_test <<- activated_percent
+    
+    if("COMBINED" %in% race_grouper) {
+      combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
+                                                                                  total_race_group = sum(total_race_group))
+      
+      combined_grouper <- combined_grouper %>% group_by(`Appt Month`, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>% mutate(RACE_GROUPER = "COMBINED")
+      
+      activated_percent <- rbind(activated_percent, combined_grouper)
+    }
+    
+    activated_percent <- activated_percent %>% filter(RACE_GROUPER %in% race_grouper)
+    
+    
+    activated_percent$RACE_GROUPER <- factor(activated_percent$RACE_GROUPER, levels = race_grouper_choices)
+    
+    
+    plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = RACE_GROUPER))+
+              geom_bar(position='dodge', stat= "identity") +
+              scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
+              scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+              labs(title = "System MyChart Activation by Race", x=NULL)+
               theme(plot.title = element_text(hjust = 0.5),
                     legend.position = "top")+
               geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
@@ -6520,7 +6697,53 @@ print("2")
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-      labs(title = paste0(title," MyChart Activation by Race/Ethnicity"), x=NULL)+
+      labs(title = paste0(title," MyChart Activation by Race"), x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    
+  })
+  
+  output$site_my_chart_activation_ethnicity <- renderPlotly({
+    
+    data <- dataArrivedTrend()
+    
+    ethnicity_grouper <- my_chart_ethnicity_grouper_selected()
+    
+    activation_data <- data %>% filter(ETHNICITY_GROUPER %in% ethnicity_grouper_choices) %>%
+      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, ETHNICITY_GROUPER) %>% summarise(total = n()) %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% mutate(total_race_group = sum(total)) %>%
+      group_by(APPT_MONTH_YEAR, MYCHART_STATUS_GROUPER, ETHNICITY_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR,
+             Race = ETHNICITY_GROUPER)
+    
+    activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
+    
+    title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    
+    if("COMBINED" %in% ethnicity_grouper) {
+      combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
+                                                                                                            total_race_group = sum(total_race_group))
+      
+      combined_grouper <- combined_grouper %>% group_by(`Appt Month`, MYCHART_STATUS_GROUPER) %>% mutate(`Percent Activated` = round(total/total_race_group,2)) %>% mutate(Race = "COMBINED")
+      
+      activated_percent <- rbind(activated_percent, combined_grouper)
+    }
+    
+    activated_percent <- activated_percent %>% filter(Race %in% ethnicity_grouper)
+    
+    
+    activated_percent$Race <- factor(activated_percent$Race, levels = ethnicity_grouper_choices)
+    
+    plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Activated`, x= `Appt Month`))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = paste0(title," MyChart Activation by Ethnicity"), x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
       geom_text(aes(label=`Percent Activated`*100, y = `Percent Activated`*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
