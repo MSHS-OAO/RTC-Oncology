@@ -557,10 +557,11 @@ daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 #dateRangetrend_min <- as.Date("2019-01-01")
 # dateRange_max <- max(historical.data$Appt.DateYear)
 
-dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
-dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
-dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
+# dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
+# dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
+# dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
 
+dateRangetrend_min <- as.Date("2021-01-01", format="%Y-%m-%d")
 
 
 
