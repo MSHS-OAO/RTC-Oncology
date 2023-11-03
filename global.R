@@ -504,12 +504,21 @@ default_provider_unique_exam <- sort(default_provider_unique_exam$PROVIDER, na.l
 
 default_referring_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                         DEPARTMENT_NAME %in% default_departments &
-                                                        ASSOCIATIONLISTA %in% c("Treatment")) %>%
+                                                        ASSOCIATIONLISTA %in% c("Treatment") &
+                                                        ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
   # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
-  select(REFERRING_PROVIDER) %>%
-  mutate(REFERRING_PROVIDER = unique(REFERRING_PROVIDER)) %>%
+  select(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+  distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
   collect()
+
+referring_provider_site <- tbl(con, "ONCOLOGY_REFERRING_PROVIDER_SITE_VIEW") %>% select(EPIC_PROVIDER_ID, SITE_REFERRING, PROVIDER_NAME) %>% collect() %>% rename(REFERRING_PROV_ID = EPIC_PROVIDER_ID)
+
+default_referring_provider <- inner_join(default_referring_provider, referring_provider_site)
+
+ default_referring_provider <- default_referring_provider %>% filter(grepl(default_campus,SITE_REFERRING))
+
 default_referring_provider <- sort(default_referring_provider$REFERRING_PROVIDER, na.last = T)
+
 
 
 
@@ -548,10 +557,11 @@ daysOfWeek.options <- c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 #dateRangetrend_min <- as.Date("2019-01-01")
 # dateRange_max <- max(historical.data$Appt.DateYear)
 
-dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
-dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
-dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
+# dateRangetrend_min <- glue("Select min(APPT_DTTM) AS minDate FROM ONCOLOGY_ACCESS")
+# dateRangetrend_min <- dbGetQuery(con, dateRangetrend_min)
+# dateRangetrend_min <- as.Date(dateRangetrend_min$MINDATE, format="%Y-%m-%d")
 
+dateRangetrend_min <- as.Date("2021-01-01", format="%Y-%m-%d")
 
 
 

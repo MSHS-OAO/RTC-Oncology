@@ -613,12 +613,19 @@ server <- function(input, output, session) {
       
       provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept &
-                                                      ASSOCIATIONLISTA %in% c("Treatment")) %>%
-        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
-        select(REFERRING_PROVIDER) %>%
-        mutate(REFERRING_PROVIDER = unique(REFERRING_PROVIDER)) %>%
+                                                      ASSOCIATIONLISTA %in% c("Treatment") &
+                                                      ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
+        select(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+        distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
         collect()
+      
+      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+      
+      
+      
       provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
       
       updatePickerInput(session,
@@ -2795,13 +2802,17 @@ server <- function(input, output, session) {
     data <- dataArrivedTrend_provider_volume()
 
     treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
+      filter(ASSOCIATIONLISTB == "Treatment Visit") %>% 
       group_by(APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect()
+    
+    site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
     plot_ly(treatment_data, x=~APPT_MONTH_YEAR, y = ~total, type = 'bar', name = "Treatment Visits",
               marker = list(color = "#212070")) %>%
     layout(xaxis = list(title = "Month"),
-           yaxis = list(title = "Treatment Visits"))
+           yaxis = list(title = "Treatment Visits"),
+           title = paste0(site, " Referring Physician Treatment Visits"))
     
   })
   
@@ -2811,6 +2822,7 @@ server <- function(input, output, session) {
     data <- dataArrivedTrend_provider_volume()
     
     treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
+      filter(ASSOCIATIONLISTB == "Treatment Visit") %>% 
       group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR) %>%
       summarise(total = n())  %>% collect() %>%
       `colnames<-` (c("Referring Provider", "Appt.MonthYear", "Total")) %>%
