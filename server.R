@@ -1618,6 +1618,8 @@ server <- function(input, output, session) {
     
     data <- dataArrivedTrend()
     # data <- arrived.data
+    data_test <<- dataArrivedTrend()
+    
     
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Labs") %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
     
@@ -1833,7 +1835,12 @@ server <- function(input, output, session) {
       
       column_border <- c(1, 4, 8)
       
-    } else {print("Please select <= 3 years")}
+    } else if (length(visits_tb_total)-1 > 3) {
+      
+      print("greater")
+      validate(need(length(visits_tb_total)-1 < 3, "Please slect <= 3 years"))
+      print("Please select <= 3 years")
+      }
     
     visits_tb_total <- visits_tb_total[!is.na(visits_tb_total[,2]),]
     
