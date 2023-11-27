@@ -108,6 +108,8 @@ ui <- dashboardPage(
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
+                menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
+                          menuItem("No Shows", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
                 #   style = "background: url('www/scale-balanced-solid.svg');
                 #    background-size: contain;
