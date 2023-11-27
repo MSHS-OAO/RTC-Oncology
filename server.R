@@ -6905,7 +6905,6 @@ print("2")
   
   output$daily_no_show_percent <- renderValueBox({
     data <- dataArrivedNoShowTrend()
-    data_test <<- data
 
     numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
       summarise(n()) %>% collect()
@@ -6916,6 +6915,33 @@ print("2")
                       denominator)*100,1), "%"),
       subtitle = tags$p("No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
+    
+  })
+  
+  output$monthly_no_show_percent <- renderPlotly({
+    data <- dataArrivedNoShowTrend()
+    no_show_data <- data %>% group_by(APPT_MONTH, APPT_STATUS, APPT_YEAR) %>% summarise(total = n()) %>% collect()
+    
+    numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+                  group_by(APPT_MONTH, APPT_YEAR) %>% summarise(numerator = sum(total))
+    
+    denominator <- no_show_data %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(denominator = sum(total))
+    
+    monthly_no_show <- left_join(denominator, numerator)
+    
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(total = (numerator/denominator)) %>% ungroup()
+    
+    if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    }
+    
+    title <- paste0(site," ","Monthly No Show Rate")
+    
+    monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
+    
+    ggplot_line_graph_percent(monthly_no_show, title) 
     
   })
 

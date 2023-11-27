@@ -593,6 +593,34 @@ ggplot_line_graph <- function(df, title) {
   
 }
 
+ggplot_line_graph_percent <- function(df, title) {
+  
+  graph <- ggplot(df, aes(x=factor(APPT_MONTH, levels = monthOptions), y=total, group=APPT_YEAR))+
+    geom_line(aes(color=APPT_YEAR), size=1.1)+
+    geom_point(aes(color=APPT_YEAR), size=3)+
+    scale_color_MountSinai('dark')+
+    labs(title = title,
+         y = NULL, x = NULL, fill = NULL, color = NULL)+
+    scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
+    theme(legend.position = 'top',
+          legend.title=element_blank(),
+          plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+          axis.title = element_text(size="12"),
+          axis.text = element_text(size="12"),
+          axis.title.x = element_blank(),
+          axis.line = element_line(size = 0.3, colour = "black"),
+          axis.title.y = element_text(size = 12, angle = 90),
+          plot.tag.position = 'top'
+          
+    )
+  
+  
+  plot <- ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T, tickformat = "%"), xaxis = list(mirror = T))
+  
+  return(plot)
+  
+}
+
 
 
 ggplot_table <- function(df, hline_y) {

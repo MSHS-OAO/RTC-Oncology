@@ -801,15 +801,33 @@ ui <- dashboardPage(
                 div("No Shows", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column(11,
                        boxPlus(
+                         title = "Metric Definition", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Total no show and same-day canceled appointments divided by total no show, same-day canceled, and arrived appointments", style = "font-size:22px")
+                                )
+                         )
+                       ),
+                       boxPlus(
                          title = "No Show Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                            fluidRow(
                              column(2),
                               column(4, valueBoxOutput("avg_daily_no_show", width = 12)),
                               column(4, valueBoxOutput("daily_no_show_percent", width = 12))
-                           )
+                           )),
+                       boxPlus(
+                         title = "Monthly No Show", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                          plotlyOutput("monthly_no_show_percent") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
                          )
-                )
+                         )
+                
         ),
         
         tabItem(
