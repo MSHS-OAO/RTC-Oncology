@@ -601,7 +601,7 @@ ggplot_line_graph_percent <- function(df, title) {
     scale_color_MountSinai('dark')+
     labs(title = title,
          y = NULL, x = NULL, fill = NULL, color = NULL)+
-    scale_y_continuous(limits=c(0,(max(df$total))*1.3)) +
+    scale_y_continuous(limits = c(0,max(df$total) * 1.3), labels = scales::percent_format(accuracy = 2)) +
     theme(legend.position = 'top',
           legend.title=element_blank(),
           plot.title = element_text(hjust=0.5, face = "bold", size = 16),
@@ -615,7 +615,7 @@ ggplot_line_graph_percent <- function(df, title) {
     )
   
   
-  plot <- ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T, tickformat = "%"), xaxis = list(mirror = T))
+  plot <- ggplotly(graph, tooltip = NULL) %>% layout(yaxis = list(mirror = T, tickformat = "%"), xaxis = list(mirror = T))
   
   return(plot)
   

@@ -6929,7 +6929,7 @@ print("2")
     
     monthly_no_show <- left_join(denominator, numerator)
     
-    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(total = (numerator/denominator)) %>% ungroup()
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
     
     if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
       site <- "System"
@@ -6941,7 +6941,20 @@ print("2")
     
     monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
     
-    ggplot_line_graph_percent(monthly_no_show, title) 
+    g1 <- ggplot_line_graph_percent(monthly_no_show, title) 
+    
+    n <- length(unique(monthly_no_show$APPT_YEAR)) - 1
+    if(n==0){
+      hline_y <- 0
+    } else{
+      hline_y <- seq(1.5, 0.5+n, by= 1)
+    }
+    
+    monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
+    g2 <- ggplot_table(monthly_no_show, hline_y)
+    
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    
     
   })
 
