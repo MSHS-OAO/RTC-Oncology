@@ -1176,6 +1176,32 @@ server <- function(input, output, session) {
     })
   })
   
+  dataArrivedNoShowTrend <- reactive({
+    
+    input$update_filters
+    input$update_filters1
+    
+    isolate({
+      validate(
+        need(input$selectedCampus != "" , "Please select a Campus"),
+        need(input$selectedDepartment != "", "Please select a Department")
+      )
+      data  <- groupByFilters_Trend(arrivedNoShow_data_rows,
+                                    input$selectedCampus, input$selectedDepartment,
+                                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+                                    input$diag_grouper
+      )
+      
+      
+      data_test <- data %>% head(n = 1L) %>% collect()
+      validate(
+        need(nrow(data_test) != 0, "There is no arrived or No Show data for these filters.")
+      )
+      
+      data
+      
+    })
+  })
   
   dataArrivedTrend_download <- reactive({
     
@@ -6855,6 +6881,41 @@ print("2")
     
     
     
+    
+  })
+  
+  
+  
+  
+  output$avg_daily_no_show <- renderValueBox({
+    data <- dataArrivedNoShowTrend()
+    
+    numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
+      summarise(n()) %>% collect()
+    denominator <- data %>% filter(APPT_STATUS %in% c("Arrived", "No Show", "Canceled")) %>%
+      select(APPT_DATE_YEAR) %>% mutate(APPT_DATE_YEAR = unique(APPT_DATE_YEAR)) %>% collect()
+    denominator <- length(denominator$APPT_DATE_YEAR)
+    
+    valueBox(
+      prettyNum(ceiling(numerator/denominator),big.mark=","), 
+      subtitle = tags$p("Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+    )
+    
+  })
+  
+  output$daily_no_show_percent <- renderValueBox({
+    data <- dataArrivedNoShowTrend()
+    data_test <<- data
+
+    numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
+      summarise(n()) %>% collect()
+    denominator <- data %>% filter(APPT_STATUS %in% c("Arrived", "No Show", "Canceled")) %>% 
+      summarise(n()) %>% collect()
+    valueBox(
+      paste0(round((numerator / 
+                      denominator)*100,1), "%"),
+      subtitle = tags$p("No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+    )
     
   })
 

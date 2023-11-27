@@ -799,7 +799,17 @@ ui <- dashboardPage(
         ), #Close Unique Patients by Provider - Exam Visits tab
         tabItem(tabName = "no_show",
                 div("No Shows", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
-                column(11)
+                column(11,
+                       boxPlus(
+                         title = "No Show Summary", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                           fluidRow(
+                             column(2),
+                              column(4, valueBoxOutput("avg_daily_no_show", width = 12)),
+                              column(4, valueBoxOutput("daily_no_show_percent", width = 12))
+                           )
+                         )
+                )
         ),
         
         tabItem(
