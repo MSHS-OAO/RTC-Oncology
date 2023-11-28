@@ -2825,22 +2825,38 @@ server <- function(input, output, session) {
   output$provVolumeTreatmentReferring_tb <- function(){
     
     data <- dataArrivedTrend_provider_volume()
+    data_testing <<- data
     
     treatment_data <-  data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
       filter(ASSOCIATIONLISTB == "Treatment Visit") %>% 
-      group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR) %>%
+      group_by(REFERRING_PROVIDER, APPT_MONTH_YEAR, SITE, ASSOCIATIONLISTT) %>%
       summarise(total = n())  %>% collect() %>%
-      `colnames<-` (c("Referring Provider", "Appt.MonthYear", "Total")) %>%
+      `colnames<-` (c("Referring Provider", "Appt.MonthYear", "Site", "Appointment Type", "Total")) %>%
       pivot_wider(names_from = Appt.MonthYear,
                   values_from = Total,
-                  values_fill = 0)
-    treatment_data$Total <- rowSums(treatment_data[2:length(treatment_data)])
+                  values_fill = 0) %>%
+                  split(.[,"Referring Provider"]) %>%  
+      map_df(., janitor::adorn_totals, name = paste0("Total")) %>%
+      mutate(`Referring Provider` = ifelse(`Referring Provider` == "Total", lag(`Referring Provider`, 1), `Referring Provider`),
+             `Appointment Type` = ifelse(`Appointment Type` == "-", "Treatment Total", `Appointment Type`))
     
-    months_sorted <- sort(colnames(treatment_data)[2:(length(treatment_data)- 1)])
-    col_order <- c(colnames(treatment_data)[1], months_sorted, colnames(treatment_data)[length(treatment_data)])
+    
+    months_sorted <- sort(colnames(treatment_data)[4:(length(treatment_data)- 1)])
+    col_order <- c(colnames(treatment_data)[1:3], months_sorted, colnames(treatment_data)[length(treatment_data)])
     treatment_data <- treatment_data[, col_order]
     
     treatment_data <- treatment_data[order(treatment_data$`Referring Provider`),]
+    
+    
+    appt_order <- c("Treatment Total", as.vector(unique(treatment_data$`Appointment Type`)))
+    treatment_data <- treatment_data[order(treatment_data$`Referring Provider`, treatment_data$Site,match(treatment_data$`Appointment Type`, appt_order)), ]
+    treatment_data <- treatment_data %>%
+      arrange(`Referring Provider`) %>%
+      adorn_totals("col", fill = "-", na.rm = TRUE, name = "Total") 
+    
+    
+    treatment_data$Total <- rowSums(treatment_data[4:length(treatment_data)])/2
+    
     
     site_selected <- isolate(input$selectedCampus)
     
@@ -2863,7 +2879,9 @@ server <- function(input, output, session) {
       column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       # add_indent(indent_rows, level_of_indent = 2) %>%
-      gsub("NA", " ", .)
+      gsub("NA", " ", .) %>%
+      collapse_rows(c(1,2,3), valign = "top") %>%
+      row_spec(which(treatment_data$`Appointment Type` == "Treatment Total"), bold = T)
   }
   
   
