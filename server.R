@@ -6517,7 +6517,7 @@ print("2")
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-      labs(title = paste0("System Race Breakdown"), x=NULL)+
+      labs(title = paste0("System Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
       geom_text(aes(label=Percentage, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
@@ -6564,7 +6564,7 @@ print("2")
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-      labs(title = paste0("System Ethnicity Breakdown"), x=NULL)+
+      labs(title = paste0("System Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
       geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
@@ -6606,7 +6606,7 @@ print("2")
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-      labs(title = paste0(title, " Race Breakdown"), x=NULL)+
+      labs(title = paste0(title, " Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
       geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
@@ -6648,7 +6648,7 @@ print("2")
       geom_bar(position='dodge', stat= "identity") +
       scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
-      labs(title = paste0(title, " Ethnicity Breakdown"), x=NULL)+
+      labs(title = paste0(title, " Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
             legend.position = "top")+
       geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
