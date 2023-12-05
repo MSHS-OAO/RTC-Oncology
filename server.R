@@ -6482,6 +6482,185 @@ print("2")
       )
   })
   
+  
+  
+  output$system_race_unknown_breakdown <- renderPlotly({
+    date_range <- system_date_range()
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- as.Date(date_range[[2]]) + 1
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    
+    
+    total_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total_all = n())
+    
+    grouped_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = n())
+    
+    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))
+    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
+    
+    
+    race_data_combined <- bind_rows(known_race, unknown_race)
+    race_data_combined <- left_join(race_data_combined, total_race)
+    
+    
+    race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR,
+             Race = RACE_GROUPER,
+             Percent = percentage)
+    
+    plot <- ggplot(race_data_combined, aes(fill = Race, y = Percent, x = `Appt Month`))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = paste0("System Race Breakdown"), x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    
+    
+  })
+  
+  
+  output$system_ethnicity_unknown_breakdown <- renderPlotly({
+    date_range <- system_date_range()
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    date_1 <- date_range[[1]]
+    date_2 <- as.Date(date_range[[2]]) + 1
+    data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
+                                    TO_DATE(date_1, format) <= APPT_DTTM, 
+                                    TO_DATE(date_2, format) > APPT_DTTM)
+    data_test <<- data
+    
+    
+    total_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total_all = n())
+    
+    grouped_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = n())
+    
+    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))
+    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
+    
+    
+    race_data_combined <- bind_rows(known_race, unknown_race)
+    race_data_combined <- left_join(race_data_combined, total_ethnicity)
+    
+    
+    race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR,
+             Ethnicity = ETHNICITY_GROUPER,
+             Percent = percentage)
+    
+    plot <- ggplot(race_data_combined, aes(fill = Ethnicity, y = Percent, x = `Appt Month`))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = paste0("System Ethnicity Breakdown"), x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    
+    
+  })
+  
+  output$site_race_unknown_breakdown <- renderPlotly({
+    data <- dataArrivedTrend()
+    
+    
+    total_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total_all = n())
+    
+    grouped_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = n())
+    
+    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))
+    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
+    
+    
+    race_data_combined <- bind_rows(known_race, unknown_race)
+    race_data_combined <- left_join(race_data_combined, total_race)
+    
+    
+    race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR,
+             Race = RACE_GROUPER,
+             Percent = percentage)
+    
+    title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    
+    
+    plot <- ggplot(race_data_combined, aes(fill = Race, y = Percent, x = `Appt Month`))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = paste0(title, " Race Breakdown"), x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    
+    
+  })
+  
+  output$site_ethnicity_unknown_breakdown <- renderPlotly({
+   
+    data <- dataArrivedTrend()
+    
+    
+    total_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR) %>% summarise(total_all = n())
+    
+    grouped_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = n())
+    
+    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))
+    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
+    
+    
+    race_data_combined <- bind_rows(known_race, unknown_race)
+    race_data_combined <- left_join(race_data_combined, total_ethnicity)
+    
+    
+    race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
+      rename(`Appt Month` = APPT_MONTH_YEAR,
+             Ethnicity = ETHNICITY_GROUPER,
+             Percent = percentage)
+    
+    title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    
+    plot <- ggplot(race_data_combined, aes(fill = Ethnicity, y = Percent, x = `Appt Month`))+
+      geom_bar(position='dodge', stat= "identity") +
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+      scale_y_continuous(labels = scales::percent, limits = c(0,1))+
+      labs(title = paste0(title, " Ethnicity Breakdown"), x=NULL)+
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "top")+
+      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
+    
+    
+  })
+  
+  
   my_chart_race_grouper_selected <- reactive({
     input$update_filters_mychart
     selected <- isolate(input$race_grouper_mychart)

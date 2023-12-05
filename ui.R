@@ -839,7 +839,19 @@ ui <- dashboardPage(
                         plotlyOutput("ethnicity_heatmap") %>%
                           withSpinner(type = 5, color = "#d80b8c")
                         
-                      )
+                      ),
+                     boxPlus(
+                       title = "Race/Ethnicity Breakdown", width = 12, status = "primary",
+                       solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                       plotlyOutput("system_race_unknown_breakdown") %>%
+                         withSpinner(type = 5, color = "#d80b8c"), hr(),
+                       plotlyOutput("system_ethnicity_unknown_breakdown") %>%
+                         withSpinner(type = 5, color = "#d80b8c"), hr(),
+                       plotlyOutput("site_race_unknown_breakdown") %>%
+                         withSpinner(type = 5, color = "#d80b8c"), hr(),
+                       plotlyOutput("site_ethnicity_unknown_breakdown") %>%
+                         withSpinner(type = 5, color = "#d80b8c")
+                     )
                      )
           
         ),
