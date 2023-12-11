@@ -635,4 +635,5 @@ ethnicity_grouper_choices <- c( "COMBINED","HISPANIC", "NOT HISPANIC OR LATINO")
 # race_grouper_choices <- oncology_tbl %>% select(RACE_GROUPER) %>%  distinct() %>% collect()
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
+provider_type_choices <- c("Oncology Provider", "Nurse Practitioner")
 download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02")

@@ -637,12 +637,14 @@ server <- function(input, output, session) {
       date_1 <- input$dateRange[1]
       date_2 <- input$dateRange[2]
       
+      
+      
       selected_dept <- input$selectedDepartment
+      provider_type <- input$provider_type_disease
       provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
+                                                                PROVIDER_TYPE %in% provider_type &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
-        # filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
-        #        TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -899,7 +901,27 @@ server <- function(input, output, session) {
   
   
   
-  
+  observeEvent(input$provider_type_disease, {
+    select_campus <- input$selectedCampus
+    selected_dept <- input$selectedDepartment
+    provider_type <- input$provider_type_disease
+    provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                              DEPARTMENT_NAME %in% selected_dept &
+                                                              PROVIDER_TYPE %in% provider_type &
+                                                              ASSOCIATIONLISTA %in% c("Exam")) %>%
+      select(PROVIDER) %>%
+      mutate(PROVIDER = unique(PROVIDER)) %>%
+      collect()
+    provider_unique_exam_choices <- sort(provider_unique_exam_choices$PROVIDER, na.last = T)
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider2",
+                      choices = provider_unique_exam_choices,
+                      selected = provider_unique_exam_choices
+    ) 
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
@@ -932,7 +954,7 @@ server <- function(input, output, session) {
   # })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters2),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
