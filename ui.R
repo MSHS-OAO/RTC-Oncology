@@ -478,7 +478,7 @@ ui <- dashboardPage(
                          fluidRow(
                            box(
                              title = "Select Disease Group:",
-                             width = 4,
+                             width = 3,
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selectedDisease",label=NULL,
@@ -494,7 +494,7 @@ ui <- dashboardPage(
                                          selected = default_disease_group)),
                            box(
                              title = "Select Disease Group Detail:",
-                             width = 4,
+                             width = 3,
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selectedDiseaseDetail",label=NULL,
@@ -509,8 +509,24 @@ ui <- dashboardPage(
                                            size = 10),
                                          selected = default_disease_group_detail)),
                            box(
+                             title = "Select Provider Type:",
+                             width = 3,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("provider_type_volume",label=NULL,
+                                         choices = provider_type_choices,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Provider Types",
+                                           dropupAuto = FALSE,
+                                           size = 10),
+                                         selected = provider_type_choices)),
+                           box(
                              title = "Select Provider:",
-                             width = 4,
+                             width = 3,
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selectedProvider",label=NULL,

@@ -593,11 +593,11 @@ server <- function(input, output, session) {
       
      
       selected_dept <- input$selectedDepartment
+      provider_type <- input$provider_type_volume
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept & 
-                                                    DISEASE_GROUP %in% disease_choices) %>%
-                                            # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-                                            #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+                                                    DISEASE_GROUP %in% disease_choices &
+                                                    PROVIDER_TYPE %in% provider_type) %>%
                                                     select(PROVIDER) %>%
                                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                                     collect()
@@ -783,12 +783,13 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-  observeEvent(c(input$selectedDiseaseDetail),{
+  observeEvent(c(input$selectedDiseaseDetail, input$provider_type_volume),{
     if(!is.null(input$selectedDiseaseDetail)){
       select_campus <- input$selectedCampus
       select_dept <- input$selectedDepartment
       select_disease <- input$selectedDisease
       select_disease_detail <- input$selectedDiseaseDetail
+      provider_type <- input$provider_type_volume
       first_date <- input$dateRange[1]
       second_date <- input$dateRange[2]
       
@@ -797,11 +798,13 @@ server <- function(input, output, session) {
         provider_choices_non_nan <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
-                                                      DISEASE_GROUP_DETAIL %in% select_disease_detail)
+                                                      DISEASE_GROUP_DETAIL %in% select_disease_detail &
+                                                        PROVIDER_TYPE %in% provider_type)
         
         provider_choices_na <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
+                                                      PROVIDER_TYPE %in% provider_type &
                                                       is.na(DISEASE_GROUP_DETAIL)) 
         provider_choices <- union_all(provider_choices_non_nan, provider_choices_na) %>% 
                                   select(PROVIDER) %>%
@@ -811,9 +814,8 @@ server <- function(input, output, session) {
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease &
-                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail) %>%
-        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail &
+                                                    PROVIDER_TYPE %in% provider_type) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -829,6 +831,10 @@ server <- function(input, output, session) {
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
+  
+  observeEvent(input$provider_type_volume, {
+    
+  })
   
   # 
   # observeEvent(c(input$selectedDisease2),{
