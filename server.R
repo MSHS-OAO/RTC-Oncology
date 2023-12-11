@@ -624,7 +624,10 @@ server <- function(input, output, session) {
       provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
       provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
       
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+      provider_type <- input$referring_provider_treatment_type
       
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
       
       provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
       
@@ -925,6 +928,43 @@ server <- function(input, output, session) {
                       choices = provider_unique_exam_choices,
                       selected = provider_unique_exam_choices
     ) 
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  
+  observeEvent(input$referring_provider_treatment_type, {
+    
+    
+    select_campus <- input$selectedCampus
+    selected_dept <- input$selectedDepartment
+    
+    provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                                   DEPARTMENT_NAME %in% selected_dept &
+                                                                   ASSOCIATIONLISTA %in% c("Treatment") &
+                                                                   ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
+      select(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+      distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+      collect()
+    
+    select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+    
+    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+    
+    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+    provider_type <- input$referring_provider_treatment_type
+    
+    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+    
+    provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
+    
+    updatePickerInput(session,
+                      inputId = "selected_referring_provider_treatment",
+                      choices = provider_choices_volume_treatment,
+                      selected = provider_choices_volume_treatment
+    ) 
+    
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)

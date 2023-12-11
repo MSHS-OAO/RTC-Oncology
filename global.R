@@ -519,6 +519,9 @@ default_referring_provider <- inner_join(default_referring_provider, referring_p
 
 default_referring_provider <- sort(default_referring_provider$REFERRING_PROVIDER, na.last = T)
 
+referring_provider_type_mapping <- tbl(con, "ONCOLOGY_DISEASE_GROUPINGS") %>% 
+                                    select(EPIC_PROVIDER_ID, PROVIDER_TYPE) %>% collect() %>% rename(REFERRING_PROV_ID = EPIC_PROVIDER_ID)
+
 
 
 
