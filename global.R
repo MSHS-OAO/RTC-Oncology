@@ -519,6 +519,9 @@ default_referring_provider <- inner_join(default_referring_provider, referring_p
 
 default_referring_provider <- sort(default_referring_provider$REFERRING_PROVIDER, na.last = T)
 
+referring_provider_type_mapping <- tbl(con, "ONCOLOGY_DISEASE_GROUPINGS") %>% 
+                                    select(EPIC_PROVIDER_ID, PROVIDER_TYPE) %>% collect() %>% rename(REFERRING_PROV_ID = EPIC_PROVIDER_ID)
+
 
 
 
@@ -635,4 +638,5 @@ ethnicity_grouper_choices <- c( "COMBINED","HISPANIC", "NOT HISPANIC OR LATINO")
 # race_grouper_choices <- oncology_tbl %>% select(RACE_GROUPER) %>%  distinct() %>% collect()
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
+provider_type_choices <- c("Oncology Provider", "Nurse Practitioner")
 download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02")

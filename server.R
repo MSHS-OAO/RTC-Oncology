@@ -593,11 +593,11 @@ server <- function(input, output, session) {
       
      
       selected_dept <- input$selectedDepartment
+      provider_type <- input$provider_type_volume
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept & 
-                                                    DISEASE_GROUP %in% disease_choices) %>%
-                                            # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-                                            #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+                                                    DISEASE_GROUP %in% disease_choices &
+                                                    PROVIDER_TYPE %in% provider_type) %>%
                                                     select(PROVIDER) %>%
                                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                                     collect()
@@ -624,7 +624,10 @@ server <- function(input, output, session) {
       provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
       provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
       
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+      provider_type <- input$referring_provider_treatment_type
       
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
       
       provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
       
@@ -637,12 +640,14 @@ server <- function(input, output, session) {
       date_1 <- input$dateRange[1]
       date_2 <- input$dateRange[2]
       
+      
+      
       selected_dept <- input$selectedDepartment
+      provider_type <- input$provider_type_disease
       provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
+                                                                PROVIDER_TYPE %in% provider_type &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
-        # filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR, 
-        #        TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -781,12 +786,13 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-  observeEvent(c(input$selectedDiseaseDetail),{
+  observeEvent(c(input$selectedDiseaseDetail, input$provider_type_volume),{
     if(!is.null(input$selectedDiseaseDetail)){
       select_campus <- input$selectedCampus
       select_dept <- input$selectedDepartment
       select_disease <- input$selectedDisease
       select_disease_detail <- input$selectedDiseaseDetail
+      provider_type <- input$provider_type_volume
       first_date <- input$dateRange[1]
       second_date <- input$dateRange[2]
       
@@ -795,11 +801,13 @@ server <- function(input, output, session) {
         provider_choices_non_nan <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
-                                                      DISEASE_GROUP_DETAIL %in% select_disease_detail)
+                                                      DISEASE_GROUP_DETAIL %in% select_disease_detail &
+                                                        PROVIDER_TYPE %in% provider_type)
         
         provider_choices_na <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
+                                                      PROVIDER_TYPE %in% provider_type &
                                                       is.na(DISEASE_GROUP_DETAIL)) 
         provider_choices <- union_all(provider_choices_non_nan, provider_choices_na) %>% 
                                   select(PROVIDER) %>%
@@ -809,9 +817,8 @@ server <- function(input, output, session) {
       provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease &
-                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail) %>%
-        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail &
+                                                    PROVIDER_TYPE %in% provider_type) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -827,6 +834,10 @@ server <- function(input, output, session) {
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
+  
+  observeEvent(input$provider_type_volume, {
+    
+  })
   
   # 
   # observeEvent(c(input$selectedDisease2),{
@@ -899,7 +910,64 @@ server <- function(input, output, session) {
   
   
   
+  observeEvent(input$provider_type_disease, {
+    select_campus <- input$selectedCampus
+    selected_dept <- input$selectedDepartment
+    provider_type <- input$provider_type_disease
+    provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                              DEPARTMENT_NAME %in% selected_dept &
+                                                              PROVIDER_TYPE %in% provider_type &
+                                                              ASSOCIATIONLISTA %in% c("Exam")) %>%
+      select(PROVIDER) %>%
+      mutate(PROVIDER = unique(PROVIDER)) %>%
+      collect()
+    provider_unique_exam_choices <- sort(provider_unique_exam_choices$PROVIDER, na.last = T)
+    
+    updatePickerInput(session,
+                      inputId = "selectedProvider2",
+                      choices = provider_unique_exam_choices,
+                      selected = provider_unique_exam_choices
+    ) 
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
   
+  
+  observeEvent(input$referring_provider_treatment_type, {
+    
+    
+    select_campus <- input$selectedCampus
+    selected_dept <- input$selectedDepartment
+    
+    provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                                   DEPARTMENT_NAME %in% selected_dept &
+                                                                   ASSOCIATIONLISTA %in% c("Treatment") &
+                                                                   ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
+      select(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+      distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
+      collect()
+    
+    select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+    
+    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+    
+    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+    provider_type <- input$referring_provider_treatment_type
+    
+    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+    
+    provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
+    
+    updatePickerInput(session,
+                      inputId = "selected_referring_provider_treatment",
+                      choices = provider_choices_volume_treatment,
+                      selected = provider_choices_volume_treatment
+    ) 
+    
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
   
   # Reactive Data -----------------------------------------------------------------------------------------------------------------------
   # All pre-processed data ============================================================================================================
@@ -932,7 +1000,7 @@ server <- function(input, output, session) {
   # })
   
   # [2.3] Arrived data ============================================================================================================
-  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters2),{
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
