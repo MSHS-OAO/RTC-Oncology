@@ -805,10 +805,10 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                          column(3),
-                         column(6,
+                         column(7,
                                 box(
-                                  title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
-                                  p("Total no show and same-day canceled appointments divided by total no show, same-day canceled, and arrived appointments", style = "font-size:22px")
+                                  title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "125px", status = "warning", solidHeader = TRUE,
+                                  p("No Show % = (No Show + Same-day Canceled) / (Arrived + No Show + Same-day Canceled)", style = "font-size:22px")
                                 )
                          )
                        ),
@@ -817,8 +817,10 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                            fluidRow(
                              column(2),
-                              column(4, valueBoxOutput("avg_daily_no_show", width = 12)),
-                              column(4, valueBoxOutput("daily_no_show_percent", width = 12))
+                              column(4, valueBoxOutput("avg_daily_no_show", width = 12) %>%
+                                       withSpinner(type = 5, color = "#d80b8c")),
+                              column(4, valueBoxOutput("daily_no_show_percent", width = 12) %>%
+                                       withSpinner(type = 5, color = "#d80b8c"))
                            )),
                        boxPlus(
                          title = "Monthly No Show", width = 12, status = "primary",
