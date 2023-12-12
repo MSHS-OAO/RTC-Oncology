@@ -6897,7 +6897,7 @@ print("2")
     denominator <- length(denominator$APPT_DATE_YEAR)
     
     valueBox(
-      prettyNum(ceiling(numerator/denominator),big.mark=","), 
+      prettyNum(round(numerator/denominator, 1),big.mark=","), 
       subtitle = tags$p("Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
