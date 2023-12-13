@@ -109,7 +109,7 @@ ui <- dashboardPage(
                                   )
                 ),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
-                          menuItem("No Shows", tabName = "no_show")),
+                          menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
                 #   style = "background: url('www/scale-balanced-solid.svg');
                 #    background-size: contain;
@@ -798,7 +798,7 @@ ui <- dashboardPage(
                 
         ), #Close Unique Patients by Provider - Exam Visits tab
         tabItem(tabName = "no_show",
-                div("No Shows", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("No Show", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column(11,
                        boxPlus(
                          title = "Metric Definition", width = 12, status = "primary",
