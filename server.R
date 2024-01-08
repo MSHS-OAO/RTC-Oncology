@@ -929,7 +929,7 @@ server <- function(input, output, session) {
                       selected = provider_unique_exam_choices
     ) 
   },
-  ignoreNULL = FALSE,
+  ignoreNULL = TRUE,
   ignoreInit = TRUE)
   
   
@@ -1120,11 +1120,10 @@ server <- function(input, output, session) {
   
   dataArrived_disease_2 <- eventReactive(list(input$update_filters,input$update_filters2, input$update_filters1),{
     validate(
-      need(input$selectedDisease2 != "", "Please select a provider group"),
       need(input$selectedProvider2 != "", "Please select a provider")
     )
     groupByFilters_3(dataArrived(),
-                     input$selectedDisease2, input$selectedProvider2, input$diag_grouper)
+                     input$selectedProvider2)
   })
   
   # Arrived population data ============================================================================================================
@@ -4193,10 +4192,13 @@ print("2")
   ## Unique Patients by Provider
   
   ## Unique Patients by Provider and Month
+  
   output$uniqueProvMonthExam_tb <- function(){
+    
+    data <- dataArrived_disease_2()
 
     # data <- uniquePts_df_siteProvMonth(dataArrived_disease_2(), c("Exam")) 
-    data <- uniquePts_df_siteProvMonth(dataArrived(), c("Exam")) 
+    data <- uniquePts_df_siteProvMonth(data, c("Exam")) 
     
     # data <- historical.data[arrived.data.rows,] %>% filter(SITE == "DBC", Provider %in% default_provider, Disease_Group %in% default_disease_group)
     # data <- uniquePts_df_siteProvMonth(data, c("Exam"))

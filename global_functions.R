@@ -97,17 +97,8 @@ groupByFilters_2 <- function(dt, visitType, apptType, treatmentType, dx){
 # }
 
 
-groupByFilters_3 <- function(dt, diseaseGroup, provider, dx){
-  result <- dt %>% filter(DISEASE_GROUP %in% diseaseGroup, PROVIDER %in% provider) %>%
-    filter(DX_GROUPER %in% dx)
-  
-  if("NA" %in% dx){
-    result_1 <- dt %>% filter(DISEASE_GROUP %in% diseaseGroup, PROVIDER %in% provider) %>%
-      filter(is.na(DX_GROUPER))
-    
-    result <- result %>% union_all(result_1)
-  }
-  result
+groupByFilters_3 <- function(dt, provider){
+  result <- dt %>% filter(PROVIDER %in% provider)
   
   return(result)
 }
