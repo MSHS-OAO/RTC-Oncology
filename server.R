@@ -1104,7 +1104,7 @@ server <- function(input, output, session) {
   
   # Arrived Disease Group data filtered: Disease Group, Provider ==============================================================
   
-  dataArrived_disease <- eventReactive(list(input$update_filters, input$update_filters1),{
+  dataArrived_disease <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters_exam_prov),{
     validate(
       need(input$selectedDisease != "", "Please select a disease group"),
       need(input$selectedDiseaseDetail != "", "Please select a disease group detail"),
