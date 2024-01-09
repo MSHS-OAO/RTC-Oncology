@@ -541,7 +541,7 @@ ui <- dashboardPage(
                                            size = 10),
                                          selected = default_provider)),
                            column(5,
-                                  actionButton("update_filters1", "CLICK TO UPDATE", width = "75%"),
+                                  actionButton("update_filters_exam_prov", "CLICK TO UPDATE", width = "75%"),
                                   br(),
                                   br()
                            )
@@ -1195,6 +1195,10 @@ ui <- dashboardPage(
                                                 top: 53px;
                                                 height 85%}"))),
       tags$head(tags$style(HTML("#update_filters1 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_exam_prov {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
