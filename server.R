@@ -3425,7 +3425,7 @@ server <- function(input, output, session) {
     
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
-      title = toupper("Total System Unique Patients - Exam Visits"),
+      title = toupper("Total Site Unique Patients - Exam Visits"),
       sparkobj = NULL,
       info = paste0("Total count of unique patients visited MSHS from..."), 
       icon = icon("hospital-user"),
@@ -3812,7 +3812,7 @@ print("2")
     
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
-      title = toupper("Total System Unique Patients - Treatment Visits"),
+      title = toupper("Total Site Unique Patients - Treatment Visits"),
       sparkobj = NULL,
       info = paste0("Total count of unique patients visited MSHS from..."), 
       icon = icon("hospital-user"),

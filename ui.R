@@ -647,12 +647,12 @@ ui <- dashboardPage(
                          br(),
                          column(6,
                                 box(
-                                  title = p("Total System Unique Patients", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  title = p("Total Site Unique Patients", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
                                   p("Total count of unique patients who had >= 1 visit(s) at any MSHS site (unique MRN by system).", style = "font-size:22px")
                                 )),
                          column(6,
                                 box(
-                                  title = p("System Unique Patients by Month", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  title = p("Site Unique Patients by Month", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
                                   p("Total count of unique patients who had >= 1 visit(s) at any MSHS site within respective month (unique MRN by system and month).", style = "font-size:22px")
                                 )
                                 )
