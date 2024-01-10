@@ -29,7 +29,7 @@ groupByFilters_unique_trend <- function(dt, campus, department, mindateRange, ma
   format <- "YYYY-MM-DD HH24:MI:SS"
   daysofweek <- toupper(daysofweek)
   # mindateRange <- format(as.Date(maxdateRange) %m-% months(36), "%Y-%m-%d")
-  mindateRange <- format(as.Date(maxdateRange) %m-% months(36), "%Y-%m-%d")
+  #mindateRange <- format(as.Date(maxdateRange) %m-% months(36), "%Y-%m-%d")
   maxdateRange <- as.Date(maxdateRange) + 1
   
   
