@@ -826,6 +826,8 @@ ui <- dashboardPage(
                          title = "Monthly No Show", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                           plotlyOutput("monthly_no_show_percent") %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("no_show_provider_breakdown") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                          )
                          )
