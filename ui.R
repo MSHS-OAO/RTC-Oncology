@@ -812,6 +812,35 @@ ui <- dashboardPage(
                                 )
                          )
                        ),
+                       column(11,
+                              boxPlus(
+                                title = "Analysis Customization", width = 12, status = "primary", 
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                                fluidRow(
+                                  box(
+                                    title = "Select Visit Type:",
+                                    width = 4,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selectedVisitType_no_show",label=NULL,
+                                                choices=default_visitType,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Visit Types",
+                                                  dropupAuto = FALSE),
+                                                selected = default_visitType)),
+                                
+                                column(5,
+                                       br(),
+                                       br(),
+                                       br(),
+                                       actionButton("update_filters_no_show", "CLICK TO UPDATE", width = "75%"),
+                                       br(),
+                                       br()
+                                )))),
                        boxPlus(
                          title = "No Show Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -1193,6 +1222,10 @@ ui <- dashboardPage(
                                                 font-size: 18px;
                                                 position: absolute}"))),
       tags$head(tags$style(HTML("#update_filters_treatment {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_no_show {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),

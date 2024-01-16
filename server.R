@@ -6886,9 +6886,15 @@ print("2")
   
   
   
-  
+  dataArrivedNoShowTrend_associationlistA <- reactive({
+    input$update_filters_no_show
+    selected_visits <- isolate(input$selectedVisitType_no_show)
+    
+    data <- dataArrivedNoShowTrend() %>% filter(ASSOCIATIONLISTA %in% selected_visits)
+    
+  })
   output$avg_daily_no_show <- renderValueBox({
-    data <- dataArrivedNoShowTrend()
+    data <- dataArrivedNoShowTrend_associationlistA()
     
     numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
       summarise(n()) %>% collect()
@@ -6904,7 +6910,7 @@ print("2")
   })
   
   output$daily_no_show_percent <- renderValueBox({
-    data <- dataArrivedNoShowTrend()
+    data <- dataArrivedNoShowTrend_associationlistA()
 
     numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
       summarise(n()) %>% collect()
@@ -6919,7 +6925,7 @@ print("2")
   })
   
   output$monthly_no_show_percent <- renderPlotly({
-    data <- dataArrivedNoShowTrend()
+    data <- dataArrivedNoShowTrend_associationlistA()
     no_show_data <- data %>% group_by(APPT_MONTH, APPT_STATUS, APPT_YEAR) %>% summarise(total = n()) %>% collect()
     
     numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
@@ -6957,6 +6963,67 @@ print("2")
     
     
   })
+  
+  output$no_show_provider_breakdown <- function() {
+    data <- dataArrivedNoShowTrend_associationlistA()
+    
+    table_data <- data %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
+    
+    table_data_test <<- table_data
+    
+    numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
+      group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(numerator = sum(total, na.rm = T))
+    
+    denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(denominator = sum(total, na.rm = T))
+    
+    monthly_no_show <- left_join(denominator, numerator) %>%
+      mutate(denominator = ifelse(is.na(denominator), 0, denominator)) %>%
+      mutate(numerator = ifelse(is.na(numerator), 0, numerator))
+    
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup()
+    
+    # total_numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
+    #   group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(numerator = sum(total, na.rm = T))
+    # 
+    # total_denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(denominator = sum(total, na.rm = T))
+    # 
+    # total_monthly_no_show <- left_join(total_denominator, total_numerator) %>%
+    #   mutate(denominator = ifelse(is.na(denominator), 0, denominator)) %>%
+    #   mutate(numerator = ifelse(is.na(numerator), 0, numerator))
+    # 
+    # total_monthly_no_show <- total_monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup() %>% mutate(ASSOCIATIONLISTA = "Total")
+    # 
+    # monthly_no_show <- bind_rows(monthly_no_show, total_monthly_no_show)
+    
+    monthly_no_show <- monthly_no_show %>% pivot_wider(names_from = APPT_MONTH_YEAR, values_from = total)
+    
+    appt_order <- c(default_visitType, "Total")
+    
+    
+    monthly_no_show <- monthly_no_show[order(monthly_no_show$PROVIDER, monthly_no_show$SITE, match(monthly_no_show$ASSOCIATIONLISTA, appt_order)), ]
+    
+    site_selected <- isolate(input$selectedCampus)
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(monthly_no_show))
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    monthly_no_show %>%
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Physician No Show Rates" = length(monthly_no_show)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      gsub("NA", " ", .) %>%
+      collapse_rows(c(1,2,3), valign = "top") %>%
+      row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
+  }
 
 
 } # Close Server
