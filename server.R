@@ -572,6 +572,12 @@ server <- function(input, output, session) {
                         choices = disease_choices,
                         selected = disease_choices
       )
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseGroup_no_show",
+                        choices = disease_choices,
+                        selected = disease_choices
+      )
+      
       
       disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease &
@@ -585,6 +591,12 @@ server <- function(input, output, session) {
       
       updatePickerInput(session,
                         inputId = "selectedDiseaseDetail",
+                        choices = disease_detail_choices,
+                        selected = disease_detail_choices
+      )
+      
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseGroupDetail_no_show",
                         choices = disease_detail_choices,
                         selected = disease_detail_choices
       )
@@ -6889,8 +6901,12 @@ print("2")
   dataArrivedNoShowTrend_associationlistA <- reactive({
     input$update_filters_no_show
     selected_visits <- isolate(input$selectedVisitType_no_show)
+    selected_disease_group <- isolate(input$selectedDiseaseGroup_no_show)
+    selected_disease_group_detail <- isolate(input$selectedDiseaseGroupDetail_no_show)
     
+    # data <- dataArrivedNoShowTrend() %>% filter(ASSOCIATIONLISTA %in% selected_visits, DISEASE_GROUP %in% selected_disease_group, DISEASE_GROUP_DETAIL %in% selected_disease_group_detail)
     data <- dataArrivedNoShowTrend() %>% filter(ASSOCIATIONLISTA %in% selected_visits)
+    
     
   })
   output$avg_daily_no_show <- renderValueBox({
@@ -6967,7 +6983,11 @@ print("2")
   output$no_show_provider_breakdown <- function() {
     data <- dataArrivedNoShowTrend_associationlistA()
     
-    table_data <- data %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
+    table_data_exam <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
+    table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, REFERRING_PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect() %>% rename(PROVIDER = REFERRING_PROVIDER)
+    
+    table_data <- bind_rows(table_data_exam, table_data_treatment)
+    
     
     table_data_test <<- table_data
     
@@ -7000,7 +7020,7 @@ print("2")
     appt_order <- c(default_visitType, "Total")
     
     
-    monthly_no_show <- monthly_no_show[order(monthly_no_show$PROVIDER, monthly_no_show$SITE, match(monthly_no_show$ASSOCIATIONLISTA, appt_order)), ]
+    monthly_no_show <- monthly_no_show[order(match(monthly_no_show$ASSOCIATIONLISTA, appt_order), monthly_no_show$PROVIDER, monthly_no_show$SITE), ]
     
     site_selected <- isolate(input$selectedCampus)
     if(length(unique(site_selected)) == length(campus_choices)){
@@ -7010,6 +7030,8 @@ print("2")
     }
     header_above <- c("Subtitle" = ncol(monthly_no_show))
     names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER)
     
     monthly_no_show %>%
       kable(booktabs = T, escape = F) %>%
