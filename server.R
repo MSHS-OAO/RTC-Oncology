@@ -6983,7 +6983,7 @@ print("2")
   output$no_show_provider_breakdown <- function() {
     data <- dataArrivedNoShowTrend_associationlistA()
     
-    table_data_exam <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
+    table_data_exam <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(total = n()) %>% collect()
     table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, REFERRING_PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect() %>% rename(PROVIDER = REFERRING_PROVIDER)
     
     table_data <- bind_rows(table_data_exam, table_data_treatment)
@@ -6992,15 +6992,15 @@ print("2")
     table_data_test <<- table_data
     
     numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
-      group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(numerator = sum(total, na.rm = T))
+      group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(numerator = sum(total, na.rm = T))
     
-    denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(denominator = sum(total, na.rm = T))
+    denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(denominator = sum(total, na.rm = T))
     
     monthly_no_show <- left_join(denominator, numerator) %>%
       mutate(denominator = ifelse(is.na(denominator), 0, denominator)) %>%
       mutate(numerator = ifelse(is.na(numerator), 0, numerator))
     
-    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup()
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup()
     
     # total_numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
     #   group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(numerator = sum(total, na.rm = T))
@@ -7020,7 +7020,7 @@ print("2")
     appt_order <- c(default_visitType, "Total")
     
     
-    monthly_no_show <- monthly_no_show[order(match(monthly_no_show$ASSOCIATIONLISTA, appt_order), monthly_no_show$PROVIDER, monthly_no_show$SITE), ]
+    monthly_no_show <- monthly_no_show[order(match(monthly_no_show$ASSOCIATIONLISTA, appt_order),monthly_no_show$DISEASE_GROUP, monthly_no_show$DISEASE_GROUP_DETAIL, monthly_no_show$PROVIDER, monthly_no_show$SITE), ]
     
     site_selected <- isolate(input$selectedCampus)
     if(length(unique(site_selected)) == length(campus_choices)){
@@ -7031,7 +7031,9 @@ print("2")
     header_above <- c("Subtitle" = ncol(monthly_no_show))
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
-    monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER)
+    monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
+                      relocate(DISEASE_GROUP, .before = PROVIDER) %>%
+                      relocate(DISEASE_GROUP_DETAIL, .before = PROVIDER)
     
     monthly_no_show %>%
       kable(booktabs = T, escape = F) %>%
@@ -7043,7 +7045,7 @@ print("2")
       column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       gsub("NA", " ", .) %>%
-      collapse_rows(c(1,2,3), valign = "top") %>%
+      collapse_rows(c(1,2,3,4,5), valign = "top") %>%
       row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
   }
 
