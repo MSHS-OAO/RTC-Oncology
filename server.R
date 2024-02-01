@@ -7033,7 +7033,11 @@ print("2")
     
     monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
                       relocate(DISEASE_GROUP, .before = PROVIDER) %>%
-                      relocate(DISEASE_GROUP_DETAIL, .before = PROVIDER)
+                      relocate(DISEASE_GROUP_DETAIL, .before = PROVIDER) %>%
+                      rename(`Disease Group`= DISEASE_GROUP,
+                             `Disease Group Detail` = DISEASE_GROUP_DETAIL,
+                             Provider = PROVIDER,
+                             `Visit Type` = ASSOCIATIONLISTA)
     
     monthly_no_show %>%
       kable(booktabs = T, escape = F) %>%
