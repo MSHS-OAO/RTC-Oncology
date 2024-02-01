@@ -7037,7 +7037,8 @@ print("2")
                       rename(`Disease Group`= DISEASE_GROUP,
                              `Disease Group Detail` = DISEASE_GROUP_DETAIL,
                              Provider = PROVIDER,
-                             `Visit Type` = ASSOCIATIONLISTA)
+                             `Visit Type` = ASSOCIATIONLISTA,
+                             Site = SITE)
     
     monthly_no_show %>%
       kable(booktabs = T, escape = F) %>%
