@@ -7048,7 +7048,7 @@ print("2")
       add_header_above(c("Physician No Show Rates" = length(monthly_no_show)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
-      column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%
+      #column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       gsub("NA", " ", .) %>%
       collapse_rows(c(1,2,3,4,5), valign = "top") %>%
