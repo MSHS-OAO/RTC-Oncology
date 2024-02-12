@@ -632,8 +632,8 @@ header$children[[2]]$children[[2]] <- header$children[[2]]$children[[1]]
 header$children[[2]]$children[[1]] <-  tags$a(href='https://peak.mountsinai.org/',
                                               tags$img(src='Sinai_logo_white.png',height='100%',width='30%'))
 
-race_grouper_choices <- c( "OVERALL", "BLANK/UNKNOWN", "AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER")
-ethnicity_grouper_choices <- c( "OVERALL","BLANK/UNKNOWN", "HISPANIC", "NOT HISPANIC OR LATINO")
+race_grouper_choices <- c( "OVERALL", "BLANK/UNKNOWN", "PATIENT DECLINED",  "AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER")
+ethnicity_grouper_choices <- c( "OVERALL","BLANK/UNKNOWN", "PATIENT DECLINED", "HISPANIC", "NOT HISPANIC OR LATINO")
 
 # race_grouper_choices <- oncology_tbl %>% select(RACE_GROUPER) %>%  distinct() %>% collect()
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))

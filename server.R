@@ -6588,8 +6588,8 @@ print("2")
     grouped_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = n())
     
-    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))
-    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
+    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER", "PATIENT DECLINED"))
+    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER", "PATIENT DECLINED"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
     
     
     race_data_combined <- bind_rows(known_race, unknown_race)
@@ -6603,12 +6603,12 @@ print("2")
     
     plot <- ggplot(race_data_combined, aes(fill = Race, y = Percent, x = `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070", "#7f7f7f", "#7030a0", "#ffcc99", "#00aeef"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0("System Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")+
-      geom_text(aes(label=Percentage, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")#+
+      #geom_text(aes(label=Percentage, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot, tooltip = list("Percent")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6635,8 +6635,8 @@ print("2")
     grouped_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
       group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = n())
     
-    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))
-    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
+    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO", "PATIENT DECLINED"))
+    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO", "PATIENT DECLINED"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
     
     
     race_data_combined <- bind_rows(known_race, unknown_race)
@@ -6650,12 +6650,12 @@ print("2")
     
     plot <- ggplot(race_data_combined, aes(fill = Ethnicity, y = Percent, x = `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#ffcc99"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0("System Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")+
-      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")#+
+      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot, tooltip = list("Percent")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6674,8 +6674,8 @@ print("2")
     grouped_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = n())
     
-    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))
-    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
+    known_race <- grouped_race %>% filter(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER", "PATIENT DECLINED"))
+    unknown_race <- grouped_race %>% filter(!(RACE_GROUPER %in% c("AFRICAN-AMERICAN", "ASIAN", "WHITE", "OTHER", "PATIENT DECLINED"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(RACE_GROUPER = "BLANK/UNKNOWN")
     
     
     race_data_combined <- bind_rows(known_race, unknown_race)
@@ -6692,12 +6692,12 @@ print("2")
     
     plot <- ggplot(race_data_combined, aes(fill = Race, y = Percent, x = `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070", "#7f7f7f", "#7030a0", "#ffcc99", "#00aeef"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title, " Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")+
-      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")#+
+      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot, tooltip = list("Percent")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6717,8 +6717,8 @@ print("2")
     grouped_ethnicity <- data %>% select(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% distinct() %>% collect() %>%
       group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = n())
     
-    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))
-    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
+    known_race <- grouped_ethnicity %>% filter(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO", "PATIENT DECLINED"))
+    unknown_race <- grouped_ethnicity %>% filter(!(ETHNICITY_GROUPER %in% c("HISPANIC", "NOT HISPANIC OR LATINO", "PATIENT DECLINED"))) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = sum(total)) %>% mutate(ETHNICITY_GROUPER = "BLANK/UNKNOWN")
     
     
     race_data_combined <- bind_rows(known_race, unknown_race)
@@ -6734,12 +6734,12 @@ print("2")
     
     plot <- ggplot(race_data_combined, aes(fill = Ethnicity, y = Percent, x = `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#ffcc99"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title, " Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")+
-      geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")#+
+      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
     
     ggplotly(plot, tooltip = list("Percent")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
@@ -6857,7 +6857,7 @@ print("2")
     
     plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = ETHNICITY_GROUPER))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#990000", "#339933"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#990000", "#339933"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = "System MyChart Activation by Ethnicity", x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
@@ -6915,7 +6915,7 @@ print("2")
     
     plot <-   ggplot(activated_percent, aes(y = `Percent Activated`, x= `Appt Month`, fill = RACE_GROUPER))+
               geom_bar(position='dodge', stat= "identity") +
-              scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
+              scale_fill_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
               scale_y_continuous(labels = scales::percent, limits = c(0,1))+
               labs(title = "System MyChart Activation by Race", x=NULL)+
               theme(plot.title = element_text(hjust = 0.5),
@@ -6966,7 +6966,7 @@ print("2")
     
     plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Activated`, x= `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title," MyChart Activation by Race"), x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
@@ -7012,7 +7012,7 @@ print("2")
     
     plot <-   ggplot(activated_percent, aes(fill = Race, y = `Percent Activated`, x= `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
-      scale_fill_manual(values = c("#d80b8c", "#212070","#990000", "#339933"))+
+      scale_fill_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#990000", "#339933"))+
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title," MyChart Activation by Ethnicity"), x=NULL)+
       theme(plot.title = element_text(hjust = 0.5),
