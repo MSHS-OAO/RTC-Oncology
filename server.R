@@ -6580,6 +6580,8 @@ print("2")
     data <- oncology_tbl %>% filter(APPT_STATUS == "Arrived",
                                     TO_DATE(date_1, format) <= APPT_DTTM, 
                                     TO_DATE(date_2, format) > APPT_DTTM)
+    
+    data_test <<- data
 
     
     total_race <- data %>% select(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% group_by(MRN,APPT_MONTH_YEAR, RACE_GROUPER) %>% distinct() %>% collect() %>%
@@ -6607,10 +6609,11 @@ print("2")
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0("System Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")#+
-      #geom_text(aes(label=Percentage, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")+
+      geom_text(aes(label=Percentage,y = Percent+0.02), size = 3, position=position_dodge(width=0.9),vjust=-.2)
+      #geom_text(aes(label=Percentage), position = position_dodge2(width = 1, preserve = "single"), vjust=-0.5, size=3)
     
-    ggplotly(plot, tooltip = list("Percent")) %>%
+    ggplotly(plot, tooltip = list("Percentage")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
                            y = 1.05, x = 0.35))
     
@@ -6646,7 +6649,8 @@ print("2")
     race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Ethnicity = ETHNICITY_GROUPER,
-             Percent = percentage)
+             Percent = percentage) %>%
+      mutate(Percentage = paste0(Percent*100, "%"))
     
     plot <- ggplot(race_data_combined, aes(fill = Ethnicity, y = Percent, x = `Appt Month`))+
       geom_bar(position='dodge', stat= "identity") +
@@ -6654,10 +6658,10 @@ print("2")
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0("System Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")#+
-      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")+
+    geom_text(aes(label=Percentage,y = Percent+0.02), size = 3, position=position_dodge(width=0.9),vjust=-.2)
     
-    ggplotly(plot, tooltip = list("Percent")) %>%
+    ggplotly(plot, tooltip = list("Percentage")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
                            y = 1.05, x = 0.35))
     
@@ -6685,7 +6689,8 @@ print("2")
     race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = RACE_GROUPER,
-             Percent = percentage)
+             Percent = percentage) %>%
+      mutate(Percentage = paste0(Percent*100, "%"))
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
@@ -6696,10 +6701,10 @@ print("2")
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title, " Race Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")#+
-      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")+
+    geom_text(aes(label=Percentage,y = Percent+0.02), size = 3, position=position_dodge(width=0.9),vjust=-.2)
     
-    ggplotly(plot, tooltip = list("Percent")) %>%
+    ggplotly(plot, tooltip = list("Percentage")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
                            y = 1.05, x = 0.35))
     
@@ -6728,7 +6733,8 @@ print("2")
     race_data_combined <- race_data_combined %>% mutate(percentage = round((total/total_all),3)) %>%
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Ethnicity = ETHNICITY_GROUPER,
-             Percent = percentage)
+             Percent = percentage) %>%
+      mutate(Percentage = paste0(Percent*100, "%"))
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
@@ -6738,10 +6744,10 @@ print("2")
       scale_y_continuous(labels = scales::percent, limits = c(0,1))+
       labs(title = paste0(title, " Ethnicity Breakdown"), x=NULL, y = NULL)+
       theme(plot.title = element_text(hjust = 0.5),
-            legend.position = "top")#+
-      #geom_text(aes(label=Percent*100, y = Percent*100 + 0.01), position=position_dodge(width=0.9),vjust=0)
+            legend.position = "top")+
+      geom_text(aes(label=Percentage,y = Percent+0.02), size = 3, position=position_dodge(width=0.9),vjust=-.2)
     
-    ggplotly(plot, tooltip = list("Percent")) %>%
+    ggplotly(plot, tooltip = list("Percentage")) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
                            y = 1.05, x = 0.35))
     
