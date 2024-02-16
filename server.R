@@ -572,6 +572,12 @@ server <- function(input, output, session) {
                         choices = disease_choices,
                         selected = disease_choices
       )
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseGroup_no_show",
+                        choices = disease_choices,
+                        selected = disease_choices
+      )
+      
       
       disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease &
@@ -585,6 +591,12 @@ server <- function(input, output, session) {
       
       updatePickerInput(session,
                         inputId = "selectedDiseaseDetail",
+                        choices = disease_detail_choices,
+                        selected = disease_detail_choices
+      )
+      
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseGroupDetail_no_show",
                         choices = disease_detail_choices,
                         selected = disease_detail_choices
       )
@@ -1243,6 +1255,32 @@ server <- function(input, output, session) {
     })
   })
   
+  dataArrivedNoShowTrend <- reactive({
+    
+    input$update_filters
+    input$update_filters1
+    
+    isolate({
+      validate(
+        need(input$selectedCampus != "" , "Please select a Campus"),
+        need(input$selectedDepartment != "", "Please select a Department")
+      )
+      data  <- groupByFilters_Trend(arrivedNoShow_data_rows,
+                                    input$selectedCampus, input$selectedDepartment,
+                                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+                                    input$diag_grouper
+      )
+      
+      
+      data_test <- data %>% head(n = 1L) %>% collect()
+      validate(
+        need(nrow(data_test) != 0, "There is no arrived or No Show data for these filters.")
+      )
+      
+      data
+      
+    })
+  })
   
   dataArrivedTrend_download <- reactive({
     
@@ -7137,6 +7175,165 @@ print("2")
     
     
   })
+  
+  
+  
+  dataArrivedNoShowTrend_associationlistA <- reactive({
+    input$update_filters_no_show
+    selected_visits <- isolate(input$selectedVisitType_no_show)
+    selected_disease_group <- isolate(input$selectedDiseaseGroup_no_show)
+    selected_disease_group_detail <- isolate(input$selectedDiseaseGroupDetail_no_show)
+    
+    # data <- dataArrivedNoShowTrend() %>% filter(ASSOCIATIONLISTA %in% selected_visits, DISEASE_GROUP %in% selected_disease_group, DISEASE_GROUP_DETAIL %in% selected_disease_group_detail)
+    data <- dataArrivedNoShowTrend() %>% filter(ASSOCIATIONLISTA %in% selected_visits)
+    
+    
+  })
+  output$avg_daily_no_show <- renderValueBox({
+    data <- dataArrivedNoShowTrend_associationlistA()
+    
+    numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
+      summarise(n()) %>% collect()
+    denominator <- data %>% filter(APPT_STATUS %in% c("Arrived", "No Show", "Canceled")) %>%
+      select(APPT_DATE_YEAR) %>% mutate(APPT_DATE_YEAR = unique(APPT_DATE_YEAR)) %>% collect()
+    denominator <- length(denominator$APPT_DATE_YEAR)
+    
+    valueBox(
+      prettyNum(round(numerator/denominator, 1),big.mark=","), 
+      subtitle = tags$p("Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+    )
+    
+  })
+  
+  output$daily_no_show_percent <- renderValueBox({
+    data <- dataArrivedNoShowTrend_associationlistA()
+
+    numerator <- data %>% filter(APPT_STATUS %in% c("No Show", "Canceled")) %>%
+      summarise(n()) %>% collect()
+    denominator <- data %>% filter(APPT_STATUS %in% c("Arrived", "No Show", "Canceled")) %>% 
+      summarise(n()) %>% collect()
+    valueBox(
+      paste0(round((numerator / 
+                      denominator)*100,1), "%"),
+      subtitle = tags$p("No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+    )
+    
+  })
+  
+  output$monthly_no_show_percent <- renderPlotly({
+    data <- dataArrivedNoShowTrend_associationlistA()
+    no_show_data <- data %>% group_by(APPT_MONTH, APPT_STATUS, APPT_YEAR) %>% summarise(total = n()) %>% collect()
+    
+    numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+                  group_by(APPT_MONTH, APPT_YEAR) %>% summarise(numerator = sum(total))
+    
+    denominator <- no_show_data %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(denominator = sum(total))
+    
+    monthly_no_show <- left_join(denominator, numerator)
+    
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
+    
+    if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    }
+    
+    title <- paste0(site," ","Monthly No Show Rate")
+    
+    monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
+    
+    g1 <- ggplot_line_graph_percent(monthly_no_show, title) 
+    
+    n <- length(unique(monthly_no_show$APPT_YEAR)) - 1
+    if(n==0){
+      hline_y <- 0
+    } else{
+      hline_y <- seq(1.5, 0.5+n, by= 1)
+    }
+    
+    monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
+    g2 <- ggplot_table(monthly_no_show, hline_y)
+    
+    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    
+    
+  })
+  
+  output$no_show_provider_breakdown <- function() {
+    data <- dataArrivedNoShowTrend_associationlistA()
+    
+    table_data_exam <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(total = n()) %>% collect()
+    table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% group_by(APPT_STATUS, APPT_MONTH_YEAR, REFERRING_PROVIDER, SITE, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect() %>% rename(PROVIDER = REFERRING_PROVIDER)
+    
+    table_data <- bind_rows(table_data_exam, table_data_treatment)
+    
+    
+    table_data_test <<- table_data
+    
+    numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
+      group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(numerator = sum(total, na.rm = T))
+    
+    denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(denominator = sum(total, na.rm = T))
+    
+    monthly_no_show <- left_join(denominator, numerator) %>%
+      mutate(denominator = ifelse(is.na(denominator), 0, denominator)) %>%
+      mutate(numerator = ifelse(is.na(numerator), 0, numerator))
+    
+    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, DISEASE_GROUP, DISEASE_GROUP_DETAIL) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup()
+    
+    # total_numerator <- table_data %>% filter(APPT_STATUS != "Arrived") %>% 
+    #   group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(numerator = sum(total, na.rm = T))
+    # 
+    # total_denominator <- table_data %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(denominator = sum(total, na.rm = T))
+    # 
+    # total_monthly_no_show <- left_join(total_denominator, total_numerator) %>%
+    #   mutate(denominator = ifelse(is.na(denominator), 0, denominator)) %>%
+    #   mutate(numerator = ifelse(is.na(numerator), 0, numerator))
+    # 
+    # total_monthly_no_show <- total_monthly_no_show %>% group_by(APPT_MONTH_YEAR, PROVIDER, SITE) %>% summarise(total = paste0(round(numerator/denominator, 3)*100, "%")) %>% ungroup() %>% mutate(ASSOCIATIONLISTA = "Total")
+    # 
+    # monthly_no_show <- bind_rows(monthly_no_show, total_monthly_no_show)
+    
+    monthly_no_show <- monthly_no_show %>% pivot_wider(names_from = APPT_MONTH_YEAR, values_from = total)
+    
+    appt_order <- c(default_visitType, "Total")
+    
+    
+    monthly_no_show <- monthly_no_show[order(match(monthly_no_show$ASSOCIATIONLISTA, appt_order),monthly_no_show$DISEASE_GROUP, monthly_no_show$DISEASE_GROUP_DETAIL, monthly_no_show$PROVIDER, monthly_no_show$SITE), ]
+    
+    site_selected <- isolate(input$selectedCampus)
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(monthly_no_show))
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
+                      relocate(DISEASE_GROUP, .before = PROVIDER) %>%
+                      relocate(DISEASE_GROUP_DETAIL, .before = PROVIDER) %>%
+                      relocate(SITE, .before = PROVIDER) %>% 
+                      rename(`Disease Group`= DISEASE_GROUP,
+                             `Disease Group Detail` = DISEASE_GROUP_DETAIL,
+                             Provider = PROVIDER,
+                             `Visit Type` = ASSOCIATIONLISTA,
+                             Site = SITE)
+    
+    monthly_no_show %>%
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Physician No Show Rates" = length(monthly_no_show)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      #column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      gsub("NA", " ", .) %>%
+      collapse_rows(c(1,2,3,4,5), valign = "top") %>%
+      row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
+  }
 
 
 } # Close Server

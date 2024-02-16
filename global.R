@@ -232,6 +232,7 @@ unique_min <- "2021-01-01"
 
 
 arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
+arrivedNoShow_data_rows <- oncology_tbl %>% filter((APPT_STATUS %in% c("No Show", "Arrived")) | (APPT_STATUS %in% c("Canceled") & (TO_CHAR(APPT_CANC_DTTM, "YYYY-MM-DD") == TO_CHAR(APPT_DTTM, "YYYY-MM-DD"))))
 
 groupByFilters_Trend <- function(dt, campus, department
                                  , mindateRange, maxdateRange

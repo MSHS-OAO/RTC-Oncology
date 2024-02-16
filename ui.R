@@ -108,6 +108,8 @@ ui <- dashboardPage(
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
+                menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
+                          menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
                 #   style = "background: url('www/scale-balanced-solid.svg');
                 #    background-size: contain;
@@ -827,6 +829,101 @@ ui <- dashboardPage(
                 )
                 
         ), #Close Unique Patients by Provider - Exam Visits tab
+        tabItem(tabName = "no_show",
+                div("No Show", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                column(11,
+                       boxPlus(
+                         title = "Metric Definition", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         column(3),
+                         column(7,
+                                box(
+                                  title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "125px", status = "warning", solidHeader = TRUE,
+                                  p("No Show % = (No Show + Same-day Canceled/Rescheduled) / (Arrived + No Show + Same-day Canceled/Reshceduled)", style = "font-size:22px")
+                                )
+                         )
+                       ),
+                       column(11,
+                              boxPlus(
+                                title = "Analysis Customization", width = 12, status = "primary", 
+                                solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                                fluidRow(
+                                  box(
+                                    title = "Select Visit Type:",
+                                    width = 4,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selectedVisitType_no_show",label=NULL,
+                                                choices=default_visitType,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Visit Types",
+                                                  dropupAuto = FALSE),
+                                                selected = default_visitType)),
+                                  # box(
+                                  #   title = "Select Disease Group:",
+                                  #   width = 4,
+                                  #   height = "100px",
+                                  #   solidHeader = FALSE,
+                                  #   pickerInput("selectedDiseaseGroup_no_show",label=NULL,
+                                  #               choices=default_disease_group,
+                                  #               multiple=TRUE,
+                                  #               options = pickerOptions(
+                                  #                 liveSearch = TRUE,
+                                  #                 actionsBox = TRUE,
+                                  #                 selectedTextFormat = "count > 1",
+                                  #                 countSelectedText = "{0}/{1} Disease Groups",
+                                  #                 dropupAuto = FALSE),
+                                  #               selected = default_disease_group)),
+                                  # box(
+                                  #   title = "Select Disease Group Detail:",
+                                  #   width = 4,
+                                  #   height = "100px",
+                                  #   solidHeader = FALSE,
+                                  #   pickerInput("selectedDiseaseGroupDetail_no_show",label=NULL,
+                                  #               choices=default_disease_group_detail,
+                                  #               multiple=TRUE,
+                                  #               options = pickerOptions(
+                                  #                 liveSearch = TRUE,
+                                  #                 actionsBox = TRUE,
+                                  #                 selectedTextFormat = "count > 1",
+                                  #                 countSelectedText = "{0}/{1} Disease Group Details",
+                                  #                 dropupAuto = FALSE),
+                                  #               selected = default_disease_group_detail)),
+                                  # 
+                                column(5,
+                                       br(),
+                                       br(),
+                                       br(),
+                                       actionButton("update_filters_no_show", "CLICK TO UPDATE", width = "75%"),
+                                       br(),
+                                       br()
+                                )))),
+                       boxPlus(
+                         title = "No Show Summary", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                           fluidRow(
+                             column(2),
+                              column(4, valueBoxOutput("avg_daily_no_show", width = 12) %>%
+                                       withSpinner(type = 5, color = "#d80b8c")),
+                              column(4, valueBoxOutput("daily_no_show_percent", width = 12) %>%
+                                       withSpinner(type = 5, color = "#d80b8c"))
+                           )),
+                       boxPlus(
+                         title = "Monthly No Show", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                          plotlyOutput("monthly_no_show_percent") %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("no_show_provider_breakdown") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
+                         )
+                         )
+                
+        ),
         
         tabItem(
           tabName = "ethnicity_and_race",
@@ -1218,6 +1315,10 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_no_show {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
       tags$head(tags$style(HTML("#update_filters2 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
@@ -1260,7 +1361,8 @@ ui <- dashboardPage(
         input.sbm == `bookedFilled` | 
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'",
+        input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
+        input.sbm == 'no_show'",
         column(1,
           dropdown(
             br(),
@@ -1306,7 +1408,8 @@ ui <- dashboardPage(
             conditionalPanel(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'",
+                   input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
+                  input.sbm == 'no_show'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1352,7 +1455,8 @@ ui <- dashboardPage(
           input.sbm == `provvolbreakdown` |
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment'" ,                box(
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
+                input.sbm == 'no_show'" ,                box(
                   title = "Select Date Range:", 
                   width = 12, 
                   height = "100px",
