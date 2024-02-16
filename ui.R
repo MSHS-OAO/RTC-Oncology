@@ -937,6 +937,18 @@ ui <- dashboardPage(
                    )
                  ),
                  boxPlus(
+                   title = "Metirc Definition", width = 12, status = "primary",
+                   solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                   br(),
+                   column(3),
+                   column(6,
+                          box(
+                            title = p("Overall Grouper", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                            p("Overall is a rollup that contains all patients within the race or ethinicity groupers.", style = "font-size:22px")
+                          ))
+                 ),
+
+                 boxPlus(
                    title = "System MyChart Activation Analysis", width = 12, status = "primary",
                    solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                    plotlyOutput("system_my_chart_activation") %>%
