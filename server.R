@@ -2806,7 +2806,7 @@ server <- function(input, output, session) {
       column_spec(1, bold = T) %>%
       collapse_rows(c(1,2,3,4), valign = "top") %>%
       add_indent(indent_rows, level_of_indent = 2) %>%
-      gsub("NA", " ", .)
+      gsub("\\bNA\\b", " ", .)
   }
   
   
@@ -2854,7 +2854,7 @@ server <- function(input, output, session) {
       column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       # add_indent(indent_rows, level_of_indent = 2) %>%
-      gsub("NA", " ", .)
+      gsub("\\bNA\\b", " ", .)
   }
   
   dataArrivedTrend_provider_volume <- reactive({
@@ -2946,7 +2946,7 @@ server <- function(input, output, session) {
       column_spec(length(treatment_data), background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       # add_indent(indent_rows, level_of_indent = 2) %>%
-      gsub("NA", " ", .) %>%
+      gsub("\\bNA\\b", " ", .) %>%
       collapse_rows(c(1,2,3), valign = "top") %>%
       row_spec(which(treatment_data$`Appointment Type` == "Treatment Total"), bold = T)
   }
