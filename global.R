@@ -412,6 +412,8 @@ default_visitType <- oncology_tbl %>% filter(SITE %in% default_campus & DEPARTME
   collect()
 default_visitType <- sort(default_visitType$ASSOCIATIONLISTA, na.last = T)
 
+default_visitType <- default_visitType[!is.na(default_visitType)]
+
 
 # default_ApptType <- sort(unique(historical.data[historical.data$SITE %in% default_campus &
 #                                                   historical.data$Department %in% default_departments &
