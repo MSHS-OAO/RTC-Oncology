@@ -7365,6 +7365,51 @@ print("2")
   }
   
   output$patient_wait_time <- renderPlotly({
+    data <- dataAll_access()
+    data_testing <<- data
+    
+    # waitTime <- data %>%
+    #   filter(WAIT_TIME >= 0) %>%
+    #   group_by(APPT_MADE_MONTH_YEAR, NEW_PT2) %>%
+    #   dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+    #   filter(NEW_PT2 %in% c("NEW","ESTABLISHED")) %>% collect()
+    
+    waitTime <- data %>%
+      filter(WAIT_TIME >= 0) %>%
+      group_by(APPT_MADE_MONTH_YEAR, NEW_PT) %>%
+      dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+      collect()
+    
+    waitTime <- waitTime %>% filter(!(is.na(NEW_PT)))
+    
+    waitTime$NEW_PT2 <- ifelse(waitTime$NEW_PT == "Y", "New","Established")
+    waitTime <- waitTime %>% select(-NEW_PT)
+
+    waitTime <- waitTime %>% spread(NEW_PT2, medWaitTime) 
+    waitTime[is.na(waitTime)] <- 0
+    waitTime <- waitTime %>% gather(variable, value, 2:3)
+    target <- 14
+    
+    
+    plot <- ggplot(waitTime, aes(x=APPT_MADE_MONTH_YEAR, y=value, group = variable, color=variable))+
+      geom_line(size=1) +
+      geom_abline(slope=0, intercept=14,  col = "red",lty=2, size = 1) +
+      labs(x=NULL, y=NULL,
+           title = "Monthly Median Wait Time to New and Established Appointment",
+           subtitle = paste0("Based on scheduled data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]))#,
+      )+
+      theme_new_line()+
+      theme_bw()+
+      graph_theme("top")+
+      geom_label(aes(x = 0.8, y = target, label = paste0("Target: ", target," days")), fill = "white", fontface = "bold", color = "red", size=4)+
+      scale_y_continuous(limits = c(0,max(waitTime$value))*1.5)+
+      theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+      scale_color_manual(values=c('#212070','#d80b8c')) +
+      geom_point(size = 3.2)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35))
     
   })
 

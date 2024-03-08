@@ -348,7 +348,34 @@ ui <- dashboardPage(
                 tags$head(tags$style("#practiceName_access{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11, 
                        boxPlus(
-                         title = "Patient Wait Time", width = 12, status = "primary", 
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           box(
+                             title = "Select Visit Type:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedVisitType_access",label=NULL,
+                                         choices=default_visitType,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Visit Types",
+                                           dropupAuto = FALSE),
+                                         selected = default_visitType)),
+                           column(5,
+                                  br(),
+                                  br(),
+                                  br(),
+                                  actionButton("update_filters_access", "CLICK TO UPDATE", width = "75%"),
+                                  br(),
+                                  br()
+                           ))),
+                       boxPlus(
+                         title = "Monthly Patient Wait Time", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotlyOutput("patient_wait_time", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
@@ -1330,6 +1357,10 @@ ui <- dashboardPage(
                                                 font-size: 18px;
                                                 position: absolute}"))),
       tags$head(tags$style(HTML("#update_filters_no_show {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_access {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
