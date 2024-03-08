@@ -7422,5 +7422,57 @@ print("2")
     
   })
 
+  output$wait_time_provider_breakdown <- function() {
+    data <- dataAll_access_associationlistA()
+    
+    table_data_exam_lab <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% filter(WAIT_TIME >= 0) %>%
+                            group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
+                            dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+                            collect() %>% filter(!(is.na(NEW_PT)))
+    
+    table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% filter(WAIT_TIME >= 0) %>%
+      group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
+      dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+      collect() %>% filter(!(is.na(NEW_PT)))
+    
+    table_data <- rbind(table_data_exam_lab, table_data_treatment)
+    
+    monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
+    
+    appt_order <- c(default_visitType, "Total")
+    
+    monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT == "Y", "New", "Established")) %>% select(-NEW_PT) %>%
+      relocate(Status, .after = ASSOCIATIONLISTA)
+    
+    monthly_wait_time <- monthly_wait_time[order(match(monthly_wait_time$ASSOCIATIONLISTA, appt_order), monthly_wait_time$PROVIDER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
+    
+    
+    site_selected <- isolate(input$selectedCampus)
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(monthly_wait_time))
+    names(header_above) <- paste0(c("Based on data from "),c(site))
+    
+    monthly_wait_time <- monthly_wait_time %>% rename(`Visit Type` = ASSOCIATIONLISTA,
+                                                      Provider = PROVIDER,
+                                                      Site = SITE)
+    
+    monthly_wait_time %>%
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Physician Patient Wait Time to Appointment" = length(monthly_wait_time)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      gsub("NA", " ", .) %>%
+      collapse_rows(c(1,2,3,4,5), valign = "top") %>%
+      row_spec(which(monthly_wait_time$`Visit Type` == "Total"), bold = T) 
+    
+    
+  }
 
 } # Close Server
