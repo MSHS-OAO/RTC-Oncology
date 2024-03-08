@@ -266,6 +266,38 @@ groupByFilters_Trend <- function(dt, campus, department
   
 }
 
+groupByFilters_access <- function(dt, campus, department
+                                 , mindateRange, maxdateRange
+                                 , daysofweek, holidays, diag
+){
+  format <- "YYYY-MM-DD HH24:MI:SS"
+  daysofweek <- toupper(daysofweek)
+  maxdateRange <- as.Date(maxdateRange) + 1
+  
+  
+  result <- dt %>% filter(SITE %in% campus, 
+                          DEPARTMENT_NAME %in% department, 
+                          TO_DATE(mindateRange, format) <= APPT_MADE_DATE_YEAR, 
+                          TO_DATE(maxdateRange, format) > APPT_MADE_DATE_YEAR, 
+                          APPT_DAY %in% daysofweek,
+                          DX_GROUPER %in% diag#, 
+                          #!HOLIDAY %in% holidays
+  ) 
+  
+  if("NA" %in% diag){
+    result_1 <- dt %>% filter(SITE %in% campus, 
+                              DEPARTMENT_NAME %in% department, 
+                              TO_DATE(mindateRange, format) <= APPT_MADE_DATE_YEAR, 
+                              TO_DATE(maxdateRange, format) > APPT_MADE_DATE_YEAR, 
+                              APPT_DAY %in% daysofweek,
+                              is.na(DX_GROUPER))
+    
+    result <- result %>% union_all(result_1)
+  }
+  return(result)
+  
+}
+
 
 all_provider <- read_excel("www/Mappings/Oncology System Dashboard - Data Groupings - Saved 11.10.2021.xlsx", sheet = "Provider ID Mappings") %>% filter(`Exam Treatment Utilization - Active Filter` == "Active")
 all_provider <- all_provider[,1]

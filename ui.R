@@ -108,6 +108,7 @@ ui <- dashboardPage(
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
+                menuItem("Access", tabName = "access", icon= icon("plus-circle")),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
                           menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
@@ -341,6 +342,48 @@ ui <- dashboardPage(
                          ))
                 )
         ),
+        tabItem(tabName = "access",
+                div("Access", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_access"),
+                tags$head(tags$style("#practiceName_access{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11, 
+                       boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           box(
+                             title = "Select Visit Type:",
+                             width = 4,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selectedVisitType_access",label=NULL,
+                                         choices=default_visitType,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Visit Types",
+                                           dropupAuto = FALSE),
+                                         selected = default_visitType)),
+                           column(5,
+                                  br(),
+                                  br(),
+                                  br(),
+                                  actionButton("update_filters_access", "CLICK TO UPDATE", width = "75%"),
+                                  br(),
+                                  br()
+                           ))),
+                       boxPlus(
+                         title = "Monthly Patient Wait Time", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotlyOutput("patient_wait_time", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("wait_time_provider_breakdown") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
+                       )
+                ),
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumebreakdown",
                 div("Volume Breakdown - Site", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
@@ -1319,6 +1362,10 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}"))),
+      tags$head(tags$style(HTML("#update_filters_access {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}"))),
       tags$head(tags$style(HTML("#update_filters2 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
@@ -1362,7 +1409,7 @@ ui <- dashboardPage(
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
         input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-        input.sbm == 'no_show'",
+        input.sbm == 'no_show' | input.sbm == 'access'",
         column(1,
           dropdown(
             br(),
@@ -1409,7 +1456,7 @@ ui <- dashboardPage(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                    input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                  input.sbm == 'no_show'",
+                  input.sbm == 'no_show' | input.sbm == 'access'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1456,7 +1503,7 @@ ui <- dashboardPage(
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                input.sbm == 'no_show'" ,                box(
+                input.sbm == 'no_show' | input.sbm == 'access'" ,                box(
                   title = "Select Date Range:", 
                   width = 12, 
                   height = "100px",
