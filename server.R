@@ -1303,6 +1303,35 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  dataAll_access <- reactive({
+    
+    input$update_filters
+    input$update_filters1
+    
+    isolate({
+      validate(
+        need(input$selectedCampus != "" , "Please select a Campus"),
+        need(input$selectedDepartment != "", "Please select a Department")
+      )
+      data  <- groupByFilters_access(arrived_data,
+                                    input$selectedCampus, input$selectedDepartment,
+                                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+                                    input$diag_grouper
+      )
+      
+      
+      data_test <- data %>% head(n = 1L) %>% collect()
+      validate(
+        need(nrow(data_test) != 0, "There is no arrived data for these filters.")
+      )
+      
+      data
+      
+    })
+  })
+  
+  
   # Unique Patients  data ============================================================================================================
   dataUniqueExam_system <- eventReactive(list(input$update_filters, input$update_filters1),{
     validate(
@@ -7334,6 +7363,10 @@ print("2")
       collapse_rows(c(1,2,3,4,5), valign = "top") %>%
       row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
   }
+  
+  output$patient_wait_time <- renderPlotly({
+    
+  })
 
 
 } # Close Server
