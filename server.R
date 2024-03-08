@@ -7428,12 +7428,13 @@ print("2")
     table_data_exam_lab <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% filter(WAIT_TIME >= 0) %>%
                             group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
                             dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-                            collect() %>% filter(!(is.na(NEW_PT)))
+                            collect() %>% filter(!(is.na(NEW_PT))) 
     
     table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% filter(WAIT_TIME >= 0) %>%
-      group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
+      group_by(APPT_MADE_MONTH_YEAR, REFERRING_PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT)))
+      collect() %>% filter(!(is.na(NEW_PT))) %>%
+      rename(PROVIDER = REFERRING_PROVIDER)
     
     table_data <- rbind(table_data_exam_lab, table_data_treatment)
     
@@ -7442,7 +7443,9 @@ print("2")
     appt_order <- c(default_visitType, "Total")
     
     monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT == "Y", "New", "Established")) %>% select(-NEW_PT) %>%
-      relocate(Status, .after = ASSOCIATIONLISTA)
+      relocate(Status, .after = ASSOCIATIONLISTA) %>%
+      relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
+      relocate(SITE, .before = PROVIDER)
     
     monthly_wait_time <- monthly_wait_time[order(match(monthly_wait_time$ASSOCIATIONLISTA, appt_order), monthly_wait_time$PROVIDER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
     
