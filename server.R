@@ -7364,8 +7364,17 @@ print("2")
       row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
   }
   
+  dataAll_access_associationlistA <- reactive({
+    input$update_filters_access
+    selected_visits <- isolate(input$selectedVisitType_access)
+    
+    data <- dataAll_access() %>% filter(ASSOCIATIONLISTA %in% selected_visits)
+    
+    
+  })
+  
   output$patient_wait_time <- renderPlotly({
-    data <- dataAll_access()
+    data <- dataAll_access_associationlistA()
     data_testing <<- data
     
     # waitTime <- data %>%

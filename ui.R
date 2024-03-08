@@ -378,6 +378,8 @@ ui <- dashboardPage(
                          title = "Monthly Patient Wait Time", width = 12, status = "primary", 
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotlyOutput("patient_wait_time", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("no_show_provider_breakdown") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        ),
                        )
