@@ -342,6 +342,13 @@ ui <- dashboardPage(
                          ))
                 )
         ),
+        tabItem(tabName = "access",
+                div("Access", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                textOutput("practiceName_access"),
+                tags$head(tags$style("#practiceName_access{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
+                column(11, 
+                       )
+                ),
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumebreakdown",
                 div("Volume Breakdown - Site", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
