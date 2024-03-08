@@ -347,6 +347,12 @@ ui <- dashboardPage(
                 textOutput("practiceName_access"),
                 tags$head(tags$style("#practiceName_access{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11, 
+                       boxPlus(
+                         title = "Patient Wait Time", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotlyOutput("patient_wait_time", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ),
                        )
                 ),
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
