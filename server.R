@@ -7364,35 +7364,38 @@ print("2")
       row_spec(which(monthly_no_show$ASSOCIATIONLISTA == "Total"), bold = T) 
   }
   
-  dataAll_access_associationlistA <- reactive({
+  dataAll_access_filter <- reactive({
     input$update_filters_access
-    selected_visits <- isolate(input$selectedVisitType_access)
+    selected_disease <- isolate(input$selectedDisease_access)
+    selected_disease_detail <- isolate(input$selectedDiseaseDetail_access)
+    selected_prov_type <- isolate(input$selectedProviderType_access)
+    selected_appt_type <- isolate(input$selectedAppointmentType_access)
     
-    data <- dataAll_access() %>% filter(ASSOCIATIONLISTA %in% selected_visits)
+    data <- dataAll_access() %>% filter(DISEASE_GROUP %in% selected_disease, DISEASE_GROUP_DETAIL %in% selected_disease_detail, PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
     
     
   })
   
   output$patient_wait_time <- renderPlotly({
-    data <- dataAll_access_associationlistA()
+    data <- dataAll_access_filter()
     data_testing <<- data
-    
-    # waitTime <- data %>%
-    #   filter(WAIT_TIME >= 0) %>%
-    #   group_by(APPT_MADE_MONTH_YEAR, NEW_PT2) %>%
-    #   dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-    #   filter(NEW_PT2 %in% c("NEW","ESTABLISHED")) %>% collect()
     
     waitTime <- data %>%
       filter(WAIT_TIME >= 0) %>%
-      group_by(APPT_MADE_MONTH_YEAR, NEW_PT) %>%
+      group_by(APPT_MADE_MONTH_YEAR, NEW_PT2) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect()
+      filter(NEW_PT2 %in% c("NEW","ESTABLISHED")) %>% collect()
     
-    waitTime <- waitTime %>% filter(!(is.na(NEW_PT)))
+    # waitTime <- data %>%
+    #   filter(WAIT_TIME >= 0) %>%
+    #   group_by(APPT_MADE_MONTH_YEAR, NEW_PT) %>%
+    #   dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+    #   collect()
+    # 
+    # waitTime <- waitTime %>% filter(!(is.na(NEW_PT)))
     
-    waitTime$NEW_PT2 <- ifelse(waitTime$NEW_PT == "Y", "New","Established")
-    waitTime <- waitTime %>% select(-NEW_PT)
+    waitTime$NEW_PT2 <- ifelse(waitTime$NEW_PT2 == "NEW", "New","Established")
+    # waitTime <- waitTime %>% select(-NEW_PT)
 
     waitTime <- waitTime %>% spread(NEW_PT2, medWaitTime) 
     waitTime[is.na(waitTime)] <- 0
@@ -7423,31 +7426,27 @@ print("2")
   })
 
   output$wait_time_provider_breakdown <- function() {
-    data <- dataAll_access_associationlistA()
+    data <- dataAll_access_filter()
     
-    table_data_exam_lab <- data %>% filter(ASSOCIATIONLISTA %in% c('Exam', 'Lab')) %>% filter(WAIT_TIME >= 0) %>%
-                            group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
-                            dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-                            collect() %>% filter(!(is.na(NEW_PT))) 
+    table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2, ) %>%
+                  dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+                  collect() %>% filter(!(is.na(NEW_PT2))) 
     
-    table_data_treatment <- data %>% filter(ASSOCIATIONLISTA %in% c('Treatment')) %>% filter(WAIT_TIME >= 0) %>%
-      group_by(APPT_MADE_MONTH_YEAR, REFERRING_PROVIDER, SITE, ASSOCIATIONLISTA, NEW_PT) %>%
-      dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT))) %>%
-      rename(PROVIDER = REFERRING_PROVIDER)
-    
-    table_data <- rbind(table_data_exam_lab, table_data_treatment)
     
     monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT == "Y", "New", "Established")) %>% select(-NEW_PT) %>%
-      relocate(Status, .after = ASSOCIATIONLISTA) %>%
-      relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
-      relocate(SITE, .before = PROVIDER)
+    monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% select(-NEW_PT2) %>%
+                          relocate(DISEASE_GROUP) %>% 
+                          relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
+                          relocate(PROVIDER_TYPE, .after = DISEASE_GROUP_DETAIL) %>%
+                          relocate(SITE, .after = PROVIDER_TYPE) %>%
+                          relocate(INPERSONVSTELE, .before = SITE) %>%
+                          relocate(Status, .after = PROVIDER)
     
-    monthly_wait_time <- monthly_wait_time[order(match(monthly_wait_time$ASSOCIATIONLISTA, appt_order), monthly_wait_time$PROVIDER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
+    # monthly_wait_time <- monthly_wait_time[order(match(monthly_wait_time$ASSOCIATIONLISTA, appt_order), monthly_wait_time$PROVIDER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
+    monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$DISEASE_GROUP, monthly_wait_time$DISEASE_GROUP_DETAIL, monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$INPERSONVSTELE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, monthly_wait_time$Status), ]
     
     
     site_selected <- isolate(input$selectedCampus)
@@ -7459,9 +7458,9 @@ print("2")
     header_above <- c("Subtitle" = ncol(monthly_wait_time))
     names(header_above) <- paste0(c("Based on data from "),c(site))
     
-    monthly_wait_time <- monthly_wait_time %>% rename(`Visit Type` = ASSOCIATIONLISTA,
-                                                      Provider = PROVIDER,
-                                                      Site = SITE)
+    # monthly_wait_time <- monthly_wait_time %>% rename(`Visit Type` = ASSOCIATIONLISTA,
+    #                                                   Provider = PROVIDER,
+    #                                                   Site = SITE)
     
     monthly_wait_time %>%
       kable(booktabs = T, escape = F) %>%
@@ -7472,7 +7471,7 @@ print("2")
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       gsub("NA", " ", .) %>%
-      collapse_rows(c(1,2,3,4,5), valign = "top") %>%
+      collapse_rows(c(1,2,3,4,5,6), valign = "top") %>%
       row_spec(which(monthly_wait_time$`Visit Type` == "Total"), bold = T) 
     
     
