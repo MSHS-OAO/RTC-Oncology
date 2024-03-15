@@ -7462,6 +7462,12 @@ print("2")
     #                                                   Provider = PROVIDER,
     #                                                   Site = SITE)
     
+    monthly_wait_time <- monthly_wait_time %>% rename(`Disease Group` = DISEASE_GROUP,
+                                                      `Disease Group Detail` = DISEASE_GROUP_DETAIL,
+                                                      `Provider Type` = PROVIDER_TYPE,
+                                                      Site = SITE,
+                                                      Provider = PROVIDER,
+                                                      `Visit Method` = INPERSONVSTELE)
     monthly_wait_time %>%
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
