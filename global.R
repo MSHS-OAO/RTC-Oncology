@@ -642,4 +642,4 @@ ethnicity_grouper_choices <- c( "OVERALL","BLANK/UNKNOWN", "PATIENT DECLINED", "
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
 provider_type_choices <- c("Medical Oncologist", "Nurse Practitioner")
-download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02", "taddej01", "martic56")
+download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02", "taddej01", "martic56", "JENKIN01")
