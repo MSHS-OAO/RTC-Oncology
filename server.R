@@ -7366,12 +7366,13 @@ print("2")
   
   dataAll_access_filter <- reactive({
     input$update_filters_access
-    selected_disease <- isolate(input$selectedDisease_access)
-    selected_disease_detail <- isolate(input$selectedDiseaseDetail_access)
+    # selected_disease <- isolate(input$selectedDisease_access)
+    # selected_disease_detail <- isolate(input$selectedDiseaseDetail_access)
     selected_prov_type <- isolate(input$selectedProviderType_access)
     selected_appt_type <- isolate(input$selectedAppointmentType_access)
     
-    data <- dataAll_access() %>% filter(DISEASE_GROUP %in% selected_disease, DISEASE_GROUP_DETAIL %in% selected_disease_detail, PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
+    # data <- dataAll_access() %>% filter(DISEASE_GROUP %in% selected_disease, DISEASE_GROUP_DETAIL %in% selected_disease_detail, PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
+    data <- dataAll_access() %>% filter(PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
     
     
   })
@@ -7406,6 +7407,7 @@ print("2")
     plot <- ggplot(waitTime, aes(x=APPT_MADE_MONTH_YEAR, y=value, group = variable, color=variable))+
       geom_line(size=1) +
       geom_abline(slope=0, intercept=14,  col = "red",lty=2, size = 1) +
+      geom_text(aes(x = 0.8, y = target, label = paste0("Target: ", target," days")), fontface = "bold", color = "red", size=4,vjust = -10.5,)+
       labs(x=NULL, y=NULL,
            title = "Monthly Median Wait Time to New and Established Appointment",
            subtitle = paste0("Based on scheduled data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]))#,
@@ -7413,7 +7415,6 @@ print("2")
       theme_new_line()+
       theme_bw()+
       graph_theme("top")+
-      geom_label(aes(x = 0.8, y = target, label = paste0("Target: ", target," days")), fill = "white", fontface = "bold", color = "red", size=4)+
       scale_y_continuous(limits = c(0,max(waitTime$value))*1.5)+
       theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
       scale_color_manual(values=c('#212070','#d80b8c')) +
@@ -7421,32 +7422,40 @@ print("2")
     
     ggplotly(plot) %>%
       layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
-                           y = 1.05, x = 0.35))
+                           y = 1.05, x = 0.35)) %>% style(textposition = "top")
+
     
   })
 
   output$wait_time_provider_breakdown <- function() {
     data <- dataAll_access_filter()
     
-    table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2, ) %>%
-                  dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-                  collect() %>% filter(!(is.na(NEW_PT2))) 
+    # table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2) %>%
+    #               dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+    #               collect() %>% filter(!(is.na(NEW_PT2))) 
+    
+    table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2, DX_GROUPER) %>%
+      dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
+      collect() %>% filter(!(is.na(NEW_PT2))) 
     
     
     monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% select(-NEW_PT2) %>%
-                          relocate(DISEASE_GROUP) %>% 
-                          relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
-                          relocate(PROVIDER_TYPE, .after = DISEASE_GROUP_DETAIL) %>%
+    monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% 
+                          # relocate(DISEASE_GROUP) %>% 
+                          # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
+                          relocate(PROVIDER_TYPE) %>%
                           relocate(SITE, .after = PROVIDER_TYPE) %>%
-                          relocate(INPERSONVSTELE, .before = SITE) %>%
-                          relocate(Status, .after = PROVIDER)
+                          relocate(Status, .after = INPERSONVSTELE) %>%
+                          relocate(DX_GROUPER, .after = PROVIDER) %>%
+                          relocate(INPERSONVSTELE, .after = PROVIDER) %>%
+                          ungroup() %>%
+                          select(-NEW_PT2)
     
     # monthly_wait_time <- monthly_wait_time[order(match(monthly_wait_time$ASSOCIATIONLISTA, appt_order), monthly_wait_time$PROVIDER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
-    monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$DISEASE_GROUP, monthly_wait_time$DISEASE_GROUP_DETAIL, monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$INPERSONVSTELE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, monthly_wait_time$Status), ]
+    monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, monthly_wait_time$INPERSONVSTELE, monthly_wait_time$DX_GROUPER, monthly_wait_time$SITE, monthly_wait_time$Status), ]
     
     
     site_selected <- isolate(input$selectedCampus)
@@ -7462,12 +7471,11 @@ print("2")
     #                                                   Provider = PROVIDER,
     #                                                   Site = SITE)
     
-    monthly_wait_time <- monthly_wait_time %>% rename(`Disease Group` = DISEASE_GROUP,
-                                                      `Disease Group Detail` = DISEASE_GROUP_DETAIL,
-                                                      `Provider Type` = PROVIDER_TYPE,
+    monthly_wait_time <- monthly_wait_time %>% rename(`Provider Type` = PROVIDER_TYPE,
                                                       Site = SITE,
                                                       Provider = PROVIDER,
-                                                      `Visit Method` = INPERSONVSTELE)
+                                                      `Visit Method` = INPERSONVSTELE,
+                                                      `Diagnosis Grouper` = DX_GROUPER)
     monthly_wait_time %>%
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
@@ -7477,7 +7485,7 @@ print("2")
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       gsub("NA", " ", .) %>%
-      collapse_rows(c(1,2,3,4,5,6), valign = "top") %>%
+      collapse_rows(c(1,2,3,4,5), valign = "top") %>%
       row_spec(which(monthly_wait_time$`Visit Type` == "Total"), bold = T) 
     
     
