@@ -7586,7 +7586,7 @@ print("2")
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("Physician Patient Wait Time to New Appointment" = length(monthly_wait_time)),
+      add_header_above(c("Physician Patient Wait Time to Established Appointment" = length(monthly_wait_time)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
