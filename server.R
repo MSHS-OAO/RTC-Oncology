@@ -7505,9 +7505,9 @@ print("2")
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
-      gsub("NA", " ", .) %>%
       collapse_rows(c(1,2,3,4,5), valign = "top") %>%
-      row_spec(which(monthly_wait_time$`Visit Method` == "Total"), bold = T) 
+      row_spec(which(monthly_wait_time$`Visit Method` == "Total"), bold = T) %>%
+      gsub("\\bNA\\b", " ", .)
     
     
   }
@@ -7590,9 +7590,9 @@ print("2")
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
-      gsub("NA", " ", .) %>%
       collapse_rows(c(1,2,3,4,5), valign = "top") %>%
-      row_spec(which(monthly_wait_time$`Visit Method` == "Total"), bold = T) 
+      row_spec(which(monthly_wait_time$`Visit Method` == "Total"), bold = T) %>%
+      gsub("\\bNA\\b", " ", .)
     
     
   }
