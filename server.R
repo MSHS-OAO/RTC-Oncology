@@ -7383,9 +7383,9 @@ print("2")
     
     waitTime <- data %>%
       filter(WAIT_TIME >= 0) %>%
-      group_by(APPT_MADE_MONTH_YEAR, NEW_PT2) %>%
+      group_by(APPT_MADE_MONTH_YEAR, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      filter(NEW_PT2 %in% c("NEW","ESTABLISHED")) %>% collect()
+      filter(NEW_PT_SCHEDULED %in% c("NEW","ESTABLISHED")) %>% collect()
     
     # waitTime <- data %>%
     #   filter(WAIT_TIME >= 0) %>%
@@ -7395,10 +7395,10 @@ print("2")
     # 
     # waitTime <- waitTime %>% filter(!(is.na(NEW_PT)))
     
-    waitTime$NEW_PT2 <- ifelse(waitTime$NEW_PT2 == "NEW", "New","Established")
+    waitTime$NEW_PT_SCHEDULED <- ifelse(waitTime$NEW_PT_SCHEDULED == "NEW", "New","Established")
     # waitTime <- waitTime %>% select(-NEW_PT)
 
-    waitTime <- waitTime %>% spread(NEW_PT2, medWaitTime) 
+    waitTime <- waitTime %>% spread(NEW_PT_SCHEDULED, medWaitTime) 
     waitTime[is.na(waitTime)] <- 0
     waitTime <- waitTime %>% gather(variable, value, 2:3)
     target <- 14
@@ -7430,20 +7430,20 @@ print("2")
   output$wait_time_provider_breakdown_new <- function() {
     data <- dataAll_access_filter()
     
-    # table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2) %>%
+    # table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT_SCHEDULED) %>%
     #               dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-    #               collect() %>% filter(!(is.na(NEW_PT2))) 
+    #               collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) 
     
-    table_data <- data %>% filter(WAIT_TIME >= 0, NEW_PT2 == "NEW") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2) %>%
+    table_data <- data %>% filter(WAIT_TIME >= 0, NEW_PT_SCHEDULED == "NEW") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT2))) 
+      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) 
     
     
     monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time <- monthly_wait_time %>% #mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% 
+    monthly_wait_time <- monthly_wait_time %>% #mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
                           # relocate(DISEASE_GROUP) %>% 
                           # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
                           relocate(PROVIDER_TYPE) %>%
@@ -7452,17 +7452,17 @@ print("2")
                           #relocate(DX_GROUPER, .after = PROVIDER) %>%
                           relocate(INPERSONVSTELE, .after = PROVIDER) %>%
                           ungroup() %>%
-                          select(-NEW_PT2)
+                          select(-NEW_PT_SCHEDULED)
     
-    monthly_wait_time_total <- data %>% filter(WAIT_TIME >= 0, NEW_PT2 == "NEW") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, NEW_PT2) %>%
+    monthly_wait_time_total <- data %>% filter(WAIT_TIME >= 0, NEW_PT_SCHEDULED == "NEW") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT2))) %>% mutate(INPERSONVSTELE = "Total")
+      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) %>% mutate(INPERSONVSTELE = "Total")
     
     monthly_wait_time_total <- monthly_wait_time_total %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time_total <- monthly_wait_time_total %>% #mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% 
+    monthly_wait_time_total <- monthly_wait_time_total %>% #mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
       # relocate(DISEASE_GROUP) %>% 
       # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
       relocate(PROVIDER_TYPE) %>%
@@ -7471,7 +7471,7 @@ print("2")
       #relocate(DX_GROUPER, .after = PROVIDER) %>%
       relocate(INPERSONVSTELE, .after = PROVIDER) %>%
       ungroup() %>%
-      select(-NEW_PT2)
+      select(-NEW_PT_SCHEDULED)
     
     monthly_wait_time <- bind_rows(monthly_wait_time, monthly_wait_time_total)
     
@@ -7515,20 +7515,20 @@ print("2")
   output$wait_time_provider_breakdown_est <- function() {
     data <- dataAll_access_filter()
     
-    # table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2) %>%
+    # table_data <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, DISEASE_GROUP, DISEASE_GROUP_DETAIL, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT_SCHEDULED) %>%
     #               dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-    #               collect() %>% filter(!(is.na(NEW_PT2))) 
+    #               collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) 
     
-    table_data <- data %>% filter(WAIT_TIME >= 0, NEW_PT2 == "ESTABLISHED") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT2) %>%
+    table_data <- data %>% filter(WAIT_TIME >= 0, NEW_PT_SCHEDULED == "ESTABLISHED") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, INPERSONVSTELE, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT2))) 
+      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) 
     
     
     monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time <- monthly_wait_time %>% #mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% 
+    monthly_wait_time <- monthly_wait_time %>% #mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
       # relocate(DISEASE_GROUP) %>% 
       # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
       relocate(PROVIDER_TYPE) %>%
@@ -7537,17 +7537,17 @@ print("2")
       #relocate(DX_GROUPER, .after = PROVIDER) %>%
       relocate(INPERSONVSTELE, .after = PROVIDER) %>%
       ungroup() %>%
-      select(-NEW_PT2)
+      select(-NEW_PT_SCHEDULED)
     
-    monthly_wait_time_total <- data %>% filter(WAIT_TIME >= 0, NEW_PT2 == "ESTABLISHED") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, NEW_PT2) %>%
+    monthly_wait_time_total <- data %>% filter(WAIT_TIME >= 0, NEW_PT_SCHEDULED == "ESTABLISHED") %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT2))) %>% mutate(INPERSONVSTELE = "Total")
+      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) %>% mutate(INPERSONVSTELE = "Total")
     
     monthly_wait_time_total <- monthly_wait_time_total %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
     appt_order <- c(default_visitType, "Total")
     
-    monthly_wait_time_total <- monthly_wait_time_total %>% #mutate(Status = ifelse(NEW_PT2 == "NEW", "New", "Established")) %>% 
+    monthly_wait_time_total <- monthly_wait_time_total %>% #mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
       # relocate(DISEASE_GROUP) %>% 
       # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
       relocate(PROVIDER_TYPE) %>%
@@ -7556,7 +7556,7 @@ print("2")
       #relocate(DX_GROUPER, .after = PROVIDER) %>%
       relocate(INPERSONVSTELE, .after = PROVIDER) %>%
       ungroup() %>%
-      select(-NEW_PT2)
+      select(-NEW_PT_SCHEDULED)
     
     monthly_wait_time <- bind_rows(monthly_wait_time, monthly_wait_time_total)
     
