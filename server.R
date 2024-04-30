@@ -601,6 +601,12 @@ server <- function(input, output, session) {
                         selected = disease_detail_choices
       )
       
+      updatePickerInput(session,
+                        inputId = "selectedDiseaseDetail_access",
+                        choices = disease_detail_choices,
+                        selected = disease_detail_choices
+      )
+      
       
       
      
@@ -7370,9 +7376,10 @@ print("2")
     # selected_disease_detail <- isolate(input$selectedDiseaseDetail_access)
     selected_prov_type <- isolate(input$selectedProviderType_access)
     selected_appt_type <- isolate(input$selectedAppointmentType_access)
+    selected_disease_detail <- isolate(input$selectedDiseaseDetail_access)
     
     # data <- dataAll_access() %>% filter(DISEASE_GROUP %in% selected_disease, DISEASE_GROUP_DETAIL %in% selected_disease_detail, PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
-    data <- dataAll_access() %>% filter(PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type)
+    data <- dataAll_access() %>% filter(PROVIDER_TYPE %in% selected_prov_type, INPERSONVSTELE %in% selected_appt_type, DISEASE_GROUP_DETAIL %in% selected_disease_detail)
     
     
   })
