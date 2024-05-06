@@ -411,8 +411,8 @@ ui <- dashboardPage(
                                            countSelectedText = "{0}/{1} Appointment Types",
                                            dropupAuto = FALSE),
                                          selected = c("In Person", "Telehealth"))),
-                           column(4),
-                           column(4,
+                           #column(4),
+                           column(3,
                                   br(),
                                   br(),
                                   br(),
@@ -426,9 +426,9 @@ ui <- dashboardPage(
                          plotlyOutput("patient_wait_time", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c"),
                          tableOutput("wait_time_provider_breakdown_new") %>%
-                           withSpinner(type = 5, color = "#d80b8c"),
-                           tableOutput("wait_time_provider_breakdown_est") %>%
-                           withSpinner(type = 5, color = "#d80b8c")
+                           withSpinner(type = 5, color = "#d80b8c")#,
+                           # tableOutput("wait_time_provider_breakdown_est") %>%
+                           # withSpinner(type = 5, color = "#d80b8c")
                        ),
                        )
                 ),
