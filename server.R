@@ -7453,8 +7453,6 @@ print("2")
     
     monthly_wait_time <- table_data %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
-    appt_order <- c(default_visitType, "Total")
-    
     monthly_wait_time <- monthly_wait_time %>% mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
                           # relocate(DISEASE_GROUP) %>% 
                           # relocate(DISEASE_GROUP_DETAIL, .after = DISEASE_GROUP) %>%
@@ -7472,11 +7470,10 @@ print("2")
     
     monthly_wait_time_total <- data %>% filter(WAIT_TIME >= 0) %>% group_by(APPT_MADE_MONTH_YEAR, PROVIDER, SITE, PROVIDER_TYPE, NEW_PT_SCHEDULED) %>%
       dplyr::summarise(medWaitTime = ceiling(median(WAIT_TIME))) %>%
-      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) %>% mutate(INPERSONVSTELE = "Total")
+      collect() %>% filter(!(is.na(NEW_PT_SCHEDULED))) %>% mutate(INPERSONVSTELE = "Overall")
     
     monthly_wait_time_total <- monthly_wait_time_total %>% pivot_wider(names_from = APPT_MADE_MONTH_YEAR, values_from = medWaitTime)
     
-    appt_order <- c(default_visitType, "Total")
     
     monthly_wait_time_total <- monthly_wait_time_total %>% mutate(Status = ifelse(NEW_PT_SCHEDULED == "NEW", "New", "Established")) %>% 
       # relocate(DISEASE_GROUP) %>% 
@@ -7491,7 +7488,9 @@ print("2")
     
     monthly_wait_time <- bind_rows(monthly_wait_time, monthly_wait_time_total)
     
-     monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, monthly_wait_time$INPERSONVSTELE, monthly_wait_time$SITE, monthly_wait_time$Status), ]
+    appt_order <- c("In Person", "Telehealth", "Overall")
+    
+     monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, factor(monthly_wait_time$INPERSONVSTELE, levels = appt_order), monthly_wait_time$SITE, monthly_wait_time$Status), ]
     #monthly_wait_time <- monthly_wait_time[order(monthly_wait_time$PROVIDER_TYPE, monthly_wait_time$SITE, monthly_wait_time$PROVIDER, monthly_wait_time$INPERSONVSTELE, monthly_wait_time$SITE), ]
     
 
@@ -7517,12 +7516,12 @@ print("2")
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("Physician Patient Wait Time to New and Estavlished Appointment" = length(monthly_wait_time)),
+      add_header_above(c("Median Patient Wait Time to New and Established Appointment by Provider" = length(monthly_wait_time)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
       collapse_rows(c(1,2,3,4), valign = "top") %>%
-      row_spec(which(monthly_wait_time$`Visit Method` == "Total"), bold = T) %>%
+      row_spec(which(monthly_wait_time$`Visit Method` == "Overall"), bold = T) %>%
       gsub("\\bNA\\b", " ", .)
     
     
