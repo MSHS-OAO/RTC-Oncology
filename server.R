@@ -1320,7 +1320,7 @@ server <- function(input, output, session) {
         need(input$selectedCampus != "" , "Please select a Campus"),
         need(input$selectedDepartment != "", "Please select a Department")
       )
-      data  <- groupByFilters_access(arrived_data,
+      data  <- groupByFilters_access(oncology_tbl,
                                     input$selectedCampus, input$selectedDepartment,
                                     input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                                     input$diag_grouper
