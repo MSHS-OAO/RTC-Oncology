@@ -108,7 +108,8 @@ ui <- dashboardPage(
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
                                   )
                 ),
-                menuItem("Access", tabName = "access", icon= icon("plus-circle")),
+                menuItem("Access", tabName = "access_top", icon= icon("plus-circle"),
+                         menuSubItem("Patient Wait Time", tabName = "access")),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
                           menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
@@ -343,7 +344,7 @@ ui <- dashboardPage(
                 )
         ),
         tabItem(tabName = "access",
-                div("Access", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Access - Patient Wait Time", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 textOutput("practiceName_access"),
                 tags$head(tags$style("#practiceName_access{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 22px; margin-top: -0.2em; margin-bottom: 0.5em; margin-left: 20px}")), hr(),
                 column(11, 
