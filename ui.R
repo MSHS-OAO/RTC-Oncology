@@ -109,7 +109,8 @@ ui <- dashboardPage(
                                   )
                 ),
                 menuItem("Access", tabName = "access_top", icon= icon("plus-circle"),
-                         menuSubItem("Patient Wait Time", tabName = "access")),
+                         menuSubItem("Patient Wait Time", tabName = "access"),
+                         menuSubItem("Treatment", tabName = "treatment_conversion")),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
                           menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
@@ -119,7 +120,6 @@ ui <- dashboardPage(
                 # background-repeat: no-repeat;
                 # height: 32px;
                 # width: 32px;
-                # display: block;"
                 # ),
                             menuItem("Ethnicity/Race Capture", tabName = "ethnicity_and_race"),
                             menuItem("MyChart Activation", tabName = "my_chart_activation")
@@ -432,6 +432,16 @@ ui <- dashboardPage(
                            # withSpinner(type = 5, color = "#d80b8c")
                        ),
                        )
+                ),
+        tabItem(tabName = "treatment_conversion",
+                div("Access - Treatment", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                column(11,
+                       boxPlus(
+                         title = "Treatments", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotlyOutput("treatment_conversions", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ))
                 ),
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumebreakdown",
