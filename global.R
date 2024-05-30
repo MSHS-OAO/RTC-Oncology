@@ -82,6 +82,7 @@ source("global_functions.R")
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
+mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
 
 
 ### (2) Import Data ----------------------------------------------------------------------------------

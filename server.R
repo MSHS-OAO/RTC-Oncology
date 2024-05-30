@@ -7527,6 +7527,32 @@ print("2")
     
   }
   
+  output$treatment_conversions <- renderPlotly({
+    data <- dataArrived() 
+    data_test <<- data
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_MONTH_YEAR) 
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH_YEAR)) %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect() %>%
+      mutate(Year = substr(APPT_MONTH_YEAR, 1, 4))
+    
+    plot <- ggplot(data_join, aes(x= APPT_MONTH_YEAR, y = total, color = Year, group = Year)) + geom_line(size=1)+
+            labs(x=NULL, y=NULL,
+                 title = "Treatment Conversions",
+                 subtitle = paste0("Based on arrived data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]))#,
+            )+
+            theme_new_line()+
+            theme_bw()+
+            graph_theme("top")+
+            scale_y_continuous(limits = c(0,max(data_join$total))*1.5)+
+            theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+            scale_color_manual(values=c('#212070','#d80b8c')) +
+            geom_point(size = 3.2)
+    
+    ggplotly(plot) %>%
+      layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+                           y = 1.05, x = 0.35)) %>% style(textposition = "top")
+  })
+  
   output$wait_time_provider_breakdown_est <- function() {
     data <- dataAll_access_filter()
     

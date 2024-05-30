@@ -1468,7 +1468,7 @@ ui <- dashboardPage(
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
         input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-        input.sbm == 'no_show' | input.sbm == 'access'",
+        input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion'",
         column(1,
           dropdown(
             br(),
@@ -1515,7 +1515,7 @@ ui <- dashboardPage(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                    input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                  input.sbm == 'no_show' | input.sbm == 'access'",
+                  input.sbm == 'no_show' | input.sbm == 'access'| input.sbm == 'treatment_conversion'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1562,7 +1562,7 @@ ui <- dashboardPage(
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                input.sbm == 'no_show' | input.sbm == 'access'" ,                box(
+                input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion'" ,                box(
                   title = "Select Date Range:", 
                   width = 12, 
                   height = "100px",
@@ -1654,7 +1654,7 @@ ui <- dashboardPage(
          input.sbm == `bookedFilled` |  
          input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
          input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-         input.sbm == 'zipCode'",
+         input.sbm == 'zipCode'| input.sbm == 'treatment_conversion'",
         br(),
         # dropdown(
         # conditionalPanel(condition = "input.sbm == 'uniqueAll'",
