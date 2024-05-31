@@ -7529,8 +7529,7 @@ print("2")
   
   output$treatment_conversions <- renderPlotly({
     data <- dataArrived() 
-    data_test <<- data
-    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) 
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) %>% distinct()
     
     data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH)) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%
       mutate(APPT_MONTH = str_to_title(APPT_MONTH))
@@ -7554,6 +7553,44 @@ print("2")
     
     
     ggplot_line_graph(data_join, "Treatment Conversions")
+  })
+  
+  output$treatment_conversions_percent <- renderPlotly({
+    data <- dataArrived()
+    
+    data_test <<- data
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) %>% distinct()
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH)) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total_treat = n()) %>% collect() %>%
+      mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_total <- data %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%  mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_all <- left_join(data_total, data_join) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = round(total_treat/total, 2))
+    
+    
+    graph <- ggplot(data_all, aes(x=factor(APPT_MONTH, levels = monthOptions), y=total, group=APPT_YEAR))+
+      geom_line(aes(color=APPT_YEAR), size=1.1)+
+      geom_point(aes(color=APPT_YEAR), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = "Treatment Percent",
+           y = NULL, x = NULL, fill = NULL, color = NULL)+
+      scale_y_continuous(labels = percent_format(), limits=c(0,1)) +
+    theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90),
+            plot.tag.position = 'top' 
+            
+      )
+    
+    
+    ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+
   })
   
   output$wait_time_provider_breakdown_est <- function() {

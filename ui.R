@@ -440,6 +440,8 @@ ui <- dashboardPage(
                          title = "Treatments", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotlyOutput("treatment_conversions", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         plotlyOutput("treatment_conversions_percent", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c")
                        ))
                 ),
