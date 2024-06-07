@@ -7033,11 +7033,17 @@ print("2")
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = RACE_GROUPER)
     
+    activation_total <- activation_data %>% group_by(`Appt Month`, Race) %>% summarise(total_race_group = sum(total))
+    
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
     if("OVERALL" %in% race_grouper) {
+      activated_percent <- activated_percent %>% select(-total_race_group)
+      activated_percent <- right_join(activated_percent, activation_total) %>% mutate(MYCHART_STATUS_GROUPER = ifelse(is.na(MYCHART_STATUS_GROUPER), "Activated", MYCHART_STATUS_GROUPER)) %>%
+        mutate(total = ifelse(is.na(total), 0, total))
+      
       combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
                                                                                                             total_race_group = sum(total_race_group))
       
@@ -7046,7 +7052,7 @@ print("2")
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
     
-    activated_percent <- activated_percent %>% filter(Race %in% race_grouper)
+    activated_percent <- activated_percent %>% filter(Race %in% race_grouper) %>% filter(!(is.na(`Percent Activated`)))
     
     
     activated_percent$Race <- factor(activated_percent$Race, levels = race_grouper_choices)
@@ -7079,11 +7085,17 @@ print("2")
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = ETHNICITY_GROUPER)
     
+    activation_total <- activation_data %>% group_by(`Appt Month`, Race) %>% summarise(total_race_group = sum(total))
+    
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
     if("OVERALL" %in% ethnicity_grouper) {
+      activated_percent <- activated_percent %>% select(-total_race_group)
+      activated_percent <- right_join(activated_percent, activation_total) %>% mutate(MYCHART_STATUS_GROUPER = ifelse(is.na(MYCHART_STATUS_GROUPER), "Activated", MYCHART_STATUS_GROUPER)) %>%
+        mutate(total = ifelse(is.na(total), 0, total))
+      
       combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
                                                                                                             total_race_group = sum(total_race_group))
       
@@ -7092,7 +7104,7 @@ print("2")
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
     
-    activated_percent <- activated_percent %>% filter(Race %in% ethnicity_grouper)
+    activated_percent <- activated_percent %>% filter(Race %in% ethnicity_grouper) %>% filter(!(is.na(`Percent Activated`)))
     
     
     activated_percent$Race <- factor(activated_percent$Race, levels = ethnicity_grouper_choices)
