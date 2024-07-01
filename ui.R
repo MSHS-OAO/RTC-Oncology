@@ -274,7 +274,7 @@ ui <- dashboardPage(
                                            p("Oncology Analytics Tool is developed based on the following data from EPIC Clarity:", style = "font-size:22px; font-weight: bold"),
                                            p("1. ", strong("Scheduling Data"), " provides scheduling details on scheduled/arrived appointments and excludes erroneous visits.", style = "font-size:22px"),
                                            p("2. ", strong("Race/Ethnicity Data"), " provides capture analysis and MyChart activation breakdown.", style = "font-size:22px"),
-                                           p("3. ", strong("All Data"), " is updated daily from EPIC."),
+                                           p("3. ", strong("All Data"), " is updated daily from EPIC.", style = "font-size:22px"),
                                            # p("2. ", strong("Slot Availability Data"), " provides slot level details inlcuding booked and filled hours and slots.", style = "font-size:22px"),
                                          ))),
                          
