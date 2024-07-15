@@ -7593,6 +7593,49 @@ print("2")
 
   })
   
+  output$treatment_conversion_provider <- function() {
+    
+    data <- dataArrived() 
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_MONTH_YEAR, PROVIDER, PROVIDER_TYPE) %>% distinct()
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH_YEAR)) %>% group_by(APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = n()) %>% collect() #%>%
+      #mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_join <- data_join %>% pivot_wider(names_from = APPT_MONTH_YEAR, values_from = total)
+    
+    months_sorted <- sort(colnames(data_join)[2:(length(data_join))])
+    col_order <- c(colnames(data_join)[1], months_sorted)
+    data_join <- data_join[, col_order]
+    
+    data_join <- data_join[order(data_join$PROVIDER), ]
+    
+    
+    site_selected <- isolate(input$selectedCampus)
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(data_join))
+    names(header_above) <- paste0(c("Based on scheduled data from "),c(site))
+    
+
+    
+    
+    data_join %>%
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Treatment Conversions by Provider" = length(data_join)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(1, bold = T) %>%
+      #collapse_rows(c(1,2,3,4), valign = "top") %>%
+      #row_spec(which(data_join$`Visit Method` == "Overall"), bold = T) %>%
+      gsub("\\bNA\\b", " ", .)
+    
+  }
+  
   output$wait_time_provider_breakdown_est <- function() {
     data <- dataAll_access_filter()
     

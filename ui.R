@@ -437,11 +437,48 @@ ui <- dashboardPage(
                 div("Access - Treatment", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column(11,
                        boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           # box(
+                           #   title = "Select Provider Type:",
+                           #   width = 3,
+                           #   height = "100px",
+                           #   solidHeader = FALSE,
+                           #   pickerInput("selected_prov_type_conversions",label=NULL,
+                           #               choices=provider_type_choices,
+                           #               multiple=TRUE,
+                           #               options = pickerOptions(
+                           #                 liveSearch = TRUE,
+                           #                 actionsBox = TRUE,
+                           #                 selectedTextFormat = "count > 1",
+                           #                 countSelectedText = "{0}/{1} Provider Types",
+                           #                 dropupAuto = FALSE),
+                           #               selected = provider_type_choices)),
+                           box(
+                             title = "Select Provider:",
+                             width = 3,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selected_prov_conversions",label=NULL,
+                                         choices=default_provider,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Provider Types",
+                                           dropupAuto = FALSE),
+                                         selected = default_provider))
+                         )),
+                       boxPlus(
                          title = "Treatments", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotlyOutput("treatment_conversions", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c"),
                          plotlyOutput("treatment_conversions_percent", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("treatment_conversion_provider") %>%
                            withSpinner(type = 5, color = "#d80b8c")
                        ))
                 ),
