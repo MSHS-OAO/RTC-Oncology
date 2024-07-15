@@ -1675,6 +1675,10 @@ server <- function(input, output, session) {
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>% 
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(total_visits) > 0 , "There are no exam visits for the selected filters")
+    )
+    
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
     if(length(unique(data$SITE)) == length(campus_choices)){
@@ -1774,6 +1778,11 @@ server <- function(input, output, session) {
     # data <- arrived.data
     
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Labs") %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) > 0 , "There are no lab visits for the selected filters")
+    )
+    
     
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -2239,7 +2248,11 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
-    factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    if(length(unique(total_visits_break$ASSOCIATIONLISTT)) > 1) {
+      factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    } else {
+      factor_levels = unique(total_visits_break$ASSOCIATIONLISTT)
+    }
     
     total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, levels = factor_levels)
     
