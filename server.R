@@ -639,18 +639,24 @@ server <- function(input, output, session) {
         distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
         collect()
       
-      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      select_campus_testing <<- select_campus
       
-      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
-      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
-      
-      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
-      provider_type <- input$referring_provider_treatment_type
-      
-      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
-      
+      if("Genetics Infusion" == select_campus) {
+        
+        provider_choices_volume_treatment <- provider_choices_volume_treatment
+      } else{
+        select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+        
+        provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+        provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+        
+        provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+        provider_type <- input$referring_provider_treatment_type
+        
+        provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+        
+      }
       provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
-      
       updatePickerInput(session,
                         inputId = "selected_referring_provider_treatment",
                         choices = provider_choices_volume_treatment,
@@ -966,15 +972,22 @@ server <- function(input, output, session) {
       distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
       collect()
     
-    select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+    if("Genetics Infusion" == select_campus) {
+      
+      provider_choices_volume_treatment <- provider_choices_volume_treatment
+    } else{
+      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+      
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+      provider_type <- input$referring_provider_treatment_type
+      
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+    }
     
-    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
-    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
-    
-    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
-    provider_type <- input$referring_provider_treatment_type
-    
-    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+
     
     provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
     
