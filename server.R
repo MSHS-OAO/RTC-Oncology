@@ -579,6 +579,7 @@ server <- function(input, output, session) {
       )
       
       
+      disease_choices <- ifelse(is_empty(disease_choices), c("NA"), disease_choices)
       disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease &
                                                    DISEASE_GROUP %in% disease_choices) %>%
@@ -588,6 +589,7 @@ server <- function(input, output, session) {
         mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
         collect()
       disease_detail_choices <- sort(disease_detail_choices$DISEASE_GROUP_DETAIL, na.last = T)
+      
       
       updatePickerInput(session,
                         inputId = "selectedDiseaseDetail",
@@ -609,7 +611,7 @@ server <- function(input, output, session) {
       
       
       
-     
+ 
       selected_dept <- input$selectedDepartment
       provider_type <- input$provider_type_volume
       provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
@@ -657,7 +659,6 @@ server <- function(input, output, session) {
       
       date_1 <- input$dateRange[1]
       date_2 <- input$dateRange[2]
-      
       
       
       selected_dept <- input$selectedDepartment
