@@ -678,6 +678,21 @@ server <- function(input, output, session) {
       ) 
       
       
+      provider_unique_conversions<- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                                DEPARTMENT_NAME %in% selected_dept &
+                                                                ASSOCIATIONLISTA %in% c("Treatment")) %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      provider_unique_conversions <- sort(provider_unique_conversions$PROVIDER, na.last = T)
+      
+      updatePickerInput(session,
+                        inputId = "selected_prov_conversions",
+                        choices = provider_unique_conversions,
+                        selected = provider_unique_conversions
+      ) 
+      
+      
       # provider_utlization_choices <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
       #                                                                            historical.data$Department %in% input$selectedDepartment, "Provider"])),
       #                                   stringsAsFactors=FALSE
