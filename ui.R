@@ -110,7 +110,7 @@ ui <- dashboardPage(
                 ),
                 menuItem("Access", tabName = "access_top", icon= icon("plus-circle"),
                          menuSubItem("Patient Wait Time", tabName = "access"),
-                         menuSubItem("Treatment", tabName = "treatment_conversion")),
+                         menuSubItem("New Treatments", tabName = "treatment_conversion")),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
                           menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
@@ -434,7 +434,7 @@ ui <- dashboardPage(
                        )
                 ),
         tabItem(tabName = "treatment_conversion",
-                div("Access - Treatment", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Access - New Treatments", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column(11,
                        boxPlus(
                          title = "Analysis Customization", width = 12, status = "primary", 
@@ -469,10 +469,18 @@ ui <- dashboardPage(
                                            selectedTextFormat = "count > 1",
                                            countSelectedText = "{0}/{1} Provider Types",
                                            dropupAuto = FALSE),
-                                         selected = default_provider))
-                         )),
+                                         selected = default_provider)),
+                           column(4,
+                                  br(),
+                                  br(),
+                                  br(),
+                                  actionButton("update_filters_conversions", "CLICK TO UPDATE", width = "75%"))
+                         )
+                         
+              
+                         ),
                        boxPlus(
-                         title = "Treatments", width = 12, status = "primary",
+                         title = "New Treatment Conversions", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          plotlyOutput("treatment_conversions", height = "auto") %>% 
                            withSpinner(type = 5, color = "#d80b8c"),
@@ -1481,6 +1489,10 @@ ui <- dashboardPage(
                                                 font-size: 18px;
                                                 position: absolute}"))),
       tags$head(tags$style(HTML("#update_filters6 {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}}"))),
+      tags$head(tags$style(HTML("#update_filters_conversions {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
