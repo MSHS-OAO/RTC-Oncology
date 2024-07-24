@@ -17,6 +17,7 @@ ui <- dashboardPage(
     
     
     
+    
     tags$head(tags$style(HTML("#save_filters {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
