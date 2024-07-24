@@ -681,7 +681,8 @@ server <- function(input, output, session) {
       provider_unique_conversions<- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
                                                                 ASSOCIATIONLISTA %in% c("Treatment")) %>%
-        filter(NEW_PT_SCHEDULED == "NEW")
+        filter(NEW_PT_SCHEDULED == "NEW") %>% 
+        filter(!is.null(PROVIDER_TYPE)) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
@@ -7547,7 +7548,9 @@ print("2")
     input$update_filters_conversions
     providers <- isolate(input$selected_prov_conversions)
     
+    print("1")
     data <- dataArrived() %>% filter(PROVIDER %in% providers)
+    print("2")
     
     data
   })
