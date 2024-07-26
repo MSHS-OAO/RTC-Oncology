@@ -7335,10 +7335,12 @@ print("2")
     # monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
     
     monthly_no_show$RACE_GROUPER <- factor(monthly_no_show$RACE_GROUPER, levels = race_grouper_choices)
+    monthly_no_show <- monthly_no_show %>% mutate(`No Show Rate` = paste0(total * 100,"%"))
     
-    g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=RACE_GROUPER))+
+    g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=RACE_GROUPER, label = `No Show Rate`))+
       geom_line(aes(color=RACE_GROUPER), size=1.1)+
       geom_point(aes(color=RACE_GROUPER), size=3)+
+       #geom_text(aes(label = percent)) +
       # scale_color_MountSinai('dark')+
       scale_color_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
       labs(title = title,
@@ -7354,7 +7356,8 @@ print("2")
             axis.title.y = element_text(size = 12, angle = 90),
             plot.tag.position = 'top')
     
-    ggplotly(g1, tooltip = NULL)
+    ggplotly(g1, tooltip = c("No Show Rate")) %>%
+    style(hoverinfo = "none", traces = c(3, 4)) 
     
     # n <- length(unique(monthly_no_show$RACE_GROUPER)) - 1
     # if(n==0){
