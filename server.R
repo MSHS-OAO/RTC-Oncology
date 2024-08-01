@@ -7274,7 +7274,7 @@ print("2")
     
     valueBox(
       prettyNum(round(numerator/denominator, 1),big.mark=","), 
-      subtitle = tags$p("Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+      subtitle = tags$p("Overall Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
   })
@@ -7289,7 +7289,7 @@ print("2")
     valueBox(
       paste0(round((numerator / 
                       denominator)*100,1), "%"),
-      subtitle = tags$p("No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+      subtitle = tags$p("Overall No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
   })
