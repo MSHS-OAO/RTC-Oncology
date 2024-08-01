@@ -7294,24 +7294,132 @@ print("2")
     
   })
   
-  output$monthly_no_show_percent <- renderPlotly({
+  output$monthly_no_show_percent_ethnicity <- renderPlotly({
+    
+    selected_race_grouper <- isolate(input$selected_race_grouper_no_show)
+    selected_ethnicity_grouper <- isolate(input$selected_ethnicity_grouper_no_show)
+    
     data <- dataArrivedNoShowTrend_associationlistA()
     
     data_test <<- data
     
-    no_show_data <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS) %>% summarise(total = n()) %>% collect()
+    data_filtered <- data %>% filter(ETHNICITY_GROUPER %in% selected_ethnicity_grouper)
     
-    numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
-                  group_by(APPT_MONTH_YEAR) %>% summarise(numerator = sum(total))
+    no_show_data_race <- data_filtered %>% group_by(APPT_MONTH_YEAR, APPT_STATUS, ETHNICITY_GROUPER) %>% summarise(total = n()) %>% collect()
     
-    denominator <- no_show_data %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+    numerator_race <- no_show_data_race %>% filter(APPT_STATUS != "Arrived") %>% 
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(numerator = sum(total))
     
-    monthly_no_show <- left_join(denominator, numerator)
+    denominator_race <- no_show_data_race %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
     
-    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup() %>% mutate(RACE_GROUPER = "OVERALL")
+    monthly_no_show_race <- left_join(numerator_race, denominator_race)
+    
+    monthly_no_show <- monthly_no_show_race %>% group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
     
     
-    no_show_data_race <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS, RACE_GROUPER) %>% summarise(total = n()) %>% collect()
+    if("OVERALL" %in% selected_ethnicity_grouper) {
+        no_show_data <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS) %>% summarise(total = n()) %>% collect()
+        
+        numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+          group_by(APPT_MONTH_YEAR) %>% summarise(numerator = sum(total))
+        
+        denominator <- no_show_data %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+        
+        monthly_no_show_overall <- left_join(denominator, numerator)
+        
+        monthly_no_show_overall <- monthly_no_show_overall %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup() %>% mutate(ETHNICITY_GROUPER = "OVERALL")
+        
+        if(nrow(monthly_no_show) != 0) {
+          monthly_no_show <- bind_rows(monthly_no_show_overall, monthly_no_show)
+        } else {
+          monthly_no_show <- monthly_no_show_overall
+        }
+    }
+    
+    if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    }
+    
+    title <- paste0(site," ","Monthly No Show Rate Broken Out By Ethnicity")
+    
+    # monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
+    
+    monthly_no_show$ETHNICITY_GROUPER <- factor(monthly_no_show$ETHNICITY_GROUPER, levels = ethnicity_grouper_choices)
+    monthly_no_show <- monthly_no_show %>% mutate(`No Show Rate` = paste0(total * 100,"%"))
+    
+    g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=ETHNICITY_GROUPER, label = `No Show Rate`))+
+      geom_line(aes(color=ETHNICITY_GROUPER), size=1.1)+
+      geom_point(aes(color=ETHNICITY_GROUPER), size=3)+
+       #geom_text(aes(label = percent)) +
+      # scale_color_MountSinai('dark')+
+      scale_color_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
+      labs(title = title,
+           y = NULL, x = NULL, fill = NULL, color = NULL)+
+      scale_y_continuous(limits = c(0,max(monthly_no_show$total) * 1.3), labels = scales::percent_format(accuracy = 2)) +
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90),
+            plot.tag.position = 'top')
+    
+    ggplotly(g1, tooltip = c("No Show Rate"))
+    
+    # n <- length(unique(monthly_no_show$RACE_GROUPER)) - 1
+    # if(n==0){
+    #   hline_y <- 0
+    # } else{
+    #   hline_y <- seq(1.5, 0.5+n, by= 1)
+    # }
+    # 
+    # monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
+    # g2 <- ggplot(monthly_no_show, aes(x= factor(APPT_MONTH_YEAR), y= RACE_GROUPER))+
+    #   labs(x=NULL, y=NULL)+
+    #   scale_x_discrete(position = "bottom")+
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(.8,"cm"),
+    #         legend.text = element_text(size="10"),
+    #         axis.title.x = element_blank(),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_blank(),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #   ) +
+    #   geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black') +
+    #   table_theme() +
+    #   theme(plot.margin=unit(c(1,0,1,1), "cm"))
+    # 
+    # g2 <- ggplotly(g2, tooltip = NULL)
+    # 
+    # subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    # 
+    
+  })
+  
+  output$monthly_no_show_percent <- renderPlotly({
+    
+    selected_race_grouper <- isolate(input$selected_race_grouper_no_show)
+    selected_ethnicity_grouper <- isolate(input$selected_ethnicity_grouper_no_show)
+    
+    data <- dataArrivedNoShowTrend_associationlistA()
+    
+    data_test <<- data
+    
+    data_filtered <- data %>% filter(RACE_GROUPER %in% selected_race_grouper)
+    
+    no_show_data_race <- data_filtered %>% group_by(APPT_MONTH_YEAR, APPT_STATUS, RACE_GROUPER) %>% summarise(total = n()) %>% collect()
     
     numerator_race <- no_show_data_race %>% filter(APPT_STATUS != "Arrived") %>% 
       group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(numerator = sum(total))
@@ -7320,9 +7428,27 @@ print("2")
     
     monthly_no_show_race <- left_join(numerator_race, denominator_race)
     
-    monthly_no_show_race <- monthly_no_show_race %>% group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
+    monthly_no_show <- monthly_no_show_race %>% group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
     
-    monthly_no_show <- bind_rows(monthly_no_show, monthly_no_show_race)
+    
+    if("OVERALL" %in% selected_race_grouper) {
+      no_show_data <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS) %>% summarise(total = n()) %>% collect()
+      
+      numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+        group_by(APPT_MONTH_YEAR) %>% summarise(numerator = sum(total))
+      
+      denominator <- no_show_data %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+      
+      monthly_no_show_overall <- left_join(denominator, numerator)
+      
+      monthly_no_show_overall <- monthly_no_show_overall %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup() %>% mutate(RACE_GROUPER = "OVERALL")
+      
+      if(nrow(monthly_no_show) != 0) {
+        monthly_no_show <- bind_rows(monthly_no_show_overall, monthly_no_show)
+      } else {
+        monthly_no_show <- monthly_no_show_overall
+      }
+    }
     
     if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
       site <- "System"
@@ -7340,7 +7466,7 @@ print("2")
     g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=RACE_GROUPER, label = `No Show Rate`))+
       geom_line(aes(color=RACE_GROUPER), size=1.1)+
       geom_point(aes(color=RACE_GROUPER), size=3)+
-       #geom_text(aes(label = percent)) +
+      #geom_text(aes(label = percent)) +
       # scale_color_MountSinai('dark')+
       scale_color_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
       labs(title = title,
@@ -7356,8 +7482,7 @@ print("2")
             axis.title.y = element_text(size = 12, angle = 90),
             plot.tag.position = 'top')
     
-    ggplotly(g1, tooltip = c("No Show Rate")) %>%
-    style(hoverinfo = "none", traces = c(3, 4)) 
+    ggplotly(g1, tooltip = c("No Show Rate"))
     
     # n <- length(unique(monthly_no_show$RACE_GROUPER)) - 1
     # if(n==0){
@@ -7446,7 +7571,7 @@ print("2")
       site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
     }
     header_above <- c("Subtitle" = ncol(monthly_no_show))
-    names(header_above) <- paste0(c("Based on data from "),c(site))
+    names(header_above) <- paste0(c("Based on overall data from "),c(site))
     
     monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
                       relocate(DISEASE_GROUP, .before = PROVIDER) %>%
@@ -7462,7 +7587,7 @@ print("2")
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("Physician No Show Rates" = length(monthly_no_show)),
+      add_header_above(c("Overall Physician No Show Rates" = length(monthly_no_show)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       #column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%

@@ -994,6 +994,17 @@ ui <- dashboardPage(
                                        br()
                                 )),
                        boxPlus(
+                         title = "Metirc Definition", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("Overall Grouper", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Overall is a rollup that contains all patients within the race or ethinicity groupers.", style = "font-size:22px")
+                                ))
+                       ),
+                       boxPlus(
                          title = "No Show Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                            fluidRow(
@@ -1007,6 +1018,8 @@ ui <- dashboardPage(
                          title = "Monthly No Show", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                           plotlyOutput("monthly_no_show_percent") %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         plotlyOutput("monthly_no_show_percent_ethnicity") %>%
                            withSpinner(type = 5, color = "#d80b8c"),
                          tableOutput("no_show_provider_breakdown") %>%
                            withSpinner(type = 5, color = "#d80b8c")
