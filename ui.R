@@ -933,7 +933,7 @@ ui <- dashboardPage(
                          column(7,
                                 box(
                                   title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "125px", status = "warning", solidHeader = TRUE,
-                                  p("No Show % = (No Show + Same-day Canceled/Rescheduled) / (Arrived + No Show + Same-day Canceled/Reshceduled)", style = "font-size:22px")
+                                  p("No Show % = (No Show + Same-day Canceled/Rescheduled) / (Arrived + No Show + Same-day Canceled/Rescheduled)", style = "font-size:22px")
                                 )
                          )
                        ),
