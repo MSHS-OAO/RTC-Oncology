@@ -7547,9 +7547,10 @@ print("2")
   dataArrived_conversions <- reactive({
     input$update_filters_conversions
     providers <- isolate(input$selected_prov_conversions)
+    treatment_disease <- c("Benign Hematology" , "Hematology Oncology", "Liquid Tumors", "Medical Oncology", "Oncology", "Solid Tumors")
     
     print("1")
-    data <- dataArrived() %>% filter(PROVIDER %in% providers)
+    data <- dataArrived() %>% filter(PROVIDER %in% providers) %>% filter(PROVIDER_TYPE == "Physician") %>% filter(DISEASE_GROUP %in% treatment_disease) %>% filter(DISEASE_GROUP_DETAIL != "Breast Surgery")
     print("2")
     
     data
