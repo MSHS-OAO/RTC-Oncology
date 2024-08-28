@@ -462,7 +462,7 @@ ui <- dashboardPage(
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selected_prov_conversions",label=NULL,
-                                         choices=default_provider,
+                                         choices=default_provider_treatment_conversions,
                                          multiple=TRUE,
                                          options = pickerOptions(
                                            liveSearch = TRUE,
@@ -470,7 +470,7 @@ ui <- dashboardPage(
                                            selectedTextFormat = "count > 1",
                                            countSelectedText = "{0}/{1} Provider Types",
                                            dropupAuto = FALSE),
-                                         selected = default_provider)),
+                                         selected = default_provider_treatment_conversions)),
                            column(4,
                                   br(),
                                   br(),

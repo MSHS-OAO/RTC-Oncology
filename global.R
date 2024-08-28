@@ -529,6 +529,19 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
 default_provider <- sort(default_provider$PROVIDER, na.last = T)
 
 
+treatment_disease <- c("Benign Hematology" , "Hematology Oncology", "Liquid Tumors", "Medical Oncology", "Oncology", "Solid Tumors")
+default_provider_treatment_conversions <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments_disease & 
+                                              DISEASE_GROUP %in% treatment_disease) %>%
+                                            filter(DISEASE_GROUP_DETAIL != "Breast Surgery") %>%
+                                            filter(PROVIDER_TYPE == "Physician") %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  select(PROVIDER) %>%
+  mutate(PROVIDER = unique(PROVIDER)) %>%
+  collect()
+default_provider_treatment_conversions <- sort(default_provider_treatment_conversions$PROVIDER, na.last = T)
+
+
 default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments &
                                                           ASSOCIATIONLISTA %in% c("Exam")) %>%
