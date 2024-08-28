@@ -603,11 +603,11 @@ server <- function(input, output, session) {
                         selected = disease_detail_choices
       )
       
-      updatePickerInput(session,
-                        inputId = "selectedDiseaseDetail_access",
-                        choices = disease_detail_choices,
-                        selected = disease_detail_choices
-      )
+      # updatePickerInput(session,
+      #                   inputId = "selectedDiseaseDetail_access",
+      #                   choices = disease_detail_choices,
+      #                   selected = disease_detail_choices
+      # )
       
       
       
