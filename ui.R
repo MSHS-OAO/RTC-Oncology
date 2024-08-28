@@ -254,7 +254,7 @@ ui <- dashboardPage(
                        # ),
                        div("Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$div(id = "home_text",
-                                HTML("<p>Version: 1.0 <br> Last Updated: 10/06/2023</p>")
+                                HTML("<p>Version: 2.3 <br> Last Updated: 02/23/2024</p>")
                        ),
                        tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: -4em; margin-left: 20px}")), 
                        br(), br(),
@@ -273,8 +273,9 @@ ui <- dashboardPage(
                                          box(
                                            title = p("Data Sources", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
                                            p("Oncology Analytics Tool is developed based on the following data from EPIC Clarity:", style = "font-size:22px; font-weight: bold"),
-                                           p("1. ", strong("Scheduling Data"), " provides scheduling details on arrived appointments.", style = "font-size:22px"),
+                                           p("1. ", strong("Scheduling Data"), " provides scheduling details on scheduled/arrived appointments and excludes erroneous visits.", style = "font-size:22px"),
                                            p("2. ", strong("Race/Ethnicity Data"), " provides capture analysis and MyChart activation breakdown.", style = "font-size:22px"),
+                                           p("3. ", strong("All Data"), " is updated daily from EPIC.", style = "font-size:22px"),
                                            # p("2. ", strong("Slot Availability Data"), " provides slot level details inlcuding booked and filled hours and slots.", style = "font-size:22px"),
                                          ))),
                          
@@ -990,11 +991,10 @@ ui <- dashboardPage(
                          column(7,
                                 box(
                                   title = p("No Show", style = "font-size:28px; font-weight:bold"), width = 12,  height = "125px", status = "warning", solidHeader = TRUE,
-                                  p("No Show % = (No Show + Same-day Canceled/Rescheduled) / (Arrived + No Show + Same-day Canceled/Reshceduled)", style = "font-size:22px")
+                                  p("No Show % = (No Show + Same-day Canceled/Rescheduled) / (Arrived + No Show + Same-day Canceled/Rescheduled)", style = "font-size:22px")
                                 )
                          )
                        ),
-                       column(11,
                               boxPlus(
                                 title = "Analysis Customization", width = 12, status = "primary", 
                                 solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
@@ -1014,45 +1014,54 @@ ui <- dashboardPage(
                                                   countSelectedText = "{0}/{1} Visit Types",
                                                   dropupAuto = FALSE),
                                                 selected = default_visitType)),
-                                  # box(
-                                  #   title = "Select Disease Group:",
-                                  #   width = 4,
-                                  #   height = "100px",
-                                  #   solidHeader = FALSE,
-                                  #   pickerInput("selectedDiseaseGroup_no_show",label=NULL,
-                                  #               choices=default_disease_group,
-                                  #               multiple=TRUE,
-                                  #               options = pickerOptions(
-                                  #                 liveSearch = TRUE,
-                                  #                 actionsBox = TRUE,
-                                  #                 selectedTextFormat = "count > 1",
-                                  #                 countSelectedText = "{0}/{1} Disease Groups",
-                                  #                 dropupAuto = FALSE),
-                                  #               selected = default_disease_group)),
-                                  # box(
-                                  #   title = "Select Disease Group Detail:",
-                                  #   width = 4,
-                                  #   height = "100px",
-                                  #   solidHeader = FALSE,
-                                  #   pickerInput("selectedDiseaseGroupDetail_no_show",label=NULL,
-                                  #               choices=default_disease_group_detail,
-                                  #               multiple=TRUE,
-                                  #               options = pickerOptions(
-                                  #                 liveSearch = TRUE,
-                                  #                 actionsBox = TRUE,
-                                  #                 selectedTextFormat = "count > 1",
-                                  #                 countSelectedText = "{0}/{1} Disease Group Details",
-                                  #                 dropupAuto = FALSE),
-                                  #               selected = default_disease_group_detail)),
-                                  # 
+                                  box(
+                                    title = "Select Race Grouper:",
+                                    width = 4,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selected_race_grouper_no_show",label=NULL,
+                                                choices=race_grouper_choices,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Disease Groups",
+                                                  dropupAuto = FALSE),
+                                                selected = race_grouper_choices)),
+                                  box(
+                                    title = "Select Ethnicity Grouper:",
+                                    width = 4,
+                                    height = "100px",
+                                    solidHeader = FALSE,
+                                    pickerInput("selected_ethnicity_grouper_no_show",label=NULL,
+                                                choices=ethnicity_grouper_choices,
+                                                multiple=TRUE,
+                                                options = pickerOptions(
+                                                  liveSearch = TRUE,
+                                                  actionsBox = TRUE,
+                                                  selectedTextFormat = "count > 1",
+                                                  countSelectedText = "{0}/{1} Disease Group Details",
+                                                  dropupAuto = FALSE),
+                                                selected = ethnicity_grouper_choices))),
+                                  column(4),
+
                                 column(5,
-                                       br(),
-                                       br(),
-                                       br(),
                                        actionButton("update_filters_no_show", "CLICK TO UPDATE", width = "75%"),
                                        br(),
                                        br()
-                                )))),
+                                )),
+                       boxPlus(
+                         title = "Metirc Definition", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         br(),
+                         column(3),
+                         column(6,
+                                box(
+                                  title = p("Overall Grouper", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
+                                  p("Overall is a rollup that contains all patients within the race or ethinicity groupers.", style = "font-size:22px")
+                                ))
+                       ),
                        boxPlus(
                          title = "No Show Summary", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
@@ -1067,6 +1076,8 @@ ui <- dashboardPage(
                          title = "Monthly No Show", width = 12, status = "primary",
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                           plotlyOutput("monthly_no_show_percent") %>%
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         plotlyOutput("monthly_no_show_percent_ethnicity") %>%
                            withSpinner(type = 5, color = "#d80b8c"),
                          tableOutput("no_show_provider_breakdown") %>%
                            withSpinner(type = 5, color = "#d80b8c")
