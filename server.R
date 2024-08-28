@@ -130,7 +130,7 @@ server <- function(input, output, session) {
     date_2 <- input$dateRange[2]
     
     departments_selected <- unique(filter_saved_all$DEPARTMENT)
-    department_choices <- oncology_tbl %>% filter(SITE %in% campus_selected) %>%
+    department_choices <- oncology_filters_updated %>% filter(SITE %in% campus_selected) %>%
                           # filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR ,
                           #          TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR)%>% 
                             select(DEPARTMENT_NAME) %>% 
@@ -374,7 +374,7 @@ server <- function(input, output, session) {
       #select_campus <- "MSW"
       # department_choices <- sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus, "Department"]))
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
+      department_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>% 
                             # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
                             #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                             select(DEPARTMENT_NAME) %>% 
@@ -390,7 +390,7 @@ server <- function(input, output, session) {
       )
       
       # 
-      # visit_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
+      # visit_type_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
       #                       select(ASSOCIATIONLISTA) %>%
       #                       mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
       #                       collect()
@@ -403,7 +403,7 @@ server <- function(input, output, session) {
       # )
       # 
       # 
-      # appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
+      # appt_type_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
       #                                               ASSOCIATIONLISTA %in%  visit_type_choices) %>%
       #                                       select(ASSOCIATIONLISTB) %>% 
       #                                       mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
@@ -417,7 +417,7 @@ server <- function(input, output, session) {
       # 
       # 
       # 
-      # treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
+      # treatment_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
       #                                                    ASSOCIATIONLISTA %in% visit_type_choices &
       #                                                    ASSOCIATIONLISTB %in% appt_type_choices) %>%
       #                                                     select(ASSOCIATIONLISTT) %>% 
@@ -432,7 +432,7 @@ server <- function(input, output, session) {
       # )
       # 
       # 
-      # department_choices_disease <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
+      # department_choices_disease <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
       #                                 select(DEPARTMENT_NAME) %>%
       #                                 mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
       #                                 collect()
@@ -440,7 +440,7 @@ server <- function(input, output, session) {
       # 
       # 
       # 
-      # disease_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      # disease_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
       #                                                    DEPARTMENT_NAME %in% department_choices_disease) %>%
       #                                       select(DISEASE_GROUP) %>%
       #                                       mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
@@ -460,7 +460,7 @@ server <- function(input, output, session) {
       # 
       # 
       # 
-      # provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      # provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
       #                                               DEPARTMENT_NAME %in% department_choices_disease & 
       #                                               DISEASE_GROUP %in% disease_choices) %>%
       #                                             select(PROVIDER) %>%
@@ -494,7 +494,7 @@ server <- function(input, output, session) {
       first_date <- input$dateRange[1]  
       second_date <- input$dateRange[2]  
       
-      department_choices <- oncology_tbl %>% filter(SITE %in% select_campus) %>% 
+      department_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>% 
         # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
         #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
         select(DEPARTMENT_NAME) %>% 
@@ -503,7 +503,7 @@ server <- function(input, output, session) {
       department_choices <- sort(department_choices$DEPARTMENT_NAME, na.last = T)
       
       
-      visit_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
+      visit_type_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices) %>%
                                               select(ASSOCIATIONLISTA) %>%
                                               mutate(ASSOCIATIONLISTA = unique(ASSOCIATIONLISTA)) %>%
                                               collect()
@@ -517,7 +517,7 @@ server <- function(input, output, session) {
      
       
       
-      appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
+      appt_type_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                      ASSOCIATIONLISTA %in%  visit_type_choices) %>%
                                                   select(ASSOCIATIONLISTB) %>% 
                                                   mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
@@ -530,7 +530,7 @@ server <- function(input, output, session) {
       )
      
       
-      treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
+      treatment_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% department_choices &
                                                      ASSOCIATIONLISTA %in% visit_type_choices &
                                                      ASSOCIATIONLISTB %in% appt_type_choices) %>%
                                                     select(ASSOCIATIONLISTT) %>% 
@@ -545,7 +545,7 @@ server <- function(input, output, session) {
       )
       
       
-      department_choices_disease <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
+      department_choices_disease <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived")) %>%
                                                       # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
                                                       #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                             select(DEPARTMENT_NAME) %>%
@@ -555,7 +555,7 @@ server <- function(input, output, session) {
       
     
       
-      disease_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      disease_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease) %>%
                                                 select(DISEASE_GROUP) %>%
                                                 mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
@@ -579,7 +579,8 @@ server <- function(input, output, session) {
       )
       
       
-      disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      disease_choices <- ifelse(is_empty(disease_choices), c("NA"), disease_choices)
+      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                    DEPARTMENT_NAME %in% department_choices_disease &
                                                    DISEASE_GROUP %in% disease_choices) %>%
         # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
@@ -588,6 +589,7 @@ server <- function(input, output, session) {
         mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
         collect()
       disease_detail_choices <- sort(disease_detail_choices$DISEASE_GROUP_DETAIL, na.last = T)
+      
       
       updatePickerInput(session,
                         inputId = "selectedDiseaseDetail",
@@ -601,18 +603,18 @@ server <- function(input, output, session) {
                         selected = disease_detail_choices
       )
       
-      updatePickerInput(session,
-                        inputId = "selectedDiseaseDetail_access",
-                        choices = disease_detail_choices,
-                        selected = disease_detail_choices
-      )
+      # updatePickerInput(session,
+      #                   inputId = "selectedDiseaseDetail_access",
+      #                   choices = disease_detail_choices,
+      #                   selected = disease_detail_choices
+      # )
       
       
       
-     
+ 
       selected_dept <- input$selectedDepartment
       provider_type <- input$provider_type_volume
-      provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept & 
                                                     DISEASE_GROUP %in% disease_choices &
                                                     PROVIDER_TYPE %in% provider_type) %>%
@@ -629,7 +631,7 @@ server <- function(input, output, session) {
       
       
       
-      provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_choices_volume_treatment <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% selected_dept &
                                                       ASSOCIATIONLISTA %in% c("Treatment") &
                                                       ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
@@ -637,18 +639,24 @@ server <- function(input, output, session) {
         distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
         collect()
       
-      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      select_campus_testing <<- select_campus
       
-      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
-      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
-      
-      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
-      provider_type <- input$referring_provider_treatment_type
-      
-      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
-      
+      if("Genetics Infusion" == select_campus) {
+        
+        provider_choices_volume_treatment <- provider_choices_volume_treatment
+      } else{
+        select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+        
+        provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+        provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+        
+        provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+        provider_type <- input$referring_provider_treatment_type
+        
+        provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+        
+      }
       provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
-      
       updatePickerInput(session,
                         inputId = "selected_referring_provider_treatment",
                         choices = provider_choices_volume_treatment,
@@ -659,10 +667,9 @@ server <- function(input, output, session) {
       date_2 <- input$dateRange[2]
       
       
-      
       selected_dept <- input$selectedDepartment
       provider_type <- input$provider_type_disease
-      provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_unique_exam_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
                                                                 PROVIDER_TYPE %in% provider_type &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
@@ -704,7 +711,7 @@ server <- function(input, output, session) {
       
       date_util1 <- input$dateRangetreat_util[1]
       date_util2 <- input$dateRangetreat_util[2]
-      provider_utlization_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_utlization_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% depts) %>%
         # filter(TO_DATE(date_util1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
         #        TO_DATE(date_util2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR) %>%
@@ -735,7 +742,7 @@ server <- function(input, output, session) {
       select_visit_type <- input$selectedVisitType
      
       
-      appt_type_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+      appt_type_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
                                                      ASSOCIATIONLISTA %in%  select_visit_type) %>%
                                                   select(ASSOCIATIONLISTB) %>% 
                                                   mutate(ASSOCIATIONLISTB = unique(ASSOCIATIONLISTB)) %>% 
@@ -750,7 +757,7 @@ server <- function(input, output, session) {
       
       
       
-      treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+      treatment_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
                                                      ASSOCIATIONLISTA %in% select_visit_type &
                                                      ASSOCIATIONLISTB %in% appt_type_choices) %>%
         select(ASSOCIATIONLISTT) %>% 
@@ -777,7 +784,7 @@ server <- function(input, output, session) {
       select_appt_type <- input$selectedApptType
     
       
-      treatment_choices <- oncology_tbl %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
+      treatment_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & DEPARTMENT_NAME %in% select_dept &
                                                      ASSOCIATIONLISTA %in% select_visit_type &
                                                      ASSOCIATIONLISTB %in% select_appt_type) %>%
                                                   select(ASSOCIATIONLISTT) %>% 
@@ -803,7 +810,7 @@ server <- function(input, output, session) {
       select_disease <- input$selectedDisease
       
       
-      disease_detail_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease) %>%
                                                   select(DISEASE_GROUP_DETAIL) %>%
@@ -833,13 +840,13 @@ server <- function(input, output, session) {
       
       if(c("NA") %in% input$selectedDiseaseDetail) {
         print("disease detail has NA")
-        provider_choices_non_nan <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+        provider_choices_non_nan <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
                                                       DISEASE_GROUP_DETAIL %in% select_disease_detail &
                                                         PROVIDER_TYPE %in% provider_type)
         
-        provider_choices_na <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+        provider_choices_na <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                       DEPARTMENT_NAME %in% select_dept & 
                                                       DISEASE_GROUP %in% select_disease &
                                                       PROVIDER_TYPE %in% provider_type &
@@ -849,7 +856,7 @@ server <- function(input, output, session) {
                                   mutate(PROVIDER = unique(PROVIDER)) %>%
                                   collect()
       } else{
-      provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                     DEPARTMENT_NAME %in% select_dept & 
                                                     DISEASE_GROUP %in% select_disease &
                                                     DISEASE_GROUP_DETAIL %in% select_disease_detail &
@@ -883,7 +890,7 @@ server <- function(input, output, session) {
   #     select_disease <- input$selectedDisease2
   #     
   #     
-  #     provider_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+  #     provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
   #                                                   DEPARTMENT_NAME %in% select_dept & 
   #                                                   DISEASE_GROUP %in% select_disease) %>%
   #                                                   select(PROVIDER) %>%
@@ -912,7 +919,7 @@ server <- function(input, output, session) {
       
       campus <- input$selectedCampus
       depts <- input$selectedDepartment
-      prov_choices <- oncology_tbl %>% filter(!is.na(DISEASE_GROUP)) %>%
+      prov_choices <- oncology_filters_updated %>% filter(!is.na(DISEASE_GROUP)) %>%
         filter(SITE %in% campus & APPT_STATUS %in% c("Arrived") &
                  DEPARTMENT_NAME %in% depts) %>%
         select(PROVIDER) %>%
@@ -949,7 +956,7 @@ server <- function(input, output, session) {
     select_campus <- input$selectedCampus
     selected_dept <- input$selectedDepartment
     provider_type <- input$provider_type_disease
-    provider_unique_exam_choices <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+    provider_unique_exam_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                               DEPARTMENT_NAME %in% selected_dept &
                                                               PROVIDER_TYPE %in% provider_type &
                                                               ASSOCIATIONLISTA %in% c("Exam")) %>%
@@ -974,7 +981,7 @@ server <- function(input, output, session) {
     select_campus <- input$selectedCampus
     selected_dept <- input$selectedDepartment
     
-    provider_choices_volume_treatment <- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+    provider_choices_volume_treatment <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                    DEPARTMENT_NAME %in% selected_dept &
                                                                    ASSOCIATIONLISTA %in% c("Treatment") &
                                                                    ASSOCIATIONLISTB %in% c("Treatment Visit")) %>%
@@ -982,15 +989,22 @@ server <- function(input, output, session) {
       distinct(REFERRING_PROVIDER, REFERRING_PROV_ID) %>%
       collect()
     
-    select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+    if("Genetics Infusion" == select_campus) {
+      
+      provider_choices_volume_treatment <- provider_choices_volume_treatment
+    } else{
+      select_campus_referring <- paste(sort(unique(select_campus)),sep="", collapse="|")
+      
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
+      
+      provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
+      provider_type <- input$referring_provider_treatment_type
+      
+      provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+    }
     
-    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_site)
-    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(grepl(select_campus_referring,SITE_REFERRING))
-    
-    provider_choices_volume_treatment <- inner_join(provider_choices_volume_treatment, referring_provider_type_mapping)
-    provider_type <- input$referring_provider_treatment_type
-    
-    provider_choices_volume_treatment <- provider_choices_volume_treatment %>% filter(PROVIDER_TYPE %in% provider_type)
+
     
     provider_choices_volume_treatment <- sort(provider_choices_volume_treatment$REFERRING_PROVIDER, na.last = T)
     
@@ -1678,6 +1692,10 @@ server <- function(input, output, session) {
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>% 
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(total_visits) > 0 , "There are no exam visits for the selected filters")
+    )
+    
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
     if(length(unique(data$SITE)) == length(campus_choices)){
@@ -1777,6 +1795,11 @@ server <- function(input, output, session) {
     # data <- arrived.data
     
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Labs") %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) > 0 , "There are no lab visits for the selected filters")
+    )
+    
     
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -2242,7 +2265,11 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
-    factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    if(length(unique(total_visits_break$ASSOCIATIONLISTT)) > 1) {
+      factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    } else {
+      factor_levels = unique(total_visits_break$ASSOCIATIONLISTT)
+    }
     
     total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, levels = factor_levels)
     
@@ -7050,11 +7077,17 @@ print("2")
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = RACE_GROUPER)
     
+    activation_total <- activation_data %>% group_by(`Appt Month`, Race) %>% summarise(total_race_group = sum(total))
+    
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
     if("OVERALL" %in% race_grouper) {
+      activated_percent <- activated_percent %>% select(-total_race_group)
+      activated_percent <- right_join(activated_percent, activation_total) %>% mutate(MYCHART_STATUS_GROUPER = ifelse(is.na(MYCHART_STATUS_GROUPER), "Activated", MYCHART_STATUS_GROUPER)) %>%
+        mutate(total = ifelse(is.na(total), 0, total))
+      
       combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
                                                                                                             total_race_group = sum(total_race_group))
       
@@ -7063,7 +7096,7 @@ print("2")
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
     
-    activated_percent <- activated_percent %>% filter(Race %in% race_grouper)
+    activated_percent <- activated_percent %>% filter(Race %in% race_grouper) %>% filter(!(is.na(`Percent Activated`)))
     
     
     activated_percent$Race <- factor(activated_percent$Race, levels = race_grouper_choices)
@@ -7096,11 +7129,17 @@ print("2")
       rename(`Appt Month` = APPT_MONTH_YEAR,
              Race = ETHNICITY_GROUPER)
     
+    activation_total <- activation_data %>% group_by(`Appt Month`, Race) %>% summarise(total_race_group = sum(total))
+    
     activated_percent <- activation_data %>% filter(MYCHART_STATUS_GROUPER == "Activated")
     
     title <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     
     if("OVERALL" %in% ethnicity_grouper) {
+      activated_percent <- activated_percent %>% select(-total_race_group)
+      activated_percent <- right_join(activated_percent, activation_total) %>% mutate(MYCHART_STATUS_GROUPER = ifelse(is.na(MYCHART_STATUS_GROUPER), "Activated", MYCHART_STATUS_GROUPER)) %>%
+        mutate(total = ifelse(is.na(total), 0, total))
+      
       combined_grouper <- activated_percent %>% group_by(`Appt Month`,MYCHART_STATUS_GROUPER) %>% summarise(total = sum(total),
                                                                                                             total_race_group = sum(total_race_group))
       
@@ -7109,7 +7148,7 @@ print("2")
       activated_percent <- rbind(activated_percent, combined_grouper)
     }
     
-    activated_percent <- activated_percent %>% filter(Race %in% ethnicity_grouper)
+    activated_percent <- activated_percent %>% filter(Race %in% ethnicity_grouper) %>% filter(!(is.na(`Percent Activated`)))
     
     
     activated_percent$Race <- factor(activated_percent$Race, levels = ethnicity_grouper_choices)
@@ -7252,7 +7291,7 @@ print("2")
     
     valueBox(
       prettyNum(round(numerator/denominator, 1),big.mark=","), 
-      subtitle = tags$p("Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+      subtitle = tags$p("Overall Avg. No Shows per Day", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
   })
@@ -7267,23 +7306,52 @@ print("2")
     valueBox(
       paste0(round((numerator / 
                       denominator)*100,1), "%"),
-      subtitle = tags$p("No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
+      subtitle = tags$p("Overall No Show Rate (%)", style = "font-size: 130%;"), icon = NULL, color = "yellow"
     )
     
   })
   
-  output$monthly_no_show_percent <- renderPlotly({
+  output$monthly_no_show_percent_ethnicity <- renderPlotly({
+    
+    selected_race_grouper <- isolate(input$selected_race_grouper_no_show)
+    selected_ethnicity_grouper <- isolate(input$selected_ethnicity_grouper_no_show)
+    
     data <- dataArrivedNoShowTrend_associationlistA()
-    no_show_data <- data %>% group_by(APPT_MONTH, APPT_STATUS, APPT_YEAR) %>% summarise(total = n()) %>% collect()
     
-    numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
-                  group_by(APPT_MONTH, APPT_YEAR) %>% summarise(numerator = sum(total))
+    data_test <<- data
     
-    denominator <- no_show_data %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(denominator = sum(total))
+    data_filtered <- data %>% filter(ETHNICITY_GROUPER %in% selected_ethnicity_grouper)
     
-    monthly_no_show <- left_join(denominator, numerator)
+    no_show_data_race <- data_filtered %>% group_by(APPT_MONTH_YEAR, APPT_STATUS, ETHNICITY_GROUPER) %>% summarise(total = n()) %>% collect()
     
-    monthly_no_show <- monthly_no_show %>% group_by(APPT_MONTH, APPT_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
+    numerator_race <- no_show_data_race %>% filter(APPT_STATUS != "Arrived") %>% 
+      group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(numerator = sum(total))
+    
+    denominator_race <- no_show_data_race %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+    
+    monthly_no_show_race <- left_join(numerator_race, denominator_race)
+    
+    monthly_no_show <- monthly_no_show_race %>% group_by(APPT_MONTH_YEAR, ETHNICITY_GROUPER) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
+    
+    
+    if("OVERALL" %in% selected_ethnicity_grouper) {
+        no_show_data <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS) %>% summarise(total = n()) %>% collect()
+        
+        numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+          group_by(APPT_MONTH_YEAR) %>% summarise(numerator = sum(total))
+        
+        denominator <- no_show_data %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+        
+        monthly_no_show_overall <- left_join(denominator, numerator)
+        
+        monthly_no_show_overall <- monthly_no_show_overall %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup() %>% mutate(ETHNICITY_GROUPER = "OVERALL")
+        
+        if(nrow(monthly_no_show) != 0) {
+          monthly_no_show <- bind_rows(monthly_no_show_overall, monthly_no_show)
+        } else {
+          monthly_no_show <- monthly_no_show_overall
+        }
+    }
     
     if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
       site <- "System"
@@ -7291,24 +7359,183 @@ print("2")
       site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
     }
     
-    title <- paste0(site," ","Monthly No Show Rate")
+    title <- paste0(site," ","Monthly No Show Rate Broken Out By Ethnicity")
     
-    monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
+    # monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
     
-    g1 <- ggplot_line_graph_percent(monthly_no_show, title) 
+    monthly_no_show$ETHNICITY_GROUPER <- factor(monthly_no_show$ETHNICITY_GROUPER, levels = ethnicity_grouper_choices)
+    monthly_no_show <- monthly_no_show %>% mutate(`No Show Rate` = paste0(total * 100,"%"))
     
-    n <- length(unique(monthly_no_show$APPT_YEAR)) - 1
-    if(n==0){
-      hline_y <- 0
-    } else{
-      hline_y <- seq(1.5, 0.5+n, by= 1)
+    g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=ETHNICITY_GROUPER, label = `No Show Rate`))+
+      geom_line(aes(color=ETHNICITY_GROUPER), size=1.1)+
+      geom_point(aes(color=ETHNICITY_GROUPER), size=3)+
+       #geom_text(aes(label = percent)) +
+      # scale_color_MountSinai('dark')+
+      scale_color_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
+      labs(title = title,
+           y = NULL, x = NULL, fill = NULL, color = NULL)+
+      scale_y_continuous(limits = c(0,max(monthly_no_show$total) * 1.3), labels = scales::percent_format(accuracy = 2)) +
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90),
+            plot.tag.position = 'top')
+    
+    ggplotly(g1, tooltip = c("No Show Rate"))
+    
+    # n <- length(unique(monthly_no_show$RACE_GROUPER)) - 1
+    # if(n==0){
+    #   hline_y <- 0
+    # } else{
+    #   hline_y <- seq(1.5, 0.5+n, by= 1)
+    # }
+    # 
+    # monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
+    # g2 <- ggplot(monthly_no_show, aes(x= factor(APPT_MONTH_YEAR), y= RACE_GROUPER))+
+    #   labs(x=NULL, y=NULL)+
+    #   scale_x_discrete(position = "bottom")+
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(.8,"cm"),
+    #         legend.text = element_text(size="10"),
+    #         axis.title.x = element_blank(),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_blank(),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #   ) +
+    #   geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black') +
+    #   table_theme() +
+    #   theme(plot.margin=unit(c(1,0,1,1), "cm"))
+    # 
+    # g2 <- ggplotly(g2, tooltip = NULL)
+    # 
+    # subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    # 
+    
+  })
+  
+  output$monthly_no_show_percent <- renderPlotly({
+    
+    selected_race_grouper <- isolate(input$selected_race_grouper_no_show)
+    selected_ethnicity_grouper <- isolate(input$selected_ethnicity_grouper_no_show)
+    
+    data <- dataArrivedNoShowTrend_associationlistA()
+    
+    data_test <<- data
+    
+    data_filtered <- data %>% filter(RACE_GROUPER %in% selected_race_grouper)
+    
+    no_show_data_race <- data_filtered %>% group_by(APPT_MONTH_YEAR, APPT_STATUS, RACE_GROUPER) %>% summarise(total = n()) %>% collect()
+    
+    numerator_race <- no_show_data_race %>% filter(APPT_STATUS != "Arrived") %>% 
+      group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(numerator = sum(total))
+    
+    denominator_race <- no_show_data_race %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+    
+    monthly_no_show_race <- left_join(numerator_race, denominator_race)
+    
+    monthly_no_show <- monthly_no_show_race %>% group_by(APPT_MONTH_YEAR, RACE_GROUPER) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup()
+    
+    
+    if("OVERALL" %in% selected_race_grouper) {
+      no_show_data <- data %>% group_by(APPT_MONTH_YEAR, APPT_STATUS) %>% summarise(total = n()) %>% collect()
+      
+      numerator <- no_show_data %>% filter(APPT_STATUS != "Arrived") %>% 
+        group_by(APPT_MONTH_YEAR) %>% summarise(numerator = sum(total))
+      
+      denominator <- no_show_data %>% group_by(APPT_MONTH_YEAR) %>% summarise(denominator = sum(total))
+      
+      monthly_no_show_overall <- left_join(denominator, numerator)
+      
+      monthly_no_show_overall <- monthly_no_show_overall %>% group_by(APPT_MONTH_YEAR) %>% summarise(total = round(numerator/denominator, 3)) %>% ungroup() %>% mutate(RACE_GROUPER = "OVERALL")
+      
+      if(nrow(monthly_no_show) != 0) {
+        monthly_no_show <- bind_rows(monthly_no_show_overall, monthly_no_show)
+      } else {
+        monthly_no_show <- monthly_no_show_overall
+      }
     }
     
-    monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
-    g2 <- ggplot_table(monthly_no_show, hline_y)
+    if(length(unique(isolate(input$selectedCampus))) == length(campus_choices)){
+      site <- "System"
+    } else{
+      site <- paste(sort(unique(isolate(input$selectedCampus))),sep="", collapse=", ")
+    }
     
-    subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    title <- paste0(site," ","Monthly No Show Rate Broken Out By Race")
     
+    # monthly_no_show$APPT_MONTH <- str_to_title(monthly_no_show$APPT_MONTH)
+    
+    monthly_no_show$RACE_GROUPER <- factor(monthly_no_show$RACE_GROUPER, levels = race_grouper_choices)
+    monthly_no_show <- monthly_no_show %>% mutate(`No Show Rate` = paste0(total * 100,"%"))
+    
+    g1 <- ggplot(monthly_no_show, aes(x=factor(APPT_MONTH_YEAR), y=total, group=RACE_GROUPER, label = `No Show Rate`))+
+      geom_line(aes(color=RACE_GROUPER), size=1.1)+
+      geom_point(aes(color=RACE_GROUPER), size=3)+
+      #geom_text(aes(label = percent)) +
+      # scale_color_MountSinai('dark')+
+      scale_color_manual(values = c("#d80b8c", "#212070", "#ffcc99", "#7f7f7f", "#7030a0", "#00aeef", "#6666ff"))+
+      labs(title = title,
+           y = NULL, x = NULL, fill = NULL, color = NULL)+
+      scale_y_continuous(limits = c(0,max(monthly_no_show$total) * 1.3), labels = scales::percent_format(accuracy = 2)) +
+      theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90),
+            plot.tag.position = 'top')
+    
+    ggplotly(g1, tooltip = c("No Show Rate"))
+    
+    # n <- length(unique(monthly_no_show$RACE_GROUPER)) - 1
+    # if(n==0){
+    #   hline_y <- 0
+    # } else{
+    #   hline_y <- seq(1.5, 0.5+n, by= 1)
+    # }
+    # 
+    # monthly_no_show <- monthly_no_show %>% mutate(total = paste0(total*100, "%"))
+    # g2 <- ggplot(monthly_no_show, aes(x= factor(APPT_MONTH_YEAR), y= RACE_GROUPER))+
+    #   labs(x=NULL, y=NULL)+
+    #   scale_x_discrete(position = "bottom")+
+    #   theme(plot.title = element_text(hjust=0.5, face = "bold", size = 20),
+    #         legend.position = "top",
+    #         legend.direction = "horizontal",
+    #         legend.key.size = unit(.8,"cm"),
+    #         legend.text = element_text(size="10"),
+    #         axis.title.x = element_blank(),
+    #         axis.title.y = element_text(size="14", margin = unit(c(8, 8, 8, 8), "mm")),
+    #         axis.text.x = element_blank(),
+    #         axis.text.y = element_text(color= "black", margin = margin(r=15)),
+    #         axis.text = element_text(size="14"),
+    #         panel.background = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.grid.major = element_blank(),
+    #   ) +
+    #   geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+    #   geom_hline(yintercept = hline_y, colour='black')+
+    #   geom_vline(xintercept = 0, colour = 'black') +
+    #   table_theme() +
+    #   theme(plot.margin=unit(c(1,0,1,1), "cm"))
+    # 
+    # g2 <- ggplotly(g2, tooltip = NULL)
+    # 
+    # subplot(g1, g2, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T, yaxis = list(title = "Visits"), scene = list(aspectration=list(x=1,y=1)))
+    # 
     
   })
   
@@ -7361,7 +7588,7 @@ print("2")
       site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
     }
     header_above <- c("Subtitle" = ncol(monthly_no_show))
-    names(header_above) <- paste0(c("Based on data from "),c(site))
+    names(header_above) <- paste0(c("Based on overall data from "),c(site))
     
     monthly_no_show <- monthly_no_show %>% relocate(ASSOCIATIONLISTA, .before = PROVIDER) %>%
                       relocate(DISEASE_GROUP, .before = PROVIDER) %>%
@@ -7377,7 +7604,7 @@ print("2")
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("Physician No Show Rates" = length(monthly_no_show)),
+      add_header_above(c("Overall Physician No Show Rates" = length(monthly_no_show)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       #column_spec(length(monthly_no_show), background = "#d80b8c", color = "white", bold = T) %>%

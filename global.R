@@ -83,6 +83,7 @@ con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
 mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
+oncology_filters_updated <- tbl(con, "ONCOLOGY_FILTERS_UPDATED")
 
 
 ### (2) Import Data ----------------------------------------------------------------------------------
@@ -233,7 +234,7 @@ unique_min <- "2021-01-01"
 
 
 arrived_data <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived"))
-arrivedNoShow_data_rows <- oncology_tbl %>% filter((APPT_STATUS %in% c("No Show", "Arrived")) | (APPT_STATUS %in% c("Canceled") & (TO_CHAR(APPT_CANC_DTTM, "YYYY-MM-DD") == TO_CHAR(APPT_DTTM, "YYYY-MM-DD"))))
+arrivedNoShow_data_rows <- oncology_tbl %>% filter((APPT_STATUS %in% c("No Show", "Arrived")) | (APPT_STATUS %in% c("Canceled", "Rescheduled") & (TO_CHAR(APPT_CANC_DTTM, "YYYY-MM-DD") == TO_CHAR(APPT_DTTM, "YYYY-MM-DD"))))
 
 groupByFilters_Trend <- function(dt, campus, department
                                  , mindateRange, maxdateRange
@@ -675,4 +676,5 @@ ethnicity_grouper_choices <- c( "OVERALL","BLANK/UNKNOWN", "PATIENT DECLINED", "
 # race_grouper_choices <- sort(unique(race_grouper_choices$RACE_GROUPER))
 
 provider_type_choices <- c("Physician", "Advanced Practice Provider")
-download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02", "taddej01", "martic56")
+
+download_list <- c("villea04", "portj01", "lium10", "jwallace", "lacham01", "hughej03", "yua17", "fleurf02", "caridr02", "taddej01", "martic56", "JENKIN01")
