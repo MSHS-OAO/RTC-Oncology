@@ -685,10 +685,9 @@ server <- function(input, output, session) {
       ) 
       
       
-      provider_unique_conversions<- oncology_tbl %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+      provider_unique_conversions<- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
                                                                 DEPARTMENT_NAME %in% selected_dept &
                                                                 ASSOCIATIONLISTA %in% c("Exam")) %>%
-        filter(NEW_PT_SCHEDULED == "NEW") %>% 
         filter(PROVIDER_TYPE == "Physician") %>% filter(DISEASE_GROUP %in% treatment_disease) %>% filter(DISEASE_GROUP_DETAIL != "Breast Surgery") %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
@@ -7783,6 +7782,8 @@ print("2")
   })
   output$treatment_conversions <- renderPlotly({
     data <- dataArrived_conversions() 
+    
+    data_test <<- data
     data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) %>% distinct()
     
     data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH)) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%
