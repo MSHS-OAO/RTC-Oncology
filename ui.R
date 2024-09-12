@@ -478,7 +478,7 @@ ui <- dashboardPage(
                              height = "100px",
                              solidHeader = FALSE,
                              pickerInput("selected_disease_group_conversions",label=NULL,
-                                         choices=default_disease_group_all,
+                                         choices=treatment_disease,
                                          multiple=TRUE,
                                          options = pickerOptions(
                                            liveSearch = TRUE,
@@ -486,7 +486,7 @@ ui <- dashboardPage(
                                            selectedTextFormat = "count > 1",
                                            countSelectedText = "{0}/{1} Disease Groups",
                                            dropupAuto = FALSE),
-                                         selected = default_disease_group_all)),
+                                         selected = treatment_disease)),
                            column(4,
                                   br(),
                                   br(),
