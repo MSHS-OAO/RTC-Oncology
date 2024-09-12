@@ -502,6 +502,16 @@ default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT
   collect()
 default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 
+
+default_disease_group_all <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived")) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  select(DISEASE_GROUP) %>%
+  mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
+  collect()
+
+
+default_disease_group_all <- sort(default_disease_group_all$DISEASE_GROUP)
+
 default_disease_group_detail <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments_disease &
                                                           DISEASE_GROUP %in% default_disease_group) %>%
