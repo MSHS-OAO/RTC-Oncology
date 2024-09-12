@@ -107,11 +107,11 @@ ui <- dashboardPage(
                                   ),
                          menuItem("By Referring Provider", tabName = "referringproVol",
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
-                                  )
+                                  ),
+                         menuSubItem("New Treatments", tabName = "treatment_conversion")
                 ),
                 menuItem("Access", tabName = "access_top", icon= icon("plus-circle"),
-                         menuSubItem("Patient Wait Time", tabName = "access"),
-                         menuSubItem("New Treatments", tabName = "treatment_conversion")),
+                         menuSubItem("Patient Wait Time", tabName = "access")),
                 menuItem("Scheduling", tabName = "scheduling", icon = icon("calendar-day"),
                           menuItem("No Show", tabName = "no_show")),
                 menuItem("Equity", tabName = "equity_tab", icon = icon("balance-scale"),
@@ -436,7 +436,7 @@ ui <- dashboardPage(
                        )
                 ),
         tabItem(tabName = "treatment_conversion",
-                div("Access - New Treatments", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                div("Volume - New Treatments", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                 column(11,
                        boxPlus(
                          title = "Analysis Customization", width = 12, status = "primary", 
