@@ -7808,7 +7808,7 @@ print("2")
     #                        y = 1.05, x = 0.35)) %>% style(textposition = "top")
     
     
-    ggplot_line_graph(data_join, "New Treatments")
+    ggplot_line_graph(data_join, "New Patients to Treatment Conversion")
   })
   
   output$treatment_conversions_percent <- renderPlotly({
@@ -7829,7 +7829,7 @@ print("2")
       geom_line(aes(color=APPT_YEAR), size=1.1)+
       geom_point(aes(color=APPT_YEAR), size=3)+
       scale_color_MountSinai('dark')+
-      labs(title = "Percent of New Treatments",
+      labs(title = "Percent of New Patients to Treatment Conversion ",
            y = NULL, x = NULL, fill = NULL, color = NULL)+
       scale_y_continuous(labels = percent_format(), limits=c(0,1)) +
     theme(legend.position = 'top',
@@ -7852,10 +7852,15 @@ print("2")
   output$treatment_conversion_provider <- function() {
     
     data <- dataArrived_conversions() 
+    data_testing <<- data
     data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_MONTH_YEAR, PROVIDER, PROVIDER_TYPE) %>% distinct()
     
-    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH_YEAR)) %>% group_by(APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = n()) %>% collect() #%>%
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH_YEAR)) %>% group_by(APPT_MONTH_YEAR, PROVIDER) %>% summarise(total_treat = n()) %>% collect() #%>%
       #mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_total <- data %>% group_by(APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = n()) %>% collect() #%>%  mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_join <- left_join(data_total, data_join) %>% group_by(APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = scales::percent(round(total_treat/total, 2), accuracy = 1))
     
     data_join <- data_join %>% pivot_wider(names_from = APPT_MONTH_YEAR, values_from = total)
     
@@ -7882,7 +7887,7 @@ print("2")
       kable(booktabs = T, escape = F) %>%
       kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
       add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
-      add_header_above(c("New Treatments by Provider" = length(data_join)),
+      add_header_above(c("Percent of New Patients to Treatment Conversion by Provider" = length(data_join)),
                        color = "black", font_size = 20, align = "center", line = FALSE) %>% 
       row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
       column_spec(1, bold = T) %>%
