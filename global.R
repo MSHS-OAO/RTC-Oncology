@@ -82,6 +82,7 @@ source("global_functions.R")
 con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
+mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
 oncology_filters_updated <- tbl(con, "ONCOLOGY_FILTERS_UPDATED")
 
 
@@ -501,6 +502,16 @@ default_disease_group <- oncology_tbl %>% filter(SITE %in% default_campus & APPT
   collect()
 default_disease_group <- sort(default_disease_group$DISEASE_GROUP)
 
+
+default_disease_group_all <- oncology_tbl %>% filter(APPT_STATUS %in% c("Arrived")) %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") > APPT_DATE_YEAR) %>%
+  select(DISEASE_GROUP) %>%
+  mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
+  collect()
+
+
+default_disease_group_all <- sort(default_disease_group_all$DISEASE_GROUP)
+
 default_disease_group_detail <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
                                                           DEPARTMENT_NAME %in% default_departments_disease &
                                                           DISEASE_GROUP %in% default_disease_group) %>%
@@ -527,6 +538,19 @@ default_provider <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STAT
   mutate(PROVIDER = unique(PROVIDER)) %>%
   collect()
 default_provider <- sort(default_provider$PROVIDER, na.last = T)
+
+
+treatment_disease <- c("Benign Hematology" , "Hematology Oncology", "Liquid Tumors", "Medical Oncology", "Oncology", "Solid Tumors")
+default_provider_treatment_conversions <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &
+                                              DEPARTMENT_NAME %in% default_departments_disease & 
+                                              DISEASE_GROUP %in% treatment_disease) %>%
+                                            filter(DISEASE_GROUP_DETAIL != "Breast Surgery") %>%
+                                            filter(PROVIDER_TYPE == "Physician") %>%
+  # filter(TO_DATE(dateRangetrend_start, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR) %>%
+  select(PROVIDER) %>%
+  mutate(PROVIDER = unique(PROVIDER)) %>%
+  collect()
+default_provider_treatment_conversions <- sort(default_provider_treatment_conversions$PROVIDER, na.last = T)
 
 
 default_provider_unique_exam <- oncology_tbl %>% filter(SITE %in% default_campus & APPT_STATUS %in% c("Arrived") &

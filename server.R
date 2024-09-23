@@ -685,6 +685,22 @@ server <- function(input, output, session) {
       ) 
       
       
+      provider_unique_conversions<- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
+                                                                DEPARTMENT_NAME %in% selected_dept &
+                                                                ASSOCIATIONLISTA %in% c("Exam")) %>%
+        filter(PROVIDER_TYPE == "Physician") %>% filter(DISEASE_GROUP %in% treatment_disease) %>% filter(DISEASE_GROUP_DETAIL != "Breast Surgery") %>%
+        select(PROVIDER) %>%
+        mutate(PROVIDER = unique(PROVIDER)) %>%
+        collect()
+      provider_unique_conversions <- sort(provider_unique_conversions$PROVIDER, na.last = T)
+      
+      updatePickerInput(session,
+                        inputId = "selected_prov_conversions",
+                        choices = provider_unique_conversions,
+                        selected = provider_unique_conversions
+      ) 
+      
+      
       # provider_utlization_choices <- data.frame(Provider = sort(unique(historical.data[historical.data$SITE %in% input$selectedCampus &
       #                                                                            historical.data$Department %in% input$selectedDepartment, "Provider"])),
       #                                   stringsAsFactors=FALSE
@@ -7751,6 +7767,146 @@ print("2")
       row_spec(which(monthly_wait_time$`Visit Method` == "Overall"), bold = T) %>%
       gsub("\\bNA\\b", " ", .)
     
+    
+  }
+  
+  dataArrived_conversions <- reactive({
+    input$update_filters_conversions
+    providers <- isolate(input$selected_prov_conversions)
+    disease_group <- isolate(input$selected_disease_group_conversions)
+
+    print("1")
+    data <- dataArrived() %>% filter(PROVIDER %in% providers) %>% filter(PROVIDER_TYPE == "Physician") %>% filter(DISEASE_GROUP %in% treatment_disease) %>% filter(DISEASE_GROUP_DETAIL != "Breast Surgery") %>%
+    filter(DISEASE_GROUP %in% disease_group)
+    
+    data
+  })
+  output$treatment_conversions <- renderPlotly({
+    data <- dataArrived_conversions() 
+    
+    data_test <<- data
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) %>% distinct()
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH)) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%
+      mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    # plot <- ggplot(data_join, aes(x= APPT_MONTH_YEAR, y = total, color = Year, group = Year)) + geom_line(size=1)+
+    #         labs(x=NULL, y=NULL,
+    #              title = "Treatment Conversions",
+    #              #subtitle = paste0("Based on arrived data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]))#,
+    #         )+
+    #         theme_new_line()+
+    #         theme_bw()+
+    #         graph_theme("right")+
+    #         scale_y_continuous(limits = c(0,max(data_join$total))*1.5)+
+    #         theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+    #         scale_color_manual(values=c('#212070','#d80b8c')) +
+    #         geom_point(size = 3.2)
+    # 
+    # ggplotly(plot) %>%
+    #   layout(legend = list(title = NA, orientation = "h",   # show entries horizontally
+    #                        y = 1.05, x = 0.35)) %>% style(textposition = "top")
+    
+    
+    ggplot_line_graph(data_join, "New Patients to Treatment Conversion")
+  })
+  
+  output$treatment_conversions_percent <- renderPlotly({
+    data <- dataArrived_conversions()
+    
+    data_test <<- data
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(MRN, APPT_YEAR, APPT_MONTH) %>% distinct()
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH)) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total_treat = n()) %>% collect() %>%
+      mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_total <- data %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%  mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_all <- left_join(data_total, data_join) %>% group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = round(total_treat/total, 2))
+    
+    
+    graph <- ggplot(data_all, aes(x=factor(APPT_MONTH, levels = monthOptions), y=total, group=APPT_YEAR))+
+      geom_line(aes(color=APPT_YEAR), size=1.1)+
+      geom_point(aes(color=APPT_YEAR), size=3)+
+      scale_color_MountSinai('dark')+
+      labs(title = "Percent of New Patients to Treatment Conversion ",
+           y = NULL, x = NULL, fill = NULL, color = NULL)+
+      scale_y_continuous(labels = percent_format(), limits=c(0,1)) +
+    theme(legend.position = 'top',
+            legend.title=element_blank(),
+            plot.title = element_text(hjust=0.5, face = "bold", size = 16),
+            axis.title = element_text(size="12"),
+            axis.text = element_text(size="12"),
+            axis.title.x = element_blank(),
+            axis.line = element_line(size = 0.3, colour = "black"),
+            axis.title.y = element_text(size = 12, angle = 90),
+            plot.tag.position = 'top' 
+            
+      )
+    
+    
+    ggplotly(graph, tooltip = c("total")) %>% layout(yaxis = list(mirror = T), xaxis = list(mirror = T))
+
+  })
+  
+  output$treatment_conversion_provider <- function() {
+    
+    data <- dataArrived_conversions() 
+    data_testing <<- data
+    data <- data %>% filter(NEW_PT_SCHEDULED == "NEW") %>% select(DISEASE_GROUP, MRN, APPT_MONTH_YEAR, PROVIDER, PROVIDER_TYPE) %>% distinct()
+    
+    data_join <- right_join(data, mrn_treatment) %>% filter(!is.null(APPT_MONTH_YEAR)) %>% group_by(DISEASE_GROUP, APPT_MONTH_YEAR, PROVIDER) %>% summarise(total_treat = n()) %>% collect() #%>%
+      #mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_total <- data %>% group_by(DISEASE_GROUP, APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = n()) %>% collect() #%>%  mutate(APPT_MONTH = str_to_title(APPT_MONTH))
+    
+    data_join <- left_join(data_join, data_total) %>% group_by(DISEASE_GROUP, APPT_MONTH_YEAR, PROVIDER) %>% summarise(total = scales::percent(round(total_treat/total, 2), accuracy = 1))
+    
+    data_longer <- data_join
+    data_join <- data_join %>% pivot_wider(names_from = APPT_MONTH_YEAR, values_from = total) 
+  
+    
+    months_sorted <- sort(colnames(data_join)[3:(length(data_join))])
+    col_order <- c(colnames(data_join)[1:2], months_sorted)
+    data_join <- data_join[, col_order]
+    
+    data_join <- data_join[order(data_join$DISEASE_GROUP, data_join$PROVIDER), ]
+    
+    data_join <- data_join %>% rename(Provider = PROVIDER,
+                                `Disease Group` = DISEASE_GROUP)
+    
+    data_longer$total <- as.numeric(sub("%", "",data_longer$total,fixed=TRUE))/100
+    
+    data_longer <- data_longer %>% group_by(DISEASE_GROUP, PROVIDER) %>% summarise(Median = scales::percent(median(total), accuracy = 1)) %>% 
+                                    rename(Provider = PROVIDER,
+                                    `Disease Group` = DISEASE_GROUP)
+    
+    data_join <- left_join(data_join, data_longer)
+    
+    
+    site_selected <- isolate(input$selectedCampus)
+    if(length(unique(site_selected)) == length(campus_choices)){
+      site <- "all sites"
+    } else{
+      site <- paste(sort(unique(site_selected)),sep="", collapse=", ")
+    }
+    header_above <- c("Subtitle" = ncol(data_join))
+    names(header_above) <- paste0(c("Based on scheduled data from "),c(site))
+    
+
+    
+    
+    data_join %>%
+      kable(booktabs = T, escape = F) %>%
+      kable_styling(bootstrap_options = c("hover","bordered"), full_width = FALSE, position = "center", row_label_position = "l", font_size = 16) %>%
+      add_header_above(header_above, color = "black", font_size = 16, align = "center", italic = TRUE) %>%
+      add_header_above(c("Percent of New Patients to Treatment Conversion by Provider" = length(data_join)),
+                       color = "black", font_size = 20, align = "center", line = FALSE) %>% 
+      row_spec(0, background = "#d80b8c", color = "white", bold = T) %>%
+      column_spec(c(1,2), bold = T) %>%
+      collapse_rows(c(1), valign = "top") %>%
+      #row_spec(which(data_join$`Visit Method` == "Overall"), bold = T) %>%
+      gsub("\\bNA\\b", " ", .)
     
   }
   

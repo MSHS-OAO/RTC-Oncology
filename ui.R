@@ -17,6 +17,7 @@ ui <- dashboardPage(
     
     
     
+    
     tags$head(tags$style(HTML("#save_filters {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
@@ -106,7 +107,8 @@ ui <- dashboardPage(
                                   ),
                          menuItem("By Referring Provider", tabName = "referringproVol",
                                   menuSubItem("Treatment", tabName = "provvoltreatment")
-                                  )
+                                  ),
+                         menuSubItem("New Treatments", tabName = "treatment_conversion")
                 ),
                 menuItem("Access", tabName = "access_top", icon= icon("plus-circle"),
                          menuSubItem("Patient Wait Time", tabName = "access")),
@@ -119,7 +121,6 @@ ui <- dashboardPage(
                 # background-repeat: no-repeat;
                 # height: 32px;
                 # width: 32px;
-                # display: block;"
                 # ),
                             menuItem("Ethnicity/Race Capture", tabName = "ethnicity_and_race"),
                             menuItem("MyChart Activation", tabName = "my_chart_activation")
@@ -253,7 +254,7 @@ ui <- dashboardPage(
                        # ),
                        div("Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$div(id = "home_text",
-                                HTML("<p>Version: 2.3 <br> Last Updated: 02/23/2024</p>")
+                                HTML("<p>Version: 2.3 <br> Last Updated: 09/23/2024</p>")
                        ),
                        tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: -4em; margin-left: 20px}")), 
                        br(), br(),
@@ -433,6 +434,78 @@ ui <- dashboardPage(
                            # withSpinner(type = 5, color = "#d80b8c")
                        ),
                        )
+                ),
+        tabItem(tabName = "treatment_conversion",
+                div("Volume - New Treatments", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
+                column(11,
+                       boxPlus(
+                         title = "Analysis Customization", width = 12, status = "primary", 
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE, br(),
+                         fluidRow(
+                           # box(
+                           #   title = "Select Provider Type:",
+                           #   width = 3,
+                           #   height = "100px",
+                           #   solidHeader = FALSE,
+                           #   pickerInput("selected_prov_type_conversions",label=NULL,
+                           #               choices=provider_type_choices,
+                           #               multiple=TRUE,
+                           #               options = pickerOptions(
+                           #                 liveSearch = TRUE,
+                           #                 actionsBox = TRUE,
+                           #                 selectedTextFormat = "count > 1",
+                           #                 countSelectedText = "{0}/{1} Provider Types",
+                           #                 dropupAuto = FALSE),
+                           #               selected = provider_type_choices)),
+                           box(
+                             title = "Select Provider:",
+                             width = 3,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selected_prov_conversions",label=NULL,
+                                         choices=default_provider_treatment_conversions,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Provider Types",
+                                           dropupAuto = FALSE),
+                                         selected = default_provider_treatment_conversions)),
+                           box(
+                             title = "Select Disease Group:",
+                             width = 3,
+                             height = "100px",
+                             solidHeader = FALSE,
+                             pickerInput("selected_disease_group_conversions",label=NULL,
+                                         choices=treatment_disease,
+                                         multiple=TRUE,
+                                         options = pickerOptions(
+                                           liveSearch = TRUE,
+                                           actionsBox = TRUE,
+                                           selectedTextFormat = "count > 1",
+                                           countSelectedText = "{0}/{1} Disease Groups",
+                                           dropupAuto = FALSE),
+                                         selected = treatment_disease)),
+                           column(4,
+                                  br(),
+                                  br(),
+                                  br(),
+                                  actionButton("update_filters_conversions", "CLICK TO UPDATE", width = "75%"))
+                         )
+                         
+              
+                         ),
+                       boxPlus(
+                         title = "New Treatment Conversions", width = 12, status = "primary",
+                         solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
+                         plotlyOutput("treatment_conversions", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         plotlyOutput("treatment_conversions_percent", height = "auto") %>% 
+                           withSpinner(type = 5, color = "#d80b8c"),
+                         tableOutput("treatment_conversion_provider") %>%
+                           withSpinner(type = 5, color = "#d80b8c")
+                       ))
                 ),
         # Volume Breakdown Tab ------------------------------------------------------------------------------------------------------
         tabItem(tabName = "volumebreakdown",
@@ -1446,6 +1519,10 @@ ui <- dashboardPage(
                                                 color: #FFFFFF;
                                                 font-size: 18px;
                                                 position: absolute}}"))),
+      tags$head(tags$style(HTML("#update_filters_conversions {background-color: #d80b8c;
+                                                color: #FFFFFF;
+                                                font-size: 18px;
+                                                position: absolute}}"))),
       tags$head(tags$style(HTML("#update_filters7 {background-color: #d80b8c;
                                                 color: #FFFFFF;
                                                 font-size: 18px;
@@ -1469,7 +1546,7 @@ ui <- dashboardPage(
         input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
         input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
         input.sbm == 'zipCode' | input.sbm == 'utilization' | input.sbm == 'treat_util' | input.sbm == 'prov_util' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-        input.sbm == 'no_show' | input.sbm == 'access'",
+        input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion'",
         column(1,
           dropdown(
             br(),
@@ -1516,7 +1593,7 @@ ui <- dashboardPage(
               condition = "input.sbm == 'volumetrend' | input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
                             input.sbm == 'provvolbreakdown' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                    input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' | input.sbm == 'donwload' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                  input.sbm == 'no_show' | input.sbm == 'access'",
+                  input.sbm == 'no_show' | input.sbm == 'access'| input.sbm == 'treatment_conversion'",
               box(
                 title = "Select Diagnosis Grouper:",
                 width = 12,
@@ -1563,7 +1640,7 @@ ui <- dashboardPage(
           input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
           input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
-                input.sbm == 'no_show' | input.sbm == 'access'" ,                box(
+                input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion'" ,                box(
                   title = "Select Date Range:", 
                   width = 12, 
                   height = "100px",
@@ -1655,7 +1732,7 @@ ui <- dashboardPage(
          input.sbm == `bookedFilled` |  
          input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'provUniqueExam' |
          input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
-         input.sbm == 'zipCode'",
+         input.sbm == 'zipCode'| input.sbm == 'treatment_conversion'",
         br(),
         # dropdown(
         # conditionalPanel(condition = "input.sbm == 'uniqueAll'",
