@@ -2139,7 +2139,7 @@ server <- function(input, output, session) {
   output$break_examvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
-     data_test <<- dataArrived_Diag()
+     #data_test <<- dataArrived_Diag()
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
