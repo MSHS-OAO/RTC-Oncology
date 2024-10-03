@@ -2139,13 +2139,13 @@ server <- function(input, output, session) {
   output$break_examvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
-     #data_test <<- dataArrived_Diag()
+     data_test <<- dataArrived_Diag()
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
-    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Telehealth Visit","New Visit","Established Visit"))
+    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
     
     if(length(isolate(input$selectedCampus)) == length(campus_choices)){
       site <- "System"
@@ -2201,7 +2201,7 @@ server <- function(input, output, session) {
     }
     
 
-    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = c("Total","Telehealth Visit","New Visit","Established Visit"))
+    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
 
     total_in_list <- length(unique(total_visits_break$ASSOCIATIONLISTB))-1
     colors <- all_pallete[total_in_list:1]
