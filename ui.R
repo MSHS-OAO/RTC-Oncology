@@ -1713,6 +1713,20 @@ ui <- dashboardPage(
                           selected = NULL
               )
             ),
+            box(
+              title = "Select only Active Patients?",
+              width = 12,
+              solidHeader = FALSE,
+              pickerInput("active_mrn",label=NULL,
+                          choices= c("Yes", "No"),
+                          multiple=FALSE,
+                          options = pickerOptions(
+                            liveSearch = TRUE,
+                            actionsBox = TRUE,
+                            dropupAuto = FALSE),
+                          selected = "No"
+              )
+            ),
             
             style = "material-circle", size = "lg", right = TRUE, status = "default",
             icon = icon("filter"), width = "300px",
