@@ -1714,7 +1714,7 @@ ui <- dashboardPage(
               )
             ),
             box(
-              title = "Select only Active Patients?",
+              title = "Select Active Patients Only?",
               width = 12,
               solidHeader = FALSE,
               pickerInput("active_mrn",label=NULL,
