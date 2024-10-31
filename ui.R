@@ -292,7 +292,7 @@ ui <- dashboardPage(
                               tags$div(id = "home_definitions",
                                        box(
                                          title = p("Metric Definition", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
-                                         p(strong("Active MRN:"), " any MRN with an arrived treatment visit anywhere in the system in the past 3 months.", style = "font-size:22px")
+                                         p(strong("Active MRN:"), " Any MRN with an arrived treatment visit anywhere in the system in the past 3 months.", style = "font-size:22px")
                                          
                                        )))
                        
