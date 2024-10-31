@@ -292,7 +292,7 @@ ui <- dashboardPage(
                               tags$div(id = "home_definitions",
                                        box(
                                          title = p("Metric Definition", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
-                                         p(strong("Active MRN:"), " Any MRN with an arrived treatment visit anywhere in the system in the past 3 months.", style = "font-size:22px")
+                                         p(strong("Active Treatment Patients:"), " Any MRN with an arrived treatment visit anywhere in the system in the past 3 months.", style = "font-size:22px")
                                          
                                        )))
                        
@@ -1680,7 +1680,7 @@ ui <- dashboardPage(
                 input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
                 input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion' | input.sbm == 'treat_util'" ,     
               box(
-                title = "Select Active Patients Only?",
+                title = "Select Active Treatment Patients Only?",
                 width = 12,
                 solidHeader = FALSE,
                 pickerInput("active_mrn",label=NULL,
