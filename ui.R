@@ -1664,6 +1664,28 @@ ui <- dashboardPage(
                 )
               )
             ),
+            conditionalPanel(
+              condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+          input.sbm == `provvolbreakdown` |
+          input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
+          input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
+                input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion' | input.sbm == 'treat_util'" ,     
+              box(
+                title = "Select Active Patients Only?",
+                width = 12,
+                solidHeader = FALSE,
+                pickerInput("active_mrn",label=NULL,
+                            choices= c("Yes", "No"),
+                            multiple=FALSE,
+                            options = pickerOptions(
+                              liveSearch = TRUE,
+                              actionsBox = TRUE,
+                              dropupAuto = FALSE),
+                            selected = "No"
+                )
+              )
+            ),
             
             # conditionalPanel(
             #   condition = "input.sbm=='utilization' | input.sbm == 'prov_util'",
@@ -1711,20 +1733,6 @@ ui <- dashboardPage(
                             actionsBox = TRUE,
                             dropupAuto = FALSE),
                           selected = NULL
-              )
-            ),
-            box(
-              title = "Select Active Patients Only?",
-              width = 12,
-              solidHeader = FALSE,
-              pickerInput("active_mrn",label=NULL,
-                          choices= c("Yes", "No"),
-                          multiple=FALSE,
-                          options = pickerOptions(
-                            liveSearch = TRUE,
-                            actionsBox = TRUE,
-                            dropupAuto = FALSE),
-                          selected = "No"
               )
             ),
             
