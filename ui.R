@@ -254,7 +254,7 @@ ui <- dashboardPage(
                        # ),
                        div("Oncology Analytics Tool", style = "color:	#221f72; font-family:Calibri; font-weight:bold; font-size:34px; margin-left: 20px"),
                        tags$div(id = "home_text",
-                                HTML("<p>Version: 2.3 <br> Last Updated: 09/23/2024</p>")
+                                HTML("<p>Version: 2.3 <br> Last Updated: 10/31/2024</p>")
                        ),
                        tags$head(tags$style("#home_text{color:#7f7f7f; font-family:Calibri; font-style: italic; font-size: 15px; margin-top: -0.2em; margin-bottom: -4em; margin-left: 20px}")), 
                        br(), br(),
@@ -287,6 +287,14 @@ ui <- dashboardPage(
                                            a(href = "https://hso-rconnect.mssm.edu/oncology-mapping",target='blank', 'Click to View', style = "font-size:22px"),
                                          )))
                        ),
+                       column(4),
+                       column(4,
+                              tags$div(id = "home_definitions",
+                                       box(
+                                         title = p("Metric Definition", style = "font-size:34px; font-weight:bold"), width = 12, height = "400px", status = "warning", solidHeader = TRUE,
+                                         p(strong("Active Treatment Patients:"), " Any MRN with an arrived treatment visit anywhere in the system in the past 3 months.", style = "font-size:22px")
+                                         
+                                       )))
                        
                 )),
         # Volume Trend Tab ------------------------------------------------------------------------------------------------------
@@ -1661,6 +1669,28 @@ ui <- dashboardPage(
                 dateRangeInput("dateRangetreat_util", label = NULL,
                                start = dateRangetrend_start, end = dateRange_max,
                                min = dateRangetrend_min, max = dateRange_max
+                )
+              )
+            ),
+            conditionalPanel(
+              condition = "input.sbm == 'volumebreakdown' | input.sbm == 'volumecomparison' | 
+          input.sbm == `provvolbreakdown` |
+          input.sbm == `bookedFilled` | input.sbm == 'provUniqueExam' |
+          input.sbm == 'zipCode' | input.sbm == 'volumetrend' | input.sbm == 'systemuniqueOffice' | input.sbm == 'systemuniqueTreatment' |
+                input.sbm == 'uniqueAll' | input.sbm == 'uniqueOffice' | input.sbm == 'uniqueTreatment' | input.sbm == 'download' | input.sbm == 'ethnicity_and_race' | input.sbm == 'my_chart_activation' | input.sbm == 'provvoltreatment' |
+                input.sbm == 'no_show' | input.sbm == 'access' | input.sbm == 'treatment_conversion' | input.sbm == 'treat_util'" ,     
+              box(
+                title = "Select Active Treatment Patients Only?",
+                width = 12,
+                solidHeader = FALSE,
+                pickerInput("active_mrn",label=NULL,
+                            choices= c("Yes", "No"),
+                            multiple=FALSE,
+                            options = pickerOptions(
+                              liveSearch = TRUE,
+                              actionsBox = TRUE,
+                              dropupAuto = FALSE),
+                            selected = "No"
                 )
               )
             ),

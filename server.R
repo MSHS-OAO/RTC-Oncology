@@ -1024,9 +1024,15 @@ server <- function(input, output, session) {
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
     )
+    
+
     data <- groupByFilters(oncology_tbl,
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
+    
+    if(input$active_mrn == "Yes") {
+     data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
@@ -1058,6 +1064,10 @@ server <- function(input, output, session) {
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no arrived data for these filters.")
@@ -1078,6 +1088,10 @@ server <- function(input, output, session) {
                    input$selectedCampus, input$selectedDepartment,
                    input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays)
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no arrived data for these filters.")
@@ -1097,6 +1111,9 @@ server <- function(input, output, session) {
                    input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                    input$diag_grouper
                    )
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
@@ -1140,6 +1157,10 @@ server <- function(input, output, session) {
     data <- groupByFilters_2(dataArrived(),
                       input$selectedVisitType, input$selectedApptType, input$selectedTreatmentType, input$diag_grouper)
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no arrived data for these filters.")
@@ -1159,10 +1180,14 @@ server <- function(input, output, session) {
       need(input$selectedProvider != "", "Please select a provider")
     )
     #groupByFilters_3(dataArrived(),
-    groupByFilters_3_detail(dataArrived_Diag(),
+    data <- groupByFilters_3_detail(dataArrived_Diag(),
                      input$selectedDisease, input$selectedProvider, input$diag_grouper, input$selectedDiseaseDetail
                      )
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
+    data
 
   })
   
@@ -1170,8 +1195,13 @@ server <- function(input, output, session) {
     validate(
       need(input$selectedProvider2 != "", "Please select a provider")
     )
-    groupByFilters_3(dataArrived(),
+    data <- groupByFilters_3(dataArrived(),
                      input$selectedProvider2)
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
+    data
   })
   
   # Arrived population data ============================================================================================================
@@ -1185,6 +1215,9 @@ server <- function(input, output, session) {
                        input$selectedCampus, input$selectedDepartment,
                        input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays, input$selectedProvider7,
                        input$dx_grouper_zip)
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
@@ -1279,6 +1312,9 @@ server <- function(input, output, session) {
                            input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                            input$diag_grouper
       )
+      if(input$active_mrn == "Yes") {
+        data <- data %>% filter(ACTIVE_MRN == "Yes") 
+      }
       
       
       data_test <- data %>% head(n = 1L) %>% collect()
@@ -1307,6 +1343,9 @@ server <- function(input, output, session) {
                                     input$diag_grouper
       )
       
+      if(input$active_mrn == "Yes") {
+        data <- data %>% filter(ACTIVE_MRN == "Yes") 
+      }
       
       data_test <- data %>% head(n = 1L) %>% collect()
       validate(
@@ -1329,6 +1368,10 @@ server <- function(input, output, session) {
             rename(CAMPUS = SITE,
                DEPARTMENT = DEPARTMENT_NAME) %>% collect() %>% 
         relocate(CAMPUS, .before = DEPARTMENT)
+      
+      if(input$active_mrn == "Yes") {
+        data <- data %>% filter(ACTIVE_MRN == "Yes") 
+      }
       
       data_test <- data %>% head(n = 1L) %>% collect()
       validate(
@@ -1356,6 +1399,10 @@ server <- function(input, output, session) {
                                     input$diag_grouper
       )
       
+      if(input$active_mrn == "Yes") {
+        data <- data %>% filter(ACTIVE_MRN == "Yes") 
+      }
+      
       
       data_test <- data %>% head(n = 1L) %>% collect()
       validate(
@@ -1379,6 +1426,9 @@ server <- function(input, output, session) {
                           input$selectedCampus, input$selectedDepartment,
                           input$dateRangeunique[1], input$dateRangeunique[2], input$daysOfWeek, input$excludeHolidays,
                           input$diag_grouper)
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
@@ -1554,6 +1604,10 @@ server <- function(input, output, session) {
                      input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                      input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType)
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no utilization data for these filters.")
@@ -1575,6 +1629,10 @@ server <- function(input, output, session) {
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no data for these filters.")
@@ -1595,6 +1653,10 @@ server <- function(input, output, session) {
     data <- data %>% filter(APPT_STATUS %in% c("Arrived"))
     data <- data %>% filter(ASSOCIATIONLISTA %in% c("Treatment"))
     
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
+    
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
       need(nrow(data_test) != 0, "There is no data for these filters.")
@@ -1611,6 +1673,10 @@ server <- function(input, output, session) {
     data <- groupByFilters_util(utilization.data,
                         input$selectedCampus, input$selectedDepartment, input$selectedProviderUtil,
                         input$dateRangeUtil[1], input$dateRangeUtil[2], input$daysOfWeek, input$excludeHolidays, input$utilType1)
+    
+    if(input$active_mrn == "Yes") {
+      data <- data %>% filter(ACTIVE_MRN == "Yes") 
+    }
     
     data_test <- data %>% head(n = 1L) %>% collect()
     validate(
