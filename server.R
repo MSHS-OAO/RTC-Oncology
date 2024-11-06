@@ -6060,7 +6060,8 @@ print("2")
     }
     
     time_df <- time_df %>%
-                add_column(`# of Nurses` = as.character(NA))
+                add_column(`# of Nurses` = as.character(NA),
+                           `# of Treatment Spaces` = as.character(NA))
     #time_df$`Space Capacity` <- set_rooms
     
     time_df
