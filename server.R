@@ -5925,7 +5925,10 @@ print("2")
   
  
   treatment_space_util_month_data <- reactive({
-    num_rooms <- input$setRooms_treatment
+    # num_rooms <- input$setRooms_treatment
+    num_rooms <- hot_to_r(input$treatment_input_table)
+    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    
     num_hours <- input$setHours_treatment
     data <- dataUtilization_Treatment()
     #data_test <<- dataUtilization_Treatment()
@@ -5971,13 +5974,16 @@ print("2")
   
   
   treatment_space_util_dayofweek_data <- reactive({
+    num_rooms <- hot_to_r(input$treatment_input_table)
+    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    
     data <- dataUtilization_Treatment() %>%
       #historical.data %>%
       # filter(is.na(holiday)) %>%
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = round(length(unique(APPT_DATE_YEAR))*input$setRooms_treatment*input$setHours_treatment,0),
+                `Time Available (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*input$setHours_treatment,0),
                 `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY) 
     
@@ -6013,7 +6019,10 @@ print("2")
     remainder <- as.data.frame(round(input$setHours_treatment,0))
     operating_hours_start <- input$operating_hours_start
     operating_hours_end <- input$operating_hours_end
-    set_rooms <- input$setRooms_treatment
+    # set_rooms <- input$setRooms_treatment
+    
+    # set_rooms <- hot_to_r(input$treatment_input_table)
+    # set_rooms <- sum(as.numeric(set_rooms$`# of Treatment Spaces`))
     
     # operating_hours_start <- "7:00AM"
     # operating_hours_end <- "6:00PM"
@@ -6061,7 +6070,7 @@ print("2")
     
     time_df <- time_df %>%
                 add_column(`# of Nurses` = as.character(NA),
-                           `# of Treatment Spaces` = as.character(NA))
+                           `# of Treatment Spaces` = as.character(3))
     #time_df$`Space Capacity` <- set_rooms
     
     time_df
@@ -6173,13 +6182,15 @@ print("2")
 
   
   infusion_util_month_data <- reactive({
-    rooms_set <- input$setRooms_treatment
+    rooms_set <- hot_to_r(input$treatment_input_table)
+    rooms_set <- sum(as.numeric(rooms_set$`# of Treatment Spaces`))
     #rooms_set <- "16"
     
     effective_capacity <<- hot_to_r(input$treatment_input_table) 
     
     effective_capacity <- effective_capacity %>% 
-                                              mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
+                                              mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
+      select(-`# of Treatment Spaces`)
     
     room_set_df <- data.frame(Time = effective_capacity$Time)
     room_set_df$rooms <- as.character(rooms_set)
@@ -6193,7 +6204,9 @@ print("2")
 
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
-    data <- dataUtilization_Treatment() %>%
+    data <- dataUtilization_Treatment()
+    
+    data <- data %>%
       #historical.data %>%
       # filter(is.na(holiday)) %>%
       select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
@@ -6236,7 +6249,10 @@ print("2")
     effective_capacity <- effective_capacity %>% 
       mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
     
-    effective_capacity <- transform(effective_capacity, `Effective Capacity` = pmin(`Nursing Capacity`, input$setRooms_treatment))
+    num_rooms <- hot_to_r(input$treatment_input_table)
+    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    
+    effective_capacity <- transform(effective_capacity, `Effective Capacity` = pmin(`Nursing Capacity`, num_rooms))
     
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
