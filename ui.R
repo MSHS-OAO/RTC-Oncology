@@ -1384,7 +1384,7 @@ ui <- dashboardPage(
                          br(),
                        column(3,
                               box(title = NULL, width = 12, solidHeader = FALSE,
-                                sliderInput("setRooms_treatment", label = h4("Treatment Spaces Available:"), min = 1, max = 65, value = 30),
+                                # sliderInput("setRooms_treatment", label = h4("Treatment Spaces Available:"), min = 1, max = 65, value = 30),
                                 #sliderInput("setNurse", label = h4("Treatment Spaces per Nurse:"), min = 1, max = 10, value = 5),
                                 sliderInput("setHours_treatment", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8, step = 0.5),
                                # selectInput("daysOfWeek_treatment",label = NULL,
@@ -1397,12 +1397,12 @@ ui <- dashboardPage(
                                            selected = "6:00PM")
                               )
                        ),
-                       column(2,
+                       column(3,
                               rHandsontableOutput("treatment_input_table")
                               ),
-                       column(7,
+                       column(6,
                               box(
-                                title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "300px", status = "warning", solidHeader = TRUE,
+                                title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "400px", status = "warning", solidHeader = TRUE,
                                 p(strong("Step 1."),"Please select the treatment spaces available and the number of open daily hours", style = "font-size:22px"),
                                 p(strong("Step 2."), "Set the open and close times", style = "font-size:22px"),
                                 p(strong("Step 3."), "Enter the number of nurses available for each hour in the table", style = "font-size:22px"),
