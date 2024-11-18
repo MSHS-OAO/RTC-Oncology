@@ -1416,7 +1416,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "150px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived Tx volume in minutes over Time Available (# of days in month patients were treated x Infusion Treatment", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Chair Availability (# of days in month patients were treated mutiplied by the total number of daily treatment spaces available)", style = "font-size:22px")
                                 )),
                          column(6,
                             tableOutput("treatment_space_util_month")
@@ -1432,7 +1432,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "175px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived Tx volume in minutes over Nurse Capacity (Nurses staffed by hour of the day x Chairs per Nurse x # of days in month patients were treated", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Nurse Availability (Nurses staffed by hour of the day multiplied by 3 Chairs per Nurse multipied by the # of days in a month patients were treated)", style = "font-size:22px")
                                 )),
                          column(6,
                                 tableOutput("treatment_nurse_util_month")
@@ -1448,7 +1448,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "200px", status = "warning", solidHeader = TRUE,
-                                  p("Calculates our 2 limitations of Nurses vs chairs available by hours of the day for total daily count, then x # of days in month patients were treated for the Effective Infusion Capacity, then divded over the Total Duration of arrived Tx volume in minutes.", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Infusion Availiability (effecitve capacity, maximum # of patients that can be treated, multipled by the # of days in a month patients were treated)", style = "font-size:22px")
                                 )),
                          column(6,
                                 tableOutput("infusion_util_month")

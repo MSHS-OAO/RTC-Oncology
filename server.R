@@ -5942,8 +5942,8 @@ print("2")
               select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
               group_by(APPT_MONTH_YEAR) %>%
               summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                        `Time Available (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
-                        `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                        `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
+                        `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
               #arrange(match(Appt.Month, month.abb)) %>%
               rename(Month = APPT_MONTH_YEAR) #%>%
               #select(Appt.MonthYear,`Total Duration (hr)`,`Time Available (hr)`, `Utilization %`)
@@ -5983,8 +5983,8 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*input$setHours_treatment,0),
-                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*input$setHours_treatment,0),
+                `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY) 
     
     data$DayofWeek <- factor(data$DayofWeek, levels= toupper(c("Sun", "Mon", 
@@ -6104,8 +6104,8 @@ print("2")
       select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_MONTH_YEAR) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = round(length(unique(APPT_DATE_YEAR))*3*as.numeric(nurse_total),0),
-                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                `Nurse Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*3*as.numeric(nurse_total),0),
+                `Utilization %` = round(`Total Duration (hr)`/`Nurse Availability (hr)`*100,0)) %>%
       #arrange(match(Appt.Month, month.abb)) %>%
       rename(Month = APPT_MONTH_YEAR)
     
@@ -6148,8 +6148,8 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = length(unique(APPT_DATE_YEAR))*3*as.numeric(nurse_total),
-                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                `Nurse Availability (hr)` = length(unique(APPT_DATE_YEAR))*3*as.numeric(nurse_total),
+                `Utilization %` = round(`Total Duration (hr)`/`Nurse Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY)
       
     data$DayofWeek <- factor(data$DayofWeek, levels= toupper(c("Sun", "Mon", 
@@ -6183,7 +6183,7 @@ print("2")
   
   infusion_util_month_data <- reactive({
     rooms_set <- hot_to_r(input$treatment_input_table)
-    rooms_set <- sum(as.numeric(rooms_set$`# of Treatment Spaces`))
+    room_set_df <<- rooms_set %>% select(-`# of Nurses`) %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`)) %>% rename(rooms = `# of Treatment Spaces`)
     #rooms_set <- "16"
     
     effective_capacity <<- hot_to_r(input$treatment_input_table) 
@@ -6192,8 +6192,8 @@ print("2")
                                               mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
       select(-`# of Treatment Spaces`)
     
-    room_set_df <- data.frame(Time = effective_capacity$Time)
-    room_set_df$rooms <- as.character(rooms_set)
+    # room_set_df <- data.frame(Time = effective_capacity$Time)
+    # room_set_df$rooms <- as.character(rooms_set)
     
     effective_capacity <- merge(effective_capacity,room_set_df)
     effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
@@ -6212,8 +6212,8 @@ print("2")
       select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_MONTH_YEAR) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
-                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                `Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Infusion Availability (hr)`*100,0)) %>%
       #arrange(match(Appt.Month, month.abb)) %>%
       rename(Month = APPT_MONTH_YEAR)
     
@@ -6262,8 +6262,8 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Time Available (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
-                `Utilization %` = round(`Total Duration (hr)`/`Time Available (hr)`*100,0)) %>%
+                `Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Infusion Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY)
     
     data$DayofWeek <- factor(data$DayofWeek, levels= toupper(c("Sun", "Mon", 
