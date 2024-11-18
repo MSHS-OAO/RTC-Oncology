@@ -6212,8 +6212,8 @@ print("2")
       select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_MONTH_YEAR) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
-                `Utilization %` = round(`Total Duration (hr)`/`Infusion Availability (hr)`*100,0)) %>%
+                `Effective Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Effective Infusion Availability (hr)`*100,0)) %>%
       #arrange(match(Appt.Month, month.abb)) %>%
       rename(Month = APPT_MONTH_YEAR)
     
@@ -6262,8 +6262,8 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
-                `Utilization %` = round(`Total Duration (hr)`/`Infusion Availability (hr)`*100,0)) %>%
+                `Effective Infusion Availability (hr)` = length(unique(APPT_DATE_YEAR))*as.numeric(effective_capacity),
+                `Utilization %` = round(`Total Duration (hr)`/`Effective Infusion Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY)
     
     data$DayofWeek <- factor(data$DayofWeek, levels= toupper(c("Sun", "Mon", 
