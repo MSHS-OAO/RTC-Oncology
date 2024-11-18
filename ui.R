@@ -1448,7 +1448,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "200px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived treatment volume over Infusion Availiability (effecitve capacity, maximum # daily of patients that can be treated, multipled by the # of days in a month patients were treated)", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Infusion Availiability (effecitve capacity, maximum # of daily patients that can be treated, multipled by the # of days in a month patients were treated)", style = "font-size:22px")
                                 )),
                          column(6,
                                 tableOutput("infusion_util_month")
