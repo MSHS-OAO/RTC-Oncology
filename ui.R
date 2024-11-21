@@ -1383,6 +1383,11 @@ ui <- dashboardPage(
                          solidHeader = TRUE, collapsible = TRUE, closable = TRUE,
                          br(),
                        column(3,
+                              materialSwitch(
+                                inputId = "by_half_hour_treatment",
+                                label = "By Half hour",
+                                right = TRUE,
+                                status = "primary"),
                               box(title = NULL, width = 12, solidHeader = FALSE,
                                 # sliderInput("setRooms_treatment", label = h4("Treatment Spaces Available:"), min = 1, max = 65, value = 30),
                                 #sliderInput("setNurse", label = h4("Treatment Spaces per Nurse:"), min = 1, max = 10, value = 5),
