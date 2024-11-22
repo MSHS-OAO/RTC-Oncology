@@ -1422,7 +1422,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "195px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived treatment volume over Chair Availability (# of days in month patients were treated mutiplied by the total number of daily treatment spaces available multipled by the # of open daily hours)", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Chair Availability (# of days patients were treated mutiplied by the total number of daily treatment spaces available multipled by the # of open daily hours)", style = "font-size:22px")
                                 )),
                          column(6,
                             tableOutput("treatment_space_util_month")
@@ -1438,7 +1438,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "175px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived treatment volume over Nurse Availability (Nurses staffed by hour of the day multiplied by 3 Chairs per Nurse multipied by the # of days in a month patients were treated)", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Nurse Availability (Nurses staffed by hour of the day multiplied by 3 Chairs per Nurse multipied by the # of days patients were treated)", style = "font-size:22px")
                                 )),
                          column(6,
                                 tableOutput("treatment_nurse_util_month")
@@ -1454,7 +1454,7 @@ ui <- dashboardPage(
                          column(6,
                                 box(
                                   title = p("Metric Definition", style = "font-size:28px; font-weight:bold"), width = 12,  height = "200px", status = "warning", solidHeader = TRUE,
-                                  p("Total Duration of arrived treatment volume over Effective Infusion Availiability (effecitve infusion capacity, maximum # of daily patients that can be treated given chair and nursing constraints, multipled by the # of days in a month patients were treated)", style = "font-size:22px")
+                                  p("Total Duration of arrived treatment volume over Effective Infusion Availiability (effecitve infusion capacity, maximum # of daily patients that can be treated given chair and nursing constraints, multipled by the # of days patients were treated)", style = "font-size:22px")
                                 )),
                          column(6,
                                 tableOutput("infusion_util_month")
