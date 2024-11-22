@@ -5949,6 +5949,7 @@ print("2")
               select(APPT_MONTH_YEAR, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
               group_by(APPT_MONTH_YEAR) %>%
               summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
+                        #`Days with Patients Seen` = length(unique(APPT_DATE_YEAR)),
                         `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
                         `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
               #arrange(match(Appt.Month, month.abb)) %>%
