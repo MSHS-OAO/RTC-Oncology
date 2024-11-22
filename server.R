@@ -5933,8 +5933,15 @@ print("2")
     data <- dataUtilization_Treatment()
     #data_test <<- dataUtilization_Treatment()
     
+    if(input$by_half_hour_treatment == TRUE) {
+      num_rooms <- num_rooms/2
+      num_hours <- 1
+    }
+    
     # num_rooms <- 3
     # num_hours <- 9
+    
+    data_test <<- data
 
     data <-  data %>%
               #historical.data %>%
@@ -5976,6 +5983,12 @@ print("2")
   treatment_space_util_dayofweek_data <- reactive({
     num_rooms <- hot_to_r(input$treatment_input_table)
     num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    num_hours <- input$setHours_treatment
+    
+    if(input$by_half_hour_treatment == TRUE) {
+      num_rooms <- num_rooms/2
+      num_hours <- 1
+    }
     
     data <- dataUtilization_Treatment() %>%
       #historical.data %>%
@@ -5983,7 +5996,7 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*input$setHours_treatment,0),
+                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
                 `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY) 
     
@@ -6028,44 +6041,87 @@ print("2")
     # operating_hours_end <- "6:00PM"
     # set_rooms <- "16"
     
-    if(grepl(":30", operating_hours_start, fixed = TRUE)){
-      start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
-      if(grepl(":30", operating_hours_end, fixed = TRUE)) {
-        end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
-      }else {
-        end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+    if(input$by_half_hour_treatment == TRUE){
+      if(grepl(":30", operating_hours_start, fixed = TRUE)){
+        start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+        if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+          end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+        }else {
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+        }
+        start_time_hour <- start_time + 1800
+        
+        time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+        time_df <- seq(min(time_df$Time), max(time_df$Time), by = "30 min")
+        time_df <- as.data.frame(time_df)
+        time_df <- rename(time_df, Time = time_df)
+        time_df$Time <- format(time_df$Time, format = "%H:%M")
+        
+        start_time <- format(start_time, format = "%H:%M")
+        
+        time_df <- rbind(start_time, time_df)
+      }else{
+        start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+        if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+          end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+        }else {
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+        }      
+        start_time_hour <- start_time
+        
+        time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+        time_df <- seq(min(time_df$Time), max(time_df$Time), by = "30 min")
+        time_df <- as.data.frame(time_df)
+        time_df <- rename(time_df, Time = time_df)
+        time_df$Time <- format(time_df$Time, format = "%H:%M")
+        
+        start_time <- format(start_time, format = "%H:%M")
+        
+        time_df <- rbind(start_time, time_df)
+        
+        time_df <- time_df %>% distinct()
       }
-      start_time_hour <- start_time + 1800
-      
-      time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
-      time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
-      time_df <- as.data.frame(time_df)
-      time_df <- rename(time_df, Time = time_df)
-      time_df$Time <- format(time_df$Time, format = "%H:%M")
-      
-      start_time <- format(start_time, format = "%H:%M")
-      
-      time_df <- rbind(start_time, time_df)
     }else{
-      start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
-      if(grepl(":30", operating_hours_end, fixed = TRUE)) {
-        end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
-      }else {
-        end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
-      }      
-      start_time_hour <- start_time
-      
-      time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
-      time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
-      time_df <- as.data.frame(time_df)
-      time_df <- rename(time_df, Time = time_df)
-      time_df$Time <- format(time_df$Time, format = "%H:%M")
-      
-      start_time <- format(start_time, format = "%H:%M")
-      
-      time_df <- rbind(start_time, time_df)
-      
-      time_df <- time_df %>% distinct()
+    
+      if(grepl(":30", operating_hours_start, fixed = TRUE)){
+        start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+        if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+          end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+        }else {
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+        }
+        start_time_hour <- start_time + 1800
+        
+        time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+        time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
+        time_df <- as.data.frame(time_df)
+        time_df <- rename(time_df, Time = time_df)
+        time_df$Time <- format(time_df$Time, format = "%H:%M")
+        
+        start_time <- format(start_time, format = "%H:%M")
+        
+        time_df <- rbind(start_time, time_df)
+      }else{
+        start_time <- parse_date_time(operating_hours_start, "%H:%M%p")
+        if(grepl(":30", operating_hours_end, fixed = TRUE)) {
+          end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
+        }else {
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+        }      
+        start_time_hour <- start_time
+        
+        time_df <- data.frame(Time = as.POSIXct(c(start_time_hour, end_time)))
+        time_df <- seq(min(time_df$Time), max(time_df$Time), by = "1 hour")
+        time_df <- as.data.frame(time_df)
+        time_df <- rename(time_df, Time = time_df)
+        time_df$Time <- format(time_df$Time, format = "%H:%M")
+        
+        start_time <- format(start_time, format = "%H:%M")
+        
+        time_df <- rbind(start_time, time_df)
+        
+        time_df <- time_df %>% distinct()
+      }
     }
     
     time_df <- time_df %>%
@@ -6097,6 +6153,10 @@ print("2")
     #nurse_test <<- nurse_total
     data <- dataUtilization_Treatment()
     #data_test <<-  dataUtilization_Treatment()
+    
+    if(input$by_half_hour_treatment == TRUE) {
+      nurse_total <- nurse_total/2
+    }
     
     data <-  data %>%
       #historical.data %>%
@@ -6141,6 +6201,10 @@ print("2")
     
     nurse_total <- nurse_total %>%
       summarise(sum(as.numeric(`# of Nurses`)))
+    
+    if(input$by_half_hour_treatment == TRUE) {
+      nurse_total <- nurse_total/2
+    }
     
     data <- dataUtilization_Treatment() %>%
       #historical.data %>%
@@ -6192,6 +6256,11 @@ print("2")
                                               mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
       select(-`# of Treatment Spaces`)
     
+    if(input$by_half_hour_treatment == TRUE) {
+      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
+      room_set_df$rooms <- room_set_df$rooms/2
+    }
+    
     # room_set_df <- data.frame(Time = effective_capacity$Time)
     # room_set_df$rooms <- as.character(rooms_set)
     
@@ -6199,12 +6268,14 @@ print("2")
     effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
     effective_capacity$`Nursing Capacity` <- as.numeric(effective_capacity$`Nursing Capacity`)
     
+    
     effective_capacity <- data.frame(Effective.Capacity = pmin(effective_capacity$`Nursing Capacity`,effective_capacity$rooms))
     
 
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
     data <- dataUtilization_Treatment()
+    data_test <<- data
     
     data <- data %>%
       #historical.data %>%
@@ -6244,15 +6315,31 @@ print("2")
   
   
   infusion_util_dayofweek_data <- reactive({
-    effective_capacity <- hot_to_r(input$treatment_input_table) 
+    rooms_set <- hot_to_r(input$treatment_input_table)
+    room_set_df <<- rooms_set %>% select(-`# of Nurses`) %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`)) %>% rename(rooms = `# of Treatment Spaces`)
+    #rooms_set <- "16"
+    
+    effective_capacity <<- hot_to_r(input$treatment_input_table) 
     
     effective_capacity <- effective_capacity %>% 
-      mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
+      mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
+      select(-`# of Treatment Spaces`)
     
-    num_rooms <- hot_to_r(input$treatment_input_table)
-    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    if(input$by_half_hour_treatment == TRUE) {
+      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
+      room_set_df$rooms <- room_set_df$rooms/2
+    }
     
-    effective_capacity <- transform(effective_capacity, `Effective Capacity` = pmin(`Nursing Capacity`, num_rooms))
+    # room_set_df <- data.frame(Time = effective_capacity$Time)
+    # room_set_df$rooms <- as.character(rooms_set)
+    
+    effective_capacity <- merge(effective_capacity,room_set_df)
+    effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
+    effective_capacity$`Nursing Capacity` <- as.numeric(effective_capacity$`Nursing Capacity`)
+    
+    
+    effective_capacity <- data.frame(Effective.Capacity = pmin(effective_capacity$`Nursing Capacity`,effective_capacity$rooms))
+    
     
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
