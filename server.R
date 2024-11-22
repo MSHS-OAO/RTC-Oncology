@@ -6256,6 +6256,11 @@ print("2")
                                               mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
       select(-`# of Treatment Spaces`)
     
+    if(input$by_half_hour_treatment == TRUE) {
+      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
+      room_set_df$rooms <- room_set_df$rooms/2
+    }
+    
     # room_set_df <- data.frame(Time = effective_capacity$Time)
     # room_set_df$rooms <- as.character(rooms_set)
     
@@ -6263,10 +6268,6 @@ print("2")
     effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
     effective_capacity$`Nursing Capacity` <- as.numeric(effective_capacity$`Nursing Capacity`)
     
-    if(input$by_half_hour_treatment == TRUE) {
-      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
-      effective_capacity$rooms <- as.numeric(effective_capacity$rooms)/2
-    }
     
     effective_capacity <- data.frame(Effective.Capacity = pmin(effective_capacity$`Nursing Capacity`,effective_capacity$rooms))
     
@@ -6274,6 +6275,7 @@ print("2")
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
     data <- dataUtilization_Treatment()
+    data_test <<- data
     
     data <- data %>%
       #historical.data %>%
@@ -6313,15 +6315,31 @@ print("2")
   
   
   infusion_util_dayofweek_data <- reactive({
-    effective_capacity <- hot_to_r(input$treatment_input_table) 
+    rooms_set <- hot_to_r(input$treatment_input_table)
+    room_set_df <<- rooms_set %>% select(-`# of Nurses`) %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`)) %>% rename(rooms = `# of Treatment Spaces`)
+    #rooms_set <- "16"
+    
+    effective_capacity <<- hot_to_r(input$treatment_input_table) 
     
     effective_capacity <- effective_capacity %>% 
-      mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3)
+      mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
+      select(-`# of Treatment Spaces`)
     
-    num_rooms <- hot_to_r(input$treatment_input_table)
-    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    if(input$by_half_hour_treatment == TRUE) {
+      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
+      room_set_df$rooms <- room_set_df$rooms/2
+    }
     
-    effective_capacity <- transform(effective_capacity, `Effective Capacity` = pmin(`Nursing Capacity`, num_rooms))
+    # room_set_df <- data.frame(Time = effective_capacity$Time)
+    # room_set_df$rooms <- as.character(rooms_set)
+    
+    effective_capacity <- merge(effective_capacity,room_set_df)
+    effective_capacity$rooms <- as.numeric(effective_capacity$rooms)
+    effective_capacity$`Nursing Capacity` <- as.numeric(effective_capacity$`Nursing Capacity`)
+    
+    
+    effective_capacity <- data.frame(Effective.Capacity = pmin(effective_capacity$`Nursing Capacity`,effective_capacity$rooms))
+    
     
     effective_capacity <- effective_capacity %>% summarise(`Total Effective Capacity` = sum(as.numeric(Effective.Capacity)))
     
