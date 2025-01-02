@@ -69,6 +69,7 @@ suppressMessages({
   library(rhandsontable)
   library(glue)
   library(DBI)
+  library(pool)
   library(shinydashboardPlus)
   library(shinycssloaders)
   library(shinyBS)
@@ -79,7 +80,9 @@ suppressMessages({
 source("global_functions.R")
 
 
-con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
+#con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
+
+con <- dbPool(drv = odbc::odbc(), dsn= "OAO Cloud DB Production")
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
 mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
@@ -408,7 +411,9 @@ write_filters_db <- function(df) {
 ### Set default values for master filters --------------------------------------------------------------------------------------
 #default_campus <- "DBC"
 #default_campus <- unique(historical.data$SITE)
-dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), format="%Y-%m-%d")
+#dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), format="%Y-%m-%d")
+
+dateRangetrend_start <- Sys.Date()-365
 
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                        collect()
