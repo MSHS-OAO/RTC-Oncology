@@ -411,7 +411,7 @@ write_filters_db <- function(df) {
 #default_campus <- unique(historical.data$SITE)
 #dateRangetrend_start <- as.Date(paste0(format(Sys.Date(), "%Y"), "-01-01"), format="%Y-%m-%d")
 
-dateRangetrend_start <- Sys.Date()-365
+dateRangetrend_start <-  floor_date(Sys.Date() %m-% months(11), unit = "month")
 
 campus_choices <- oncology_tbl %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>%
                        collect()
