@@ -69,7 +69,6 @@ suppressMessages({
   library(rhandsontable)
   library(glue)
   library(DBI)
-  library(pool)
   library(shinydashboardPlus)
   library(shinycssloaders)
   library(shinyBS)
