@@ -79,10 +79,8 @@ suppressMessages({
 
 source("global_functions.R")
 
+con <- dbConnect(odbc::odbc(), "OAO Cloud DB Production", timeout = 30)
 
-#con <- dbConnect(odbc::odbc(), "OAO Cloud DB", timeout = 30)
-
-con <- dbPool(drv = odbc::odbc(), dsn= "OAO Cloud DB Production")
 oncology_tbl <- tbl(con, "ONCOLOGY_ACCESS")
 oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
 mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
@@ -370,7 +368,7 @@ write_filters_db <- function(df) {
   
   all_data <<- gsub("'NA'", "''", all_data)
   
-  conn <- dbConnect(odbc::odbc(), "OAO Cloud DB")
+  conn <- dbConnect(odbc::odbc(), "OAO Cloud DB Production")
   print("after conn")
   
   dbBegin(conn)
