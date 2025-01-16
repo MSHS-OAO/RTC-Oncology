@@ -5936,6 +5936,9 @@ print("2")
       num_rooms <- num_rooms %>% mutate(time_multiplier = 0.5)
     }else {
       num_rooms <- num_rooms %>% mutate(time_multiplier = ifelse(grepl(":30", num_rooms$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        num_rooms[nrow(num_rooms), ncol(num_rooms)] <- 0.5
+      }
     }
     
     num_rooms <- num_rooms %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`) * time_multiplier)
@@ -5994,6 +5997,9 @@ print("2")
       num_rooms <- num_rooms %>% mutate(time_multiplier = 0.5)
     }else {
       num_rooms <- num_rooms %>% mutate(time_multiplier = ifelse(grepl(":30", num_rooms$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        num_rooms[nrow(num_rooms), ncol(num_rooms)] <- 0.5
+      }
     }
     
     num_rooms <- num_rooms %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`) * time_multiplier)
@@ -6164,6 +6170,9 @@ print("2")
       nurse_total <- nurse_total %>% mutate(time_multiplier = 0.5)
     }else {
       nurse_total <- nurse_total %>% mutate(time_multiplier = ifelse(grepl(":30", nurse_total$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        nurse_total[nrow(nurse_total), ncol(nurse_total)] <- 0.5
+      }
     }
     nurse_total <- nurse_total %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
     
@@ -6221,6 +6230,9 @@ print("2")
       nurse_total <- nurse_total %>% mutate(time_multiplier = 0.5)
     }else {
       nurse_total <- nurse_total %>% mutate(time_multiplier = ifelse(grepl(":30", nurse_total$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        nurse_total[nrow(nurse_total), ncol(nurse_total)] <- 0.5
+      }
     }
     nurse_total <- nurse_total %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
     
@@ -6281,6 +6293,11 @@ print("2")
     }else {
       room_set_df <- room_set_df %>% mutate(time_multiplier = ifelse(grepl(":30", room_set_df$Time, fixed = TRUE), 0.5,1))
       effective_capacity <- effective_capacity %>% mutate(time_multiplier = ifelse(grepl(":30", effective_capacity$Time, fixed = TRUE), 0.5,1))
+      
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        room_set_df[nrow(room_set_df), ncol(room_set_df)] <- 0.5
+        effective_capacity[nrow(effective_capacity), ncol(effective_capacity)] <- 0.5
+      }
       
     }
     
@@ -6359,6 +6376,11 @@ print("2")
     }else {
       room_set_df <- room_set_df %>% mutate(time_multiplier = ifelse(grepl(":30", room_set_df$Time, fixed = TRUE), 0.5,1))
       effective_capacity <- effective_capacity %>% mutate(time_multiplier = ifelse(grepl(":30", effective_capacity$Time, fixed = TRUE), 0.5,1))
+      
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        room_set_df[nrow(room_set_df), ncol(room_set_df)] <- 0.5
+        effective_capacity[nrow(effective_capacity), ncol(effective_capacity)] <- 0.5
+      }
       
     }
     
