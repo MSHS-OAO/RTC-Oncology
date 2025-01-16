@@ -5928,23 +5928,27 @@ print("2")
   
  
   treatment_space_util_month_data <- reactive({
-    # num_rooms <- input$setRooms_treatment
+    #Convert input table to dataframe
     num_rooms <- hot_to_r(input$treatment_input_table)
-    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
-    
-    num_hours <- input$setHours_treatment
-    data <- dataUtilization_Treatment()
-    #data_test <<- dataUtilization_Treatment()
-    
+  
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
     if(input$by_half_hour_treatment == TRUE) {
-      num_rooms <- num_rooms/2
-      num_hours <- 1
+      num_rooms <- num_rooms %>% mutate(time_multiplier = 0.5)
+    }else {
+      num_rooms <- num_rooms %>% mutate(time_multiplier = ifelse(grepl(":30", num_rooms$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        num_rooms[nrow(num_rooms), ncol(num_rooms)] <- 0.5
+      }
     }
     
-    # num_rooms <- 3
-    # num_hours <- 9
+    num_rooms <- num_rooms %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`) * time_multiplier)
     
-    data_test <<- data
+    #Sum daily available spaces
+    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
+    
+    data <- dataUtilization_Treatment()
+
+    
 
     data <-  data %>%
               #historical.data %>%
@@ -5953,7 +5957,7 @@ print("2")
               group_by(APPT_MONTH_YEAR) %>%
               summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
                         #`Days with Patients Seen` = length(unique(APPT_DATE_YEAR)),
-                        `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
+                        `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms,0),
                         `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
               #arrange(match(Appt.Month, month.abb)) %>%
               rename(Month = APPT_MONTH_YEAR) #%>%
@@ -5985,14 +5989,23 @@ print("2")
   
   
   treatment_space_util_dayofweek_data <- reactive({
+    #Convert input table to dataframe
     num_rooms <- hot_to_r(input$treatment_input_table)
-    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
-    num_hours <- input$setHours_treatment
     
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
     if(input$by_half_hour_treatment == TRUE) {
-      num_rooms <- num_rooms/2
-      num_hours <- 1
+      num_rooms <- num_rooms %>% mutate(time_multiplier = 0.5)
+    }else {
+      num_rooms <- num_rooms %>% mutate(time_multiplier = ifelse(grepl(":30", num_rooms$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        num_rooms[nrow(num_rooms), ncol(num_rooms)] <- 0.5
+      }
     }
+    
+    num_rooms <- num_rooms %>% mutate(`# of Treatment Spaces` = as.numeric(`# of Treatment Spaces`) * time_multiplier)
+    
+    #Sum daily available spaces
+    num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
     
     data <- dataUtilization_Treatment() %>%
       #historical.data %>%
@@ -6000,7 +6013,7 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
+                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms,0),
                 `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY) 
     
@@ -6033,7 +6046,7 @@ print("2")
   }
   
   treatment_input_table_data <- reactive({
-    remainder <- as.data.frame(round(input$setHours_treatment,0))
+    # remainder <- as.data.frame(round(input$setHours_treatment,0))
     operating_hours_start <- input$operating_hours_start
     operating_hours_end <- input$operating_hours_end
     # set_rooms <- input$setRooms_treatment
@@ -6051,7 +6064,7 @@ print("2")
         if(grepl(":30", operating_hours_end, fixed = TRUE)) {
           end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
         }else {
-          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 1800
         }
         start_time_hour <- start_time + 1800
         
@@ -6069,7 +6082,7 @@ print("2")
         if(grepl(":30", operating_hours_end, fixed = TRUE)) {
           end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
         }else {
-          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 1800
         }      
         start_time_hour <- start_time
         
@@ -6149,18 +6162,27 @@ print("2")
   
 
   treatment_nurse_util_month_data <- reactive({
-
+    #Convert input table to dataframe
     nurse_total <- hot_to_r(input$treatment_input_table) 
+    nurse_total_test <<- nurse_total
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
+    if(input$by_half_hour_treatment == TRUE) {
+      nurse_total <- nurse_total %>% mutate(time_multiplier = 0.5)
+    }else {
+      nurse_total <- nurse_total %>% mutate(time_multiplier = ifelse(grepl(":30", nurse_total$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        nurse_total[nrow(nurse_total), ncol(nurse_total)] <- 0.5
+      }
+    }
+    nurse_total <- nurse_total %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
     
+    #Sum daily nurses
     nurse_total <- nurse_total %>%
                        summarise(sum(as.numeric(`# of Nurses`)))
-    #nurse_test <<- nurse_total
+    
     data <- dataUtilization_Treatment()
     #data_test <<-  dataUtilization_Treatment()
     
-    if(input$by_half_hour_treatment == TRUE) {
-      nurse_total <- nurse_total/2
-    }
     
     data <-  data %>%
       #historical.data %>%
@@ -6200,15 +6222,23 @@ print("2")
 
 
   treatment_nurse_util_dayofweek_data <- reactive({
-    
+    #Convert input table to dataframe
     nurse_total <- hot_to_r(input$treatment_input_table) 
+    
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
+    if(input$by_half_hour_treatment == TRUE) {
+      nurse_total <- nurse_total %>% mutate(time_multiplier = 0.5)
+    }else {
+      nurse_total <- nurse_total %>% mutate(time_multiplier = ifelse(grepl(":30", nurse_total$Time, fixed = TRUE), 0.5,1))
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        nurse_total[nrow(nurse_total), ncol(nurse_total)] <- 0.5
+      }
+    }
+    nurse_total <- nurse_total %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
     
     nurse_total <- nurse_total %>%
       summarise(sum(as.numeric(`# of Nurses`)))
     
-    if(input$by_half_hour_treatment == TRUE) {
-      nurse_total <- nurse_total/2
-    }
     
     data <- dataUtilization_Treatment() %>%
       #historical.data %>%
@@ -6256,14 +6286,28 @@ print("2")
     
     effective_capacity <<- hot_to_r(input$treatment_input_table) 
     
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
+    if(input$by_half_hour_treatment == TRUE) {
+      room_set_df <- room_set_df %>% mutate(time_multiplier = 0.5)
+      effective_capacity <- effective_capacity %>% mutate(time_multiplier = 0.5)
+    }else {
+      room_set_df <- room_set_df %>% mutate(time_multiplier = ifelse(grepl(":30", room_set_df$Time, fixed = TRUE), 0.5,1))
+      effective_capacity <- effective_capacity %>% mutate(time_multiplier = ifelse(grepl(":30", effective_capacity$Time, fixed = TRUE), 0.5,1))
+      
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        room_set_df[nrow(room_set_df), ncol(room_set_df)] <- 0.5
+        effective_capacity[nrow(effective_capacity), ncol(effective_capacity)] <- 0.5
+      }
+      
+    }
+    
+    room_set_df <- room_set_df %>% mutate(rooms = as.numeric(rooms) * time_multiplier)
+    effective_capacity <- effective_capacity %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
+    
     effective_capacity <- effective_capacity %>% 
                                               mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
       select(-`# of Treatment Spaces`)
     
-    if(input$by_half_hour_treatment == TRUE) {
-      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
-      room_set_df$rooms <- room_set_df$rooms/2
-    }
     
     # room_set_df <- data.frame(Time = effective_capacity$Time)
     # room_set_df$rooms <- as.character(rooms_set)
@@ -6325,14 +6369,27 @@ print("2")
     
     effective_capacity <<- hot_to_r(input$treatment_input_table) 
     
+    #Create a time multipler to check if the time is a half hour or not so that we are still keeping hr units
+    if(input$by_half_hour_treatment == TRUE) {
+      room_set_df <- room_set_df %>% mutate(time_multiplier = 0.5)
+      effective_capacity <- effective_capacity %>% mutate(time_multiplier = 0.5)
+    }else {
+      room_set_df <- room_set_df %>% mutate(time_multiplier = ifelse(grepl(":30", room_set_df$Time, fixed = TRUE), 0.5,1))
+      effective_capacity <- effective_capacity %>% mutate(time_multiplier = ifelse(grepl(":30", effective_capacity$Time, fixed = TRUE), 0.5,1))
+      
+      if(grepl(":30", input$operating_hours_end, fixed = TRUE)) {
+        room_set_df[nrow(room_set_df), ncol(room_set_df)] <- 0.5
+        effective_capacity[nrow(effective_capacity), ncol(effective_capacity)] <- 0.5
+      }
+      
+    }
+    
+    room_set_df <- room_set_df %>% mutate(rooms = as.numeric(rooms) * time_multiplier)
+    effective_capacity <- effective_capacity %>% mutate(`# of Nurses` = as.numeric(`# of Nurses`) * time_multiplier)
+    
     effective_capacity <- effective_capacity %>% 
       mutate(`Nursing Capacity` = as.numeric(`# of Nurses`) * 3) %>%
       select(-`# of Treatment Spaces`)
-    
-    if(input$by_half_hour_treatment == TRUE) {
-      effective_capacity$`Nursing Capacity` <- effective_capacity$`Nursing Capacity`/2
-      room_set_df$rooms <- room_set_df$rooms/2
-    }
     
     # room_set_df <- data.frame(Time = effective_capacity$Time)
     # room_set_df$rooms <- as.character(rooms_set)
