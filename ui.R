@@ -1391,7 +1391,7 @@ ui <- dashboardPage(
                               box(title = NULL, width = 12, solidHeader = FALSE,
                                 # sliderInput("setRooms_treatment", label = h4("Treatment Spaces Available:"), min = 1, max = 65, value = 30),
                                 #sliderInput("setNurse", label = h4("Treatment Spaces per Nurse:"), min = 1, max = 10, value = 5),
-                                sliderInput("setHours_treatment", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8, step = 0.5),
+                                #sliderInput("setHours_treatment", label = h4("Set Daily Open Hours:"), min = 1, max = 24, value = 8, step = 0.5),
                                # selectInput("daysOfWeek_treatment",label = NULL,
                                #             choices=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), selected = daysOfWeek.options,
                                #             multiple=TRUE, selectize=TRUE),
@@ -1409,10 +1409,10 @@ ui <- dashboardPage(
                        column(6,
                               box(
                                 title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "400px", status = "warning", solidHeader = TRUE,
-                                p(strong("Step 1."),"Please select the treatment spaces available and the number of open daily hours", style = "font-size:22px"),
-                                p(strong("Step 2."), "Set the open and close times", style = "font-size:22px"),
-                                p(strong("Step 3."), "Use the toggle to update the table every half hour.  Enter the number of nurses and chairs available for each time slot in the table.", style = "font-size:22px"),
-                                p(strong("Step 4."), "Use the filters on the right to enter the campus, department, and time frame the data should reflect, then click on the Click to Update button", style = "font-size:22px")
+                                # p(strong("Step 1."),"Please select the treatment spaces available and the number of open daily hours", style = "font-size:22px"),
+                                p(strong("Step 1."), "Set the open and close times", style = "font-size:22px"),
+                                p(strong("Step 2."), "Use the toggle to update the table every half hour.  Enter the number of nurses and chairs available for each time slot in the table.", style = "font-size:22px"),
+                                p(strong("Step 3."), "Use the filters on the right to enter the campus, department, and time frame the data should reflect, then click on the Click to Update button", style = "font-size:22px")
                               ))
                        ),
                        boxPlus(

@@ -5932,13 +5932,13 @@ print("2")
     num_rooms <- hot_to_r(input$treatment_input_table)
     num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
     
-    num_hours <- input$setHours_treatment
+    # num_hours <- input$setHours_treatment
     data <- dataUtilization_Treatment()
     #data_test <<- dataUtilization_Treatment()
     
     if(input$by_half_hour_treatment == TRUE) {
       num_rooms <- num_rooms/2
-      num_hours <- 1
+      # num_hours <- 1
     }
     
     # num_rooms <- 3
@@ -5953,7 +5953,7 @@ print("2")
               group_by(APPT_MONTH_YEAR) %>%
               summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
                         #`Days with Patients Seen` = length(unique(APPT_DATE_YEAR)),
-                        `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
+                        `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms,0),
                         `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
               #arrange(match(Appt.Month, month.abb)) %>%
               rename(Month = APPT_MONTH_YEAR) #%>%
@@ -5987,11 +5987,11 @@ print("2")
   treatment_space_util_dayofweek_data <- reactive({
     num_rooms <- hot_to_r(input$treatment_input_table)
     num_rooms <- sum(as.numeric(num_rooms$`# of Treatment Spaces`))
-    num_hours <- input$setHours_treatment
+    # num_hours <- input$setHours_treatment
     
     if(input$by_half_hour_treatment == TRUE) {
       num_rooms <- num_rooms/2
-      num_hours <- 1
+      # num_hours <- 1
     }
     
     data <- dataUtilization_Treatment() %>%
@@ -6000,7 +6000,7 @@ print("2")
       select(APPT_DAY, APPT_DUR, APPT_DATE_YEAR) %>% collect() %>%
       group_by(APPT_DAY) %>%
       summarise(`Total Duration (hr)` = round(sum(APPT_DUR)/60,0),
-                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms*num_hours,0),
+                `Chair Availability (hr)` = round(length(unique(APPT_DATE_YEAR))*num_rooms,0),
                 `Utilization %` = round(`Total Duration (hr)`/`Chair Availability (hr)`*100,0)) %>%
       rename(DayofWeek = APPT_DAY) 
     
@@ -6033,7 +6033,7 @@ print("2")
   }
   
   treatment_input_table_data <- reactive({
-    remainder <- as.data.frame(round(input$setHours_treatment,0))
+    # remainder <- as.data.frame(round(input$setHours_treatment,0))
     operating_hours_start <- input$operating_hours_start
     operating_hours_end <- input$operating_hours_end
     # set_rooms <- input$setRooms_treatment
