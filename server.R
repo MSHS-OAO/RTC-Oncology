@@ -6051,7 +6051,7 @@ print("2")
         if(grepl(":30", operating_hours_end, fixed = TRUE)) {
           end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
         }else {
-          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 1800
         }
         start_time_hour <- start_time + 1800
         
@@ -6069,7 +6069,7 @@ print("2")
         if(grepl(":30", operating_hours_end, fixed = TRUE)) {
           end_time <- floor_date(parse_date_time(operating_hours_end, "%H:%M%p"), unit = 'hours')
         }else {
-          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 3600
+          end_time <- parse_date_time(operating_hours_end, "%H:%M%p") - 1800
         }      
         start_time_hour <- start_time
         
