@@ -1408,7 +1408,7 @@ ui <- dashboardPage(
                               ),
                        column(6,
                               box(
-                                title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "400px", status = "warning", solidHeader = TRUE,
+                                title = p("How to Use", style = "font-size:34px; font-weight:bold"), width = 12,  height = "350px", status = "warning", solidHeader = TRUE,
                                 # p(strong("Step 1."),"Please select the treatment spaces available and the number of open daily hours", style = "font-size:22px"),
                                 p(strong("Step 1."), "Set the open and close times", style = "font-size:22px"),
                                 p(strong("Step 2."), "Use the toggle to update the table every half hour.  Enter the number of nurses and chairs available for each time slot in the table.", style = "font-size:22px"),
