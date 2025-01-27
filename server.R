@@ -2205,12 +2205,12 @@ server <- function(input, output, session) {
   output$break_examvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
-     #data_test <<- dataArrived_Diag()
+     data_test <<- dataArrived_Diag()
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>%
-      group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
+      group_by(APPT_MONTH_YEAR, INPERSONVSTELE, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
     
-    max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
+    max <- total_visits_break %>% group_by(APPT_MONTH_YEAR, INPERSONVSTELE) %>% summarise(max = sum(total))
     total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
     
     if(length(isolate(input$selectedCampus)) == length(campus_choices)){
@@ -2221,28 +2221,14 @@ server <- function(input, output, session) {
     
     total_visits_break <- total_visits_break %>% filter(!is.na(ASSOCIATIONLISTB))
     
-    # g3 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y=total, group=AssociationListB, fill=AssociationListB))+
-    #   geom_bar(position="stack",stat="identity", width=0.7)+
-    #   scale_fill_MountSinai('dark')+
-    #   scale_y_continuous(limits=c(0,(max(max$max))*1.2))+
-    #   labs(title = paste0(site," ","Exam Visit Volume Composition"),
-    #        subtitle = paste0("Based on data from ",isolate(input$dateRange[1])," to ",isolate(input$dateRange[2]),"\n"),
-    #        y = "Patient Volume\n", x = NULL, fill = NULL)+
-    #   theme_new_line()+
-    #   theme(axis.title.y = element_text(size = 12, angle = 90), plot.margin=unit(c(1,1,-0.5,1), "cm"))#+
-    #   # geom_text(aes(label=total), color="white", 
-    #   #           size=5, fontface="bold", position = position_stack(vjust = 0.5))+
-    #   # stat_summary(fun.y = sum, vjust = -1, aes(label=ifelse(..y.. == 0,"",..y..), group = Appt.MonthYear), geom="text", color="black", 
-    #   #              size=5, fontface="bold.italic")
-    
     title <- paste0(site," ","Exam Visit Volume Composition")
 
     
-    total_visits_yearly_total <- total_visits_break %>% group_by(ASSOCIATIONLISTB) %>% 
+    total_visits_yearly_total <- total_visits_break %>% group_by(INPERSONVSTELE ,ASSOCIATIONLISTB) %>% 
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTB, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$INPERSONVSTELE, "-", total_visits_yearly_total$ASSOCIATIONLISTB, " (", comma(total_visits_yearly_total$total), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
@@ -2253,13 +2239,23 @@ server <- function(input, output, session) {
     g3 <- ggplot_bar_graph(total_visits_break_legend, title, total_visits_break_legend$APPT_MONTH_YEAR, total_visits_break_legend$total, total_visits_break_legend$ASSOCIATIONLISTB, max)
 
     
-    Total <- total_visits_break %>% 
-      group_by(APPT_MONTH_YEAR) %>%
+    Total <- total_visits_break %>%
+      group_by(APPT_MONTH_YEAR, INPERSONVSTELE) %>%
       summarise(total = sum(total))
     Total$ASSOCIATIONLISTB <- "Total"
+    
+    
     total_visits_break <- full_join(total_visits_break,Total)
     
-    n <- length(unique(total_visits_break$ASSOCIATIONLISTB)) - 1
+    total_visits_break$rename_column <- paste0(total_visits_break$INPERSONVSTELE, "-", total_visits_break$ASSOCIATIONLISTB)
+    total_visits_break <- total_visits_break %>% 
+      ungroup()%>%
+      select(-c(ASSOCIATIONLISTB, INPERSONVSTELE)) %>%
+      rename(ASSOCIATIONLISTB = rename_column)
+    
+    n <- length(unique(total_visits_break$ASSOCIATIONLISTB)) -1
+    
+    
     if(n==0){
       hline_y <- 0
     } else{
@@ -2299,7 +2295,7 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
       ) +
-      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=5, fontface="bold") +
+      geom_text(aes(label= ifelse(is.na(total),"",total)), color="black", size=4, fontface="bold") +
       geom_hline(yintercept = hline_y, colour='black')+
       geom_vline(xintercept = 0, colour = 'black') +
       table_theme()
@@ -2308,12 +2304,12 @@ server <- function(input, output, session) {
   g4 <- ggplotly(g4, tooltip = NULL)
   
   
-  subplot(g3, g4, nrows = 2, margin = 0.1, heights = c(0.6, 0.4)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
+  subplot(g3, g4, nrows = 2, margin = 0.1, heights = c(0.5, 0.5)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
   )
   
     
     
-  }#, height = function(x) input$plotHeight
+}#, height = function(x) input$plotHeight
   )
   
   
