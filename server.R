@@ -2238,7 +2238,7 @@ server <- function(input, output, session) {
     
     g3 <- ggplot_bar_graph(total_visits_break_legend, title, total_visits_break_legend$APPT_MONTH_YEAR, total_visits_break_legend$total, total_visits_break_legend$ASSOCIATIONLISTB, max)
 
-    
+   
     Total <- total_visits_break %>%
       group_by(APPT_MONTH_YEAR, INPERSONVSTELE) %>%
       summarise(total = sum(total))
@@ -2263,7 +2263,8 @@ server <- function(input, output, session) {
     }
     
 
-    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
+    total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, 
+                                                  levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
 
     total_in_list <- length(unique(total_visits_break$ASSOCIATIONLISTB))-1
     colors <- all_pallete[total_in_list:1]
@@ -2301,8 +2302,8 @@ server <- function(input, output, session) {
       table_theme()
     
   # g3 <- ggplotly(g3, tooltip = c("total")) 
-  g4 <- ggplotly(g4, tooltip = NULL)
-  
+    g4 <- ggplotly(g4, tooltip = NULL) 
+   
   
   subplot(g3, g4, nrows = 2, margin = 0.1, heights = c(0.5, 0.5)) %>% layout(showlegend = T#, legend = list(title = list(text = "Visit Type"))
   )
@@ -2316,6 +2317,7 @@ server <- function(input, output, session) {
   output$break_treatmentvisitsgraph <- renderPlotly({
     
     data <- dataArrived_Diag()
+    data_treat <<- data
     
     #data <- historical.data[arrived.data.rows,] %>% filter(SITE == "MSW", Appt.MonthYear == "2020-12")
     #data <- historical.data[arrived.data.rows,] %>% filter(SITE == "MSW")
@@ -2326,12 +2328,13 @@ server <- function(input, output, session) {
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
-    if(length(unique(total_visits_break$ASSOCIATIONLISTT)) > 1) {
-      factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
-    } else {
-      factor_levels = unique(total_visits_break$ASSOCIATIONLISTT)
-    }
+    # if(length(unique(total_visits_break$ASSOCIATIONLISTT)) > 1) {
+    #   factor_levels = c("Pump Disconnect", "Port Flush", "Transfusion", "Phlebotomy", "Hydration", "Injection", "Therapeutic Infusion", "Infusion")
+    # } else {
+    #   factor_levels = unique(total_visits_break$ASSOCIATIONLISTT)
+    # }
     
+    factor_levels = unique(total_visits_break$ASSOCIATIONLISTT)
     total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, levels = factor_levels)
     
     total_visits_break <- total_visits_break %>% filter(!is.na(ASSOCIATIONLISTT))
@@ -2371,7 +2374,7 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTT, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTT, " (", comma(total_visits_yearly_total$total), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
@@ -2414,9 +2417,11 @@ server <- function(input, output, session) {
     }
     
     
-    factor_levels = c("Total",rev(c("Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")))
+    #factor_levels = c("Total",rev(c("Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")))
 
-    total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, levels = factor_levels)
+    
+    total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, 
+                                                  levels = sort(unique(total_visits_break$ASSOCIATIONLISTT), decreasing = T))
     
     list_length <- length(unique(total_visits_break$ASSOCIATIONLISTT))
     
