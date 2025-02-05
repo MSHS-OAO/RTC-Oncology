@@ -2365,8 +2365,6 @@ server <- function(input, output, session) {
     #   #              size=5, fontface="bold.italic")
     # 
     
-    
-    
     title <- paste0(site," ","Treatment Visit Volume Composition")
 
     
@@ -2419,9 +2417,9 @@ server <- function(input, output, session) {
     
     #factor_levels = c("Total",rev(c("Infusion", "Therapeutic Infusion", "Injection", "Hydration", "Phlebotomy", "Transfusion", "Port Flush", "Pump Disconnect")))
 
-    
+    total_factor_levels <- c("Total", sort(factor_levels, decreasing = T ))
     total_visits_break$ASSOCIATIONLISTT <- factor(total_visits_break$ASSOCIATIONLISTT, 
-                                                  levels = sort(unique(total_visits_break$ASSOCIATIONLISTT), decreasing = T))
+                                                  levels = total_factor_levels)
     
     list_length <- length(unique(total_visits_break$ASSOCIATIONLISTT))
     
