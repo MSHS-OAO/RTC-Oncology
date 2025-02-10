@@ -2228,7 +2228,7 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$INPERSONVSTELE, "-", total_visits_yearly_total$ASSOCIATIONLISTB, " (", comma(total_visits_yearly_total$total), ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$INPERSONVSTELE, "-", total_visits_yearly_total$ASSOCIATIONLISTB, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
@@ -2372,7 +2372,7 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTT, " (", comma(total_visits_yearly_total$total), ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$ASSOCIATIONLISTT, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
