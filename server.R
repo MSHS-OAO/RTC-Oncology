@@ -1726,7 +1726,8 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    #total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
@@ -1786,7 +1787,8 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    #total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
@@ -1836,7 +1838,8 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
+    #total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
@@ -1891,7 +1894,8 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    #total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$APPT_YEAR, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_yearly_total <- left_join(total_visits, total_visits_yearly_total)
@@ -2129,7 +2133,7 @@ server <- function(input, output, session) {
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
     
-    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$AssociationListA, " (", total_visits_yearly_total$total, ")")
+    total_visits_yearly_total$APPT_YEAR_RENAME <- paste0(total_visits_yearly_total$AssociationListA, " (", comma(total_visits_yearly_total$total, accuracy = 1), ")")
     total_visits_yearly_total <- total_visits_yearly_total %>% select(-total, -APPT_MONTH)
     
     total_visits_break_legend <- left_join(total_visits_break, total_visits_yearly_total)
@@ -2156,6 +2160,7 @@ server <- function(input, output, session) {
     
 
     total_visits_break$ASSOCIATIONLISTA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Total","Treatment","Labs","Exam"))
+    #total_visits_break$ASSOCIATIONLISTA <- factor(comma(total_visits_break$ASSOCIATIONLISTA, accuracy = 1, levels = c("Total","Treatment","Labs","Exam")))
 
     # g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
     #   #scale_color_MountSinai('dark' )+
@@ -2217,6 +2222,7 @@ server <- function(input, output, session) {
       site <- "System"
     } else{
       site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=", ")
+      #site <- paste(sort(isolate(input$selectedCampus)),sep="", collapse=". ")
     }
     
     total_visits_break <- total_visits_break %>% filter(!is.na(ASSOCIATIONLISTB))
