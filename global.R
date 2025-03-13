@@ -41,13 +41,13 @@ suppressMessages({
   library(ggplot2)
   library(leaflet)
   library(readr)
-  #library(highcharter)
+  library(highcharter)
   library(ggforce) # for 'geom_arc_bar'
   library(packcircles) # for packed circle graph
   library(viridis)
   library(ggiraph)
   library(treemapify)
-  #library(treemap)
+  library(treemap)
   library(broom)
   library(extrafont)
   library(tis) # for US holidays
