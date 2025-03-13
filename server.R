@@ -2128,7 +2128,7 @@ server <- function(input, output, session) {
     }
     
     title <- paste0(site," ","All Visit Volume Composition")
-
+#
     total_visits_yearly_total <- total_visits_break %>% group_by(AssociationListA) %>% 
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
