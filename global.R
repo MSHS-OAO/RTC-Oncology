@@ -86,7 +86,7 @@ mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
 oncology_filters_updated <- tbl(con, "ONCOLOGY_FILTERS_UPDATED")
 
 
-### (2) Import Data ----------------------------------------------------------------------------------
+### (2) Import Data ---------------------------------------------------------------------------------
 
 # Define file paths for use later in the script
 monthly_access <- here::here("Data/Access/Monthly")
