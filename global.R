@@ -85,6 +85,8 @@ oncology_filters_tbl <- tbl(con, "ONCOLOGY_FILTERS")
 mrn_treatment <- tbl(con, "ONCOLOGY_ACTIVE_TREATMENT_MRN")
 oncology_filters_updated <- tbl(con, "ONCOLOGY_FILTERS_UPDATED")
 
+oncology_tbl <- oncology_tbl %>%
+  mutate(ASSOCIATIONLISTA = ifelse(ASSOCIATIONLISTA == "Lab", "Labs", ASSOCIATIONLISTA))
 
 ### (2) Import Data ---------------------------------------------------------------------------------
 
