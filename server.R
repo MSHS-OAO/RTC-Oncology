@@ -1108,11 +1108,12 @@ server <- function(input, output, session) {
     #groupByFilters_Trend(historical.data[arrived.data.rows,],
     data <- groupByFilters_Trend(arrived_data,
                    input$selectedCampus, input$selectedDepartment,
-                   input$dateRange [1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
+                   input$dateRange[1], input$dateRange[2], input$daysOfWeek, input$excludeHolidays,
                    input$diag_grouper
                    )
     if(input$active_mrn == "Yes") {
       data <- data %>% filter(ACTIVE_MRN == "Yes") 
+      
     }
     
     data_test <- data %>% head(n = 1L) %>% collect()
@@ -2113,9 +2114,11 @@ server <- function(input, output, session) {
     
     data <- dataArrived_Diag()
     # data <- historical.data[arrived.data.rows,]
+    
 
-    total_visits_break <- data %>% filter(ASSOCIATIONLISTA %in% c("Labs","Treatment","Exam")) %>%
+    total_visits_break <- data %>% filter(ASSOCIATIONLISTA %in% c("Labs", "Treatment","Exam")) %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
+    
     
     total_visits_break$AssociationListA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Labs","Treatment","Exam"))
     
@@ -2128,7 +2131,7 @@ server <- function(input, output, session) {
     }
     
     title <- paste0(site," ","All Visit Volume Composition")
-#
+
     total_visits_yearly_total <- total_visits_break %>% group_by(AssociationListA) %>% 
       summarise(total = sum(total, na.rm = T)) %>% 
       mutate(APPT_MONTH = "Total")
@@ -2160,7 +2163,7 @@ server <- function(input, output, session) {
     
 
     total_visits_break$ASSOCIATIONLISTA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Total","Treatment","Labs","Exam"))
-    #total_visits_break$ASSOCIATIONLISTA <- factor(comma(total_visits_break$ASSOCIATIONLISTA, accuracy = 1, levels = c("Total","Treatment","Labs","Exam")))
+    
 
     # g2 <- ggplot(total_visits_break, aes(x=Appt.MonthYear, y= AssociationListA, label=total)) +
     #   #scale_color_MountSinai('dark' )+
