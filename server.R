@@ -131,7 +131,7 @@ server <- function(input, output, session) {
     
     departments_selected <- unique(filter_saved_all$DEPARTMENT)
     department_choices <- oncology_filters_updated %>% filter(SITE %in% campus_selected) %>%
-                          # filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR ,
+                           #filter(TO_DATE(date_1, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR ,
                           #          TO_DATE(date_2, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR)%>% 
                             select(DEPARTMENT_NAME) %>% 
                             mutate(DEPARTMENT_NAME = unique(DEPARTMENT_NAME)) %>%
@@ -555,8 +555,11 @@ server <- function(input, output, session) {
       
     
       
-      disease_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                   DEPARTMENT_NAME %in% department_choices_disease) %>%
+      disease_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>% 
+                                                #              & APPT_STATUS %in% c("Arrived") &
+                                                #    DEPARTMENT_NAME %in% department_choices_disease) %>%
+                                        #filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+                                        #       TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                 select(DISEASE_GROUP) %>%
                                                 mutate(DISEASE_GROUP = unique(DISEASE_GROUP)) %>%
                                                 collect()
@@ -580,11 +583,12 @@ server <- function(input, output, session) {
       
       
       disease_choices <- ifelse(is_empty(disease_choices), c("NA"), disease_choices)
-      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                   DEPARTMENT_NAME %in% department_choices_disease &
-                                                   DISEASE_GROUP %in% disease_choices) %>%
-        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
-        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
+      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>%
+                                                   #                  & APPT_STATUS %in% c("Arrived") &
+                                                   # DEPARTMENT_NAME %in% department_choices_disease &
+                                                   # DISEASE_GROUP %in% disease_choices) %>%
+         #filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+          #      TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
         select(DISEASE_GROUP_DETAIL) %>%
         mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
         collect()
@@ -614,10 +618,13 @@ server <- function(input, output, session) {
  
       selected_dept <- input$selectedDepartment
       provider_type <- input$provider_type_volume
-      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                    DEPARTMENT_NAME %in% selected_dept & 
-                                                    DISEASE_GROUP %in% disease_choices &
-                                                    PROVIDER_TYPE %in% provider_type) %>%
+      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>%
+                                                    #           & APPT_STATUS %in% c("Arrived") &
+                                                    # DEPARTMENT_NAME %in% selected_dept & 
+                                                    # DISEASE_GROUP %in% disease_choices &
+                                                    # PROVIDER_TYPE %in% provider_type) %>%
+        # filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+        #        TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                     select(PROVIDER) %>%
                                                     mutate(PROVIDER = unique(PROVIDER)) %>%
                                                     collect()
@@ -809,9 +816,12 @@ server <- function(input, output, session) {
       select_disease <- input$selectedDisease
       
       
-      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                    DEPARTMENT_NAME %in% select_dept & 
-                                                    DISEASE_GROUP %in% select_disease) %>%
+      disease_detail_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>%
+                                                    #                 & APPT_STATUS %in% c("Arrived") &
+                                                    # DEPARTMENT_NAME %in% select_dept & 
+                                                    # DISEASE_GROUP %in% select_disease) %>%
+        #filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+        #       TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
                                                   select(DISEASE_GROUP_DETAIL) %>%
                                                   mutate(DISEASE_GROUP_DETAIL = unique(DISEASE_GROUP_DETAIL)) %>%
                                                   collect()
@@ -855,11 +865,14 @@ server <- function(input, output, session) {
                                   mutate(PROVIDER = unique(PROVIDER)) %>%
                                   collect()
       } else{
-      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus & APPT_STATUS %in% c("Arrived") &
-                                                    DEPARTMENT_NAME %in% select_dept & 
-                                                    DISEASE_GROUP %in% select_disease &
-                                                    DISEASE_GROUP_DETAIL %in% select_disease_detail &
-                                                    PROVIDER_TYPE %in% provider_type) %>%
+      provider_choices <- oncology_filters_updated %>% filter(SITE %in% select_campus) %>%
+                                                    #           & APPT_STATUS %in% c("Arrived") &
+                                                    # DEPARTMENT_NAME %in% select_dept & 
+                                                    # DISEASE_GROUP %in% select_disease &
+                                                    # DISEASE_GROUP_DETAIL %in% select_disease_detail &
+                                                    # PROVIDER_TYPE %in% provider_type) %>%
+        #filter(TO_DATE(first_date, "YYYY-MM-DD HH24:MI:SS") <= APPT_DATE_YEAR,
+        #       TO_DATE(second_date, "YYYY-MM-DD HH24:MI:SS") >= APPT_DATE_YEAR,) %>%
         select(PROVIDER) %>%
         mutate(PROVIDER = unique(PROVIDER)) %>%
         collect()
