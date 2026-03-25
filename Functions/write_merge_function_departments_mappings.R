@@ -7,7 +7,7 @@ library(readxl)
 library(dplyr)
 options(odbc.batch_rows = 1000000)
 
-#Data Loading - Manually (use terminal)
+#Data Loading
 file_path <- "/SharedDrive/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Mappings/DataTemplates/MSSN_and_LI_Providers_and_Depts_to_add.xlsx"
 new_dep_data <- read_excel(file_path, sheet = "Departments to be added")
 
