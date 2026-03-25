@@ -7,9 +7,9 @@ library(readxl)
 library(dplyr)
 options(odbc.batch_rows = 1000000)
 
-#Data Loading - Manually (Use terminal)
-#new_providers_data <- read_excel(file.choose())
-#head(new_providers_data)
+#Data Loading
+file_path <- "/SharedDrive/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Mappings/DataTemplates/MSSN_and_LI_Providers_and_Depts_to_add.xlsx"
+new_providers_data <- read_excel(file_path, sheet = "Providers to be added")
 
 #---Providers Mapping---
 # Pre-processing and Cleaning 
@@ -21,8 +21,16 @@ process_and_clean_data <- function(input_df) {
   }
   
   cleaned_data <- input_df %>%
-    # Drop unwanted fields
-    select(-`In HSO Tool`, -`Provider NPI`, -`Active/ Historical Filter`) %>%
+    
+    # Selects only required columns
+    select(
+      `PROVIDER NAME`,
+      `EPIC Provider ID`,
+      `Disease Group`,
+      `Disease Group Specialty`,
+      `Site`,
+      `Type`
+    ) %>%
     
     # Rename fields (New_Name = Old_Name)
     rename(
@@ -37,7 +45,8 @@ process_and_clean_data <- function(input_df) {
     # Content Logic: Convert 'APP' to full name & Add DATE_ADDED
     mutate(
       PROVIDER_TYPE = ifelse(PROVIDER_TYPE == "APP", "Advanced Practice Provider", PROVIDER_TYPE),
-      DATE_ADDED = format(Sys.Date(), "%Y-%m-%d")
+      # this going to be changed later to update on the same day of the work
+      DATE_ADDED = "2026-03-24"
     ) %>%
     
     # Prepare for SQL (convert everything to character and handle NAs)
@@ -60,7 +69,7 @@ get_values <- function(x, table_name) {
   SITE <- x[5]
   PROVIDER_NAME <- x[6]
   DATE_ADDED    <- x[7]
-
+  
   values <- glue(
     "INTO \"{table_name}\" 
      (EPIC_PROVIDER_ID, DISEASE_GROUP, DISEASE_GROUP_B, PROVIDER_TYPE, SITE, PROVIDER_NAME, DATE_ADDED) 
@@ -72,96 +81,83 @@ get_values <- function(x, table_name) {
   return(values)
 }
 
-
-# Write temporary table and merge into final table
-write_temporary_table_to_database_and_merge <- function(processed_input_data, table_name = "PROVIDER_NOV") {
+write_temporary_table_to_database_and_merge <- function(processed_input_data) {
   
-  if (nrow(processed_input_data) == 0) {
-    message("The Excel file is empty!")
+  if (is.null(processed_input_data) || nrow(processed_input_data) == 0) {
+    message("The input data is empty — no changes made.")
     return(NULL)
   }
+  
   processed_input_data <- processed_input_data %>%
     mutate(across(everything(), as.character))
   
-}
-
-# Correct provider table data types definition 
-DATA_TYPES <- c(
-  EPIC_PROVIDER_ID = "Varchar2(38)",
-  DISEASE_GROUP    = "Varchar2(26)",
-  DISEASE_GROUP_B  = "Varchar2(100)",
-  PROVIDER_TYPE    = "Varchar2(120)",
-  SITE             = "Varchar2(120)",
-  PROVIDER_NAME    = "Varchar2(75)",
-  DATE_ADDED       = "DATE"
-)
-
-#Create the connection 
-con <- dbConnect(odbc(), "OracleODBC-21_5", uid = "OAO_DEVELOPMENT", pwd = "HC*tA$4f1qMqVo")
-
-#Define the Tables
-STAGING_TABLE <- "TEMP_STAGING_PROVIDER"
-table_name <- "PROVIDER_NOV"
-DISEASE_GROUPS <- "ONCOLOGY_DISEASE_GROUPINGS"
-
-# Build the SQL strings
-inserts <- lapply(split(processed_input_data, 1:nrow(processed_input_data)), function(row) {
-  get_values(as.character(row), STAGING_TABLE)
-})
-
-all_data_sql <- glue("INSERT ALL {glue_collapse(inserts, sep = ' ')} SELECT 1 FROM DUAL")
-
-# Merge the Provider_Nov table with the Disease grouping table 
-merge_nov_sql <- glue('
-    MERGE INTO {table_name} T
-    USING {STAGING_TABLE} S
-    ON (T."EPIC_PROVIDER_ID" = S."EPIC_PROVIDER_ID" AND T."SITE" = S."SITE")
-    WHEN MATCHED THEN
-      UPDATE SET 
-        T."DISEASE_GROUP" = S."DISEASE_GROUP",
-        T."DISEASE_GROUP_B" = S."DISEASE_GROUP_B",
-        T."PROVIDER_TYPE" = S."PROVIDER_TYPE",
-        T."PROVIDER_NAME" = S."PROVIDER_NAME",
-        T."DATE_ADDED" = S."DATE_ADDED"
-    WHEN NOT MATCHED THEN
-      INSERT ("EPIC_PROVIDER_ID", "DISEASE_GROUP", "DISEASE_GROUP_B", "PROVIDER_TYPE", "SITE", "PROVIDER_NAME", "DATE_ADDED")
-      VALUES (S."EPIC_PROVIDER_ID", S."DISEASE_GROUP", S."DISEASE_GROUP_B", S."PROVIDER_TYPE", S."SITE", S."PROVIDER_NAME", S."DATE_ADDED")')
-
-# Merge the Provider_Nov table with the Disease grouping table
-merge_disease_sql <- glue('
+  # Table name definitions
+  STAGING_TABLE  <- "ONCOLOGY_STAGING_PROVIDERS"
+  DISEASE_GROUPS <- "ONCOLOGY_DISEASE_GROUPINGS"
+  
+  # Column data types for staging table creation
+  DATA_TYPES <- c(
+    EPIC_PROVIDER_ID = "Varchar2(38)",
+    DISEASE_GROUP    = "Varchar2(26)",
+    DISEASE_GROUP_B  = "Varchar2(100)",
+    PROVIDER_TYPE    = "Varchar2(120)",
+    SITE             = "Varchar2(120)",
+    PROVIDER_NAME    = "Varchar2(75)",
+    DATE_ADDED       = "DATE"
+  )
+  
+  # Build INSERT ALL SQL for staging load
+  inserts <- lapply(
+    split(processed_input_data, 1:nrow(processed_input_data)),
+    function(row) get_values(as.character(row), STAGING_TABLE)
+  )
+  all_data_sql <- glue("INSERT ALL {glue_collapse(inserts, sep = ' ')} SELECT 1 FROM DUAL")
+  
+  # Build MERGE SQL
+  merge_disease_sql <- glue('
     MERGE INTO {DISEASE_GROUPS} A
     USING {STAGING_TABLE} B
     ON (A."EPIC_PROVIDER_ID" = B."EPIC_PROVIDER_ID")
     WHEN MATCHED THEN
-      UPDATE SET A."PROVIDER_NAME" = B."PROVIDER_NAME", A."DISEASE_GROUP" = B."DISEASE_GROUP",
-                 A."DISEASE_GROUP_B" = B."DISEASE_GROUP_B", A."SITE" = B."SITE", A."PROVIDER_TYPE" = B."PROVIDER_TYPE"
+      UPDATE SET
+        A."PROVIDER_NAME"   = B."PROVIDER_NAME",
+        A."DISEASE_GROUP"   = B."DISEASE_GROUP",
+        A."DISEASE_GROUP_B" = B."DISEASE_GROUP_B",
+        A."SITE"            = B."SITE",
+        A."PROVIDER_TYPE"   = B."PROVIDER_TYPE"
     WHEN NOT MATCHED THEN
       INSERT ("PROVIDER_NAME", "EPIC_PROVIDER_ID", "DISEASE_GROUP", "DISEASE_GROUP_B", "PROVIDER_TYPE", "SITE", "DATE_ADDED")
-      VALUES (B."PROVIDER_NAME", B."EPIC_PROVIDER_ID", B."DISEASE_GROUP", B."DISEASE_GROUP_B", B."PROVIDER_TYPE", B."SITE", B."DATE_ADDED" )')
+      VALUES (B."PROVIDER_NAME", B."EPIC_PROVIDER_ID", B."DISEASE_GROUP", B."DISEASE_GROUP_B",
+              B."PROVIDER_TYPE", B."SITE", B."DATE_ADDED")')
+  
+  # Create the connection
+  con <- dbConnect(odbc(), "OracleODBC-21_5", uid = "OAO_DEVELOPMENT", pwd = "HC*tA$4f1qMqVo")
+  
+  # Transaction Execution
+  tryCatch({
+    dbBegin(con)
+    
+    # Create staging table and load data
+    dbWriteTable(con, STAGING_TABLE, processed_input_data[0, ], overwrite = TRUE, field.types = DATA_TYPES)
+    dbExecute(con, all_data_sql)
+    
+    # Merge staging into ONCOLOGY_DISEASE_GROUPINGS
+    dbExecute(con, merge_disease_sql)
+    
+    # Cleanup staging table and commit
+    dbRemoveTable(con, STAGING_TABLE)
+    dbCommit(con)
+    
+    message("ONCOLOGY_DISEASE_GROUPINGS updated successfully via ONCOLOGY_STAGING_PROVIDERS.")
+    
+  }, error = function(e) {
+    dbRollback(con)
+    message(paste("Critical Error - All changes rolled back:", e$message))
+    
+  }, finally = {
+    dbDisconnect(con)
+  })
+}
 
-# Transaction Execution
-tryCatch({
-  dbBegin(con)
-  
-  # Setup Staging
-  dbWriteTable(con, STAGING_TABLE, processed_input_data[0, ], overwrite = TRUE, field.types = DATA_TYPES)
-  
-  # Load Data
-  dbExecute(con, all_data_sql)
-  
-  # Execute both Merges
-  dbExecute(con, merge_nov_sql)
-  dbExecute(con, merge_disease_sql)
-  
-  # Cleanup & Commit
-  dbRemoveTable(con, STAGING_TABLE)
-  dbCommit(con)
-  
-  message("Both tables were updated")
-  
-}, error = function(e) {
-  dbRollback(con)
-  message(paste("Critical Error - All changes rolled back:", e$message))
-}, finally = {
-  dbDisconnect(con)
-})
+# Run
+write_temporary_table_to_database_and_merge(processed_input_data)

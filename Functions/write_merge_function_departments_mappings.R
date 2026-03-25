@@ -8,8 +8,8 @@ library(dplyr)
 options(odbc.batch_rows = 1000000)
 
 #Data Loading - Manually (use terminal)
-#new_dep_data <- read_excel(file.choose())
-#head(new_dep_data)
+file_path <- "/SharedDrive/deans/Presidents/HSPI-PM/Operations Analytics and Optimization/Projects/Service Lines/Oncology/Data/Mappings/DataTemplates/MSSN_and_LI_Providers_and_Depts_to_add.xlsx"
+new_dep_data <- read_excel(file_path, sheet = "Departments to be added")
 
 ##---Departments Mapping---
 # Pre-processing and Cleaning 
@@ -20,17 +20,16 @@ process_and_clean_data <- function(input_df) {
   }
   
   cleaned_data <- input_df %>%
-    # any_of() prevents the "Column Notes doesn't exist" error
-    select(-any_of("Notes")) %>% 
+    # Select only the needed columns
+    select(`EPIC  Department`, `EPIC Department ID`, SITE) %>%
     rename(
       DEPARTMENT_NAME = `EPIC  Department`,
-      DEPARTMENT_ID = `EPIC Department ID`
+      DEPARTMENT_ID   = `EPIC Department ID`
     ) %>%
     mutate(
-      # Ensure DATE_ADDED is a character for the glue string later
-      DATE_ADDED = format(Sys.Date(), "%Y-%m-%d")
+      # this going to be changed later to update on the same day of the work
+      DATE_ADDED = "2026-03-24"
     ) %>%
-    # Ensure all columns exist before selecting
     select(DEPARTMENT_NAME, DEPARTMENT_ID, SITE, DATE_ADDED) %>%
     mutate(across(everything(), as.character)) %>%
     mutate(across(everything(), ~coalesce(., "NULL")))
@@ -62,7 +61,7 @@ write_temporary_table_to_database_and_merge <- function(processed_data) {
   }
   
   # Define Table Names Clearly
-  STAGING_TABLE <- "TEMP_STAGING_DEP"
+  STAGING_TABLE <- "ONCOLOGY_STAGING_DEPARTMENTS"
   TARGET_TABLE  <- "ONCOLOGY_DEPARTMENT_GROUPINGS"
   
   DATA_TYPES <- c(
@@ -86,8 +85,7 @@ write_temporary_table_to_database_and_merge <- function(processed_data) {
     WHEN MATCHED THEN
       UPDATE SET 
         T.DEPARTMENT_NAME = S.DEPARTMENT_NAME,
-        T.SITE            = S.SITE,
-        T.DATE_ADDED      = S.DATE_ADDED
+        T.SITE            = S.SITE
     WHEN NOT MATCHED THEN
       INSERT (DEPARTMENT_NAME, DEPARTMENT_ID, SITE, DATE_ADDED)
       VALUES (S.DEPARTMENT_NAME, S.DEPARTMENT_ID, S.SITE, S.DATE_ADDED)')
