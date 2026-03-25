@@ -91,8 +91,9 @@ write_temporary_table_to_database_and_merge <- function(processed_data) {
       VALUES (S.DEPARTMENT_NAME, S.DEPARTMENT_ID, S.SITE, S.DATE_ADDED)')
   
   # Connection and Execution
-  con <- dbConnect(odbc(), "OracleODBC-21_5", uid = "OAO_DEVELOPMENT", pwd = "HC*tA$4f1qMqVo")
+  con <- dbConnect(odbc(),"OAO Cloud DB Staging", timeout = 30)
   
+  # Write the data to staging table
   tryCatch({
     dbBegin(con)
     
@@ -102,6 +103,22 @@ write_temporary_table_to_database_and_merge <- function(processed_data) {
     
     # Bulk Insert into Staging
     dbExecute(con, all_data_sql)
+    
+    dbCommit(con)
+    message(glue("Success! {nrow(processed_data)} records insered into {STAGING_TABLE}."))
+    
+  }, error = function(e) {
+    if (exists("con")) dbRollback(con)
+    message(paste("Error - Couldn't write data into {STAGING_TABLE}:", e$message))
+  }, finally = {
+    if (exists("con")) dbDisconnect(con)
+  })
+  
+  con <- dbConnect(odbc(),"OAO Cloud DB Staging", timeout = 30)
+  
+  # Merge the data into target table
+  tryCatch({
+    dbBegin(con)
     
     # Merge Staging into Final
     dbExecute(con, merge_sql)
@@ -114,12 +131,12 @@ write_temporary_table_to_database_and_merge <- function(processed_data) {
     
   }, error = function(e) {
     if (exists("con")) dbRollback(con)
-    message(paste("Critical Error - Changes rolled back:", e$message))
+    message(paste("Error -  Failed merging data:", e$message))
   }, finally = {
     if (exists("con")) dbDisconnect(con)
   })
 }
 
-# Execution
+# Test
 processed_input_data <- process_and_clean_data(new_dep_data)
 write_temporary_table_to_database_and_merge(processed_input_data)

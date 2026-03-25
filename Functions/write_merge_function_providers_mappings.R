@@ -58,7 +58,6 @@ process_and_clean_data <- function(input_df) {
   
   return(cleaned_data)
 }
-processed_input_data <- process_and_clean_data(new_providers_data)
 
 # Values formatting 
 get_values <- function(x, table_name) {
@@ -131,15 +130,35 @@ write_temporary_table_to_database_and_merge <- function(processed_input_data) {
               B."PROVIDER_TYPE", B."SITE", B."DATE_ADDED")')
   
   # Create the connection
-  con <- dbConnect(odbc(), "OracleODBC-21_5", uid = "OAO_DEVELOPMENT", pwd = "HC*tA$4f1qMqVo")
+  # Connection and Execution
+  con <- dbConnect(odbc(),"OAO Cloud DB Staging", timeout = 30)
   
-  # Transaction Execution
+  # Write the data to staging table
   tryCatch({
     dbBegin(con)
     
-    # Create staging table and load data
-    dbWriteTable(con, STAGING_TABLE, processed_input_data[0, ], overwrite = TRUE, field.types = DATA_TYPES)
+    # Create staging table (schema only)
+    dbWriteTable(con, STAGING_TABLE, processed_input_data[0, ], 
+                 overwrite = TRUE, field.types = DATA_TYPES)
+    
+    # Bulk Insert into Staging
     dbExecute(con, all_data_sql)
+    
+    dbCommit(con)
+    message(glue("Success! {nrow(processed_input_data)} records insered into {STAGING_TABLE}."))
+    
+  }, error = function(e) {
+    if (exists("con")) dbRollback(con)
+    message(paste("Error - Couldn't write data into {STAGING_TABLE}:", e$message))
+  }, finally = {
+    if (exists("con")) dbDisconnect(con)
+  })
+  
+  con <- dbConnect(odbc(),"OAO Cloud DB Staging", timeout = 30)
+  
+  # Merge the data into target table
+  tryCatch({
+    dbBegin(con)
     
     # Merge staging into ONCOLOGY_DISEASE_GROUPINGS
     dbExecute(con, merge_disease_sql)
@@ -152,12 +171,13 @@ write_temporary_table_to_database_and_merge <- function(processed_input_data) {
     
   }, error = function(e) {
     dbRollback(con)
-    message(paste("Critical Error - All changes rolled back:", e$message))
+    message(paste("Error - Failed merging data:", e$message))
     
   }, finally = {
     dbDisconnect(con)
   })
 }
 
-# Run
+# Test
+processed_input_data <- process_and_clean_data(new_providers_data)
 write_temporary_table_to_database_and_merge(processed_input_data)
