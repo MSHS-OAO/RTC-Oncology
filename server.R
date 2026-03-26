@@ -1069,7 +1069,7 @@ server <- function(input, output, session) {
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters2),{
     
-    print("From dataArrived")
+    # print("From dataArrived")
     # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
     # debug_campus        <<- input$selectedCampus
     # debug_department    <<- input$selectedDepartment
