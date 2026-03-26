@@ -1071,13 +1071,13 @@ server <- function(input, output, session) {
     
     print("From dataArrived")
     # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
-    debug_campus        <<- input$selectedCampus
-    debug_department    <<- input$selectedDepartment
-    debug_date_start    <<- input$dateRange[1]
-    debug_date_end      <<- input$dateRange[2]
-    debug_days          <<- input$daysOfWeek
-    debug_holidays      <<- input$excludeHolidays
-    debug_active_mrn    <<- input$active_mrn
+    # debug_campus        <<- input$selectedCampus
+    # debug_department    <<- input$selectedDepartment
+    # debug_date_start    <<- input$dateRange[1]
+    # debug_date_end      <<- input$dateRange[2]
+    # debug_days          <<- input$daysOfWeek
+    # debug_holidays      <<- input$excludeHolidays
+    # debug_active_mrn    <<- input$active_mrn
     # ------------------------------------    
     
     
