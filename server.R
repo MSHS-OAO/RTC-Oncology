@@ -1068,6 +1068,19 @@ server <- function(input, output, session) {
   
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters2),{
+    
+    print("From dataArrived")
+    # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
+    debug_campus        <<- input$selectedCampus
+    debug_department    <<- input$selectedDepartment
+    debug_date_start    <<- input$dateRange[1]
+    debug_date_end      <<- input$dateRange[2]
+    debug_days          <<- input$daysOfWeek
+    debug_holidays      <<- input$excludeHolidays
+    debug_active_mrn    <<- input$active_mrn
+    # ------------------------------------    
+    
+    
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -3743,6 +3756,7 @@ print("2")
   
   ## Unique MRN by Month
   output$uniqueOfficeMonthSystem <- renderPlotly({
+    
     data <- dataArrived()
      unique <- uniquePts_df_systemMonth(data, c("Exam")) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
 
@@ -4130,6 +4144,10 @@ print("2")
     # unique <- data %>%
     #   group_by(APPT_MONTH_YEAR) %>%
     #   summarise(total = n())
+    # Added code to handle zero row exception
+    validate(
+      need(nrow(unique) != 0, "There is no data for these filters.")
+    )
 
     unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
