@@ -1329,6 +1329,18 @@ server <- function(input, output, session) {
     input$update_filters
     input$update_filters1
     
+    # print("From dataArrivedTrend")
+    # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
+    # debug_campus        <<- input$selectedCampus
+    # debug_department    <<- input$selectedDepartment
+    # debug_date_start    <<- input$dateRange[1]
+    # debug_date_end      <<- input$dateRange[2]
+    # debug_days          <<- input$daysOfWeek
+    # debug_holidays      <<- input$excludeHolidays
+    # debug_active_mrn    <<- input$active_mrn
+    # debug_diag   <<- input$diag_grouper
+    # ------------------------------------    
+    
     isolate({
       validate(
         need(input$selectedCampus != "" , "Please select a Campus"),
@@ -1840,6 +1852,10 @@ server <- function(input, output, session) {
     
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) != 0, "There is no data for these filters.")
+    )
     
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
