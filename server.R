@@ -1737,6 +1737,10 @@ server <- function(input, output, session) {
     total_visits <- data %>%
       filter(ASSOCIATIONLISTA %in% c("Exam","Treatment","Labs")) %>%
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) != 0, "There is no data for these filters")
+    )
 
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -2026,6 +2030,10 @@ server <- function(input, output, session) {
     
     #bind the total visits per month per year with the total yeraly visits 
     visits_tb_total <- rbind(visits_tb,visits_tb_yearly)
+    
+    validate(
+      need(nrow(visits_tb_total)!=0,"There is no data for these filters.")
+    )
     
     #created an if statement to change the table based on the different years
     #if the number of years provided is one then there will be no need to calculate any variance
