@@ -3680,7 +3680,9 @@ server <- function(input, output, session) {
     data <- uniquePts_df_system(data, c("Exam")) %>% summarise(total = n()) %>% collect()
     # data <- uniquePts.office.data
     #data <- historical.data.unique.exam
-    
+    validate(
+      need(nrow(data) != 0, "There is no data for these filters.")
+    )
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
       title = toupper("Total Site Unique Patients - Exam Visits"),
@@ -3808,6 +3810,9 @@ print("2")
     # } else{
     #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     # }
+     validate(
+       need(nrow(unique) != 0, "There is no data for these filters.")
+     )
 
     unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
@@ -4068,6 +4073,10 @@ print("2")
     data <- dataArrived_unique_trend()
     
     data <- uniquePts_df_system(data, c("Treatment Visit")) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(data) != 0, "There is no data for these filters.")
+    )
     
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
