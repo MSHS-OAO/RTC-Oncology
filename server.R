@@ -2161,6 +2161,9 @@ server <- function(input, output, session) {
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA %in% c("Labs", "Treatment","Exam")) %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )
     
     total_visits_break$AssociationListA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Labs","Treatment","Exam"))
     
@@ -2259,6 +2262,10 @@ server <- function(input, output, session) {
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>%
       group_by(APPT_MONTH_YEAR, INPERSONVSTELE, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR, INPERSONVSTELE) %>% summarise(max = sum(total))
     total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
