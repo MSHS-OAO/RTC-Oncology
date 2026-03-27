@@ -2377,6 +2377,10 @@ server <- function(input, output, session) {
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Treatment") %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTT) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )    
+    
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
     # if(length(unique(total_visits_break$ASSOCIATIONLISTT)) > 1) {
