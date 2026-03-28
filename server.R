@@ -1068,6 +1068,19 @@ server <- function(input, output, session) {
   
   # [2.3] Arrived data ============================================================================================================
   dataArrived <- eventReactive(list(input$update_filters, input$update_filters1, input$update_filters2),{
+    
+    # print("From dataArrived")
+    # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
+    # debug_campus        <<- input$selectedCampus
+    # debug_department    <<- input$selectedDepartment
+    # debug_date_start    <<- input$dateRange[1]
+    # debug_date_end      <<- input$dateRange[2]
+    # debug_days          <<- input$daysOfWeek
+    # debug_holidays      <<- input$excludeHolidays
+    # debug_active_mrn    <<- input$active_mrn
+    # ------------------------------------    
+    
+    
     validate(
       need(input$selectedCampus != "" , "Please select a Campus"),
       need(input$selectedDepartment != "", "Please select a Department")
@@ -1315,6 +1328,18 @@ server <- function(input, output, session) {
     
     input$update_filters
     input$update_filters1
+    
+    # print("From dataArrivedTrend")
+    # ---- PUSH TO GLOBAL ENVIRONMENT  for debugging purposes only comment later ----
+    # debug_campus        <<- input$selectedCampus
+    # debug_department    <<- input$selectedDepartment
+    # debug_date_start    <<- input$dateRange[1]
+    # debug_date_end      <<- input$dateRange[2]
+    # debug_days          <<- input$daysOfWeek
+    # debug_holidays      <<- input$excludeHolidays
+    # debug_active_mrn    <<- input$active_mrn
+    # debug_diag   <<- input$diag_grouper
+    # ------------------------------------    
     
     isolate({
       validate(
@@ -1712,6 +1737,10 @@ server <- function(input, output, session) {
     total_visits <- data %>%
       filter(ASSOCIATIONLISTA %in% c("Exam","Treatment","Labs")) %>%
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) != 0, "There is no data for these filters")
+    )
 
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -1827,6 +1856,10 @@ server <- function(input, output, session) {
     
     total_visits <- data %>% filter(ASSOCIATIONLISTA == "Treatment") %>% 
       group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits) != 0, "There is no data for these filters.")
+    )
     
     data <- data %>% select(SITE) %>% mutate(SITE = unique(SITE)) %>% collect()
     
@@ -1952,6 +1985,10 @@ server <- function(input, output, session) {
       visits_tb_yearly$APPT_MONTH <- "Total YTD Comparison"
       visits_tb_yearly <- visits_tb_yearly %>% relocate(APPT_MONTH)
       
+      validate(
+        need(nrow(visits_tb_yearly)!=0,"There is no data for these filters.")
+      )
+      
       #get the total patients per year per month
       visits_tb <- data %>%
         group_by(APPT_YEAR, APPT_MONTH) %>% summarise(total = n()) %>% collect() %>%
@@ -1968,6 +2005,9 @@ server <- function(input, output, session) {
       visits_tb_yearly$APPT_MONTH <- paste0("Total ",input$annualVolSummary,"\n YTD Comparison")
       visits_tb_yearly <- visits_tb_yearly %>% relocate(APPT_MONTH)
       
+      validate(
+        need(nrow(visits_tb_yearly)!=0,"There is no data for these filters.")
+      )
       #get the total patients per year per month
       visits_tb <- data %>% 
         filter(ASSOCIATIONLISTA %in% filter) %>%
@@ -1997,6 +2037,7 @@ server <- function(input, output, session) {
     
     #bind the total visits per month per year with the total yeraly visits 
     visits_tb_total <- rbind(visits_tb,visits_tb_yearly)
+    
     
     #created an if statement to change the table based on the different years
     #if the number of years provided is one then there will be no need to calculate any variance
@@ -2132,6 +2173,9 @@ server <- function(input, output, session) {
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA %in% c("Labs", "Treatment","Exam")) %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTA) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )
     
     total_visits_break$AssociationListA <- factor(total_visits_break$ASSOCIATIONLISTA, levels = c("Labs","Treatment","Exam"))
     
@@ -2230,6 +2274,10 @@ server <- function(input, output, session) {
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Exam") %>%
       group_by(APPT_MONTH_YEAR, INPERSONVSTELE, ASSOCIATIONLISTB) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR, INPERSONVSTELE) %>% summarise(max = sum(total))
     total_visits_break$ASSOCIATIONLISTB <- factor(total_visits_break$ASSOCIATIONLISTB, levels = sort(unique(total_visits_break$ASSOCIATIONLISTB), decreasing = T))
@@ -2347,6 +2395,10 @@ server <- function(input, output, session) {
     
     total_visits_break <- data %>% filter(ASSOCIATIONLISTA == "Treatment") %>%
       group_by(APPT_MONTH_YEAR, ASSOCIATIONLISTT) %>% summarise(total = n()) %>% collect()
+    
+    validate(
+      need(nrow(total_visits_break) != 0, "There is no data for these filters.")
+    )    
     
     max <- total_visits_break %>% group_by(APPT_MONTH_YEAR) %>% summarise(max = sum(total))
     
@@ -3628,7 +3680,9 @@ server <- function(input, output, session) {
     data <- uniquePts_df_system(data, c("Exam")) %>% summarise(total = n()) %>% collect()
     # data <- uniquePts.office.data
     #data <- historical.data.unique.exam
-    
+    validate(
+      need(nrow(data) != 0, "There is no data for these filters.")
+    )
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
       title = toupper("Total Site Unique Patients - Exam Visits"),
@@ -3743,6 +3797,7 @@ print("2")
   
   ## Unique MRN by Month
   output$uniqueOfficeMonthSystem <- renderPlotly({
+    
     data <- dataArrived()
      unique <- uniquePts_df_systemMonth(data, c("Exam")) %>% group_by(SITE, APPT_MONTH_YEAR) %>% summarise(total = n()) %>% collect()
 
@@ -3755,6 +3810,9 @@ print("2")
     # } else{
     #   site <- paste(sort(unique(data$SITE)),sep="", collapse=", ")
     # }
+     validate(
+       need(nrow(unique) != 0, "There is no data for these filters.")
+     )
 
     unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
@@ -4016,6 +4074,10 @@ print("2")
     
     data <- uniquePts_df_system(data, c("Treatment Visit")) %>% summarise(total = n()) %>% collect()
     
+    validate(
+      need(nrow(data) != 0, "There is no data for these filters.")
+    )
+    
     valueBoxSpark(
       value =  prettyNum(data$total, big.mark = ','),
       title = toupper("Total Site Unique Patients - Treatment Visits"),
@@ -4130,6 +4192,10 @@ print("2")
     # unique <- data %>%
     #   group_by(APPT_MONTH_YEAR) %>%
     #   summarise(total = n())
+    # Added code to handle zero row exception
+    validate(
+      need(nrow(unique) != 0, "There is no data for these filters.")
+    )
 
     unique$APPT_MONTH_YEAR <- as.factor(unique$APPT_MONTH_YEAR)
     
